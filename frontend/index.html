@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinDash - Gerenciador Financeiro</title>
+    <link rel="stylesheet" href="/src/css/style.css">
+</head>
+
+<body class="min-h-screen bg-dark-bg text-text-primary font-sans antialiased">
+    <script type="module">
+        import authService from '/src/js/auth.js';
+
+        // Redirect to appropriate page
+        if (authService.isAuthenticated()) {
+            window.location.href = '/dashboard.html';
+        } else {
+            window.location.href = '/login.html';
+        }
+    </script>
+</body>
+
+</html>

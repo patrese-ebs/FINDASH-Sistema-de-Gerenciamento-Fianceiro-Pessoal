@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - FinDash</title>
+    <link rel="stylesheet" href="/src/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body class="min-h-screen bg-dark-bg text-text-primary font-sans antialiased">
+    <!-- Sidebar -->
+    <div class="fixed left-0 top-0 h-full w-64 bg-dark-card border-r border-dark-border p-6 slide-in">
+        <div class="mb-8">
+            <h1 class="text-2xl font-bold gradient-purple-blue bg-clip-text text-transparent">FinDash</h1>
+        </div>
+
+        <nav class="space-y-2">
+            <a href="/dashboard.html"
+                class="flex items-center gap-3 px-4 py-3 rounded-lg bg-accent-purple bg-opacity-20 text-accent-purple font-medium">
+                <span>📊</span>
+                <span>Dashboard</span>
+            </a>
+            <a href="/transactions.html"
+                class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-dark-bg transition-colors text-text-secondary hover:text-text-primary">
+                <span>💰</span>
+                <span>Transações</span>
+            </a>
+            <a href="/investments.html"
+                class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-dark-bg transition-colors text-text-secondary hover:text-text-primary">
+                <span>📈</span>
+                <span>Investimentos</span>
+            </a>
+            <a href="/goals.html"
+                class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-dark-bg transition-colors text-text-secondary hover:text-text-primary">
+                <span>🎯</span>
+                <span>Metas</span>
+            </a>
+        </nav>
+
+        <div class="absolute bottom-6 left-6 right-6">
+            <button id="logoutBtn"
+                class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-dark-bg transition-colors text-text-secondary hover:text-red-400">
+                <span>🚪</span>
+                <span>Sair</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="ml-64 p-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <h2 class="text-3xl font-bold">Visão Geral Financeira</h2>
+            <p class="text-text-secondary mt-1">Bem-vindo de volta, aqui está o que está acontecendo com seu dinheiro
+                hoje.</p>
+            <div class="flex items-center gap-4 mt-4">
+                <select id="monthFilter" class="input-field">
+                    <option value="1">Janeiro</option>
+                    <option value="2">Fevereiro</option>
+                    <option value="3">Março</option>
+                    <option value="4">Abril</option>
+                    <option value="5">Maio</option>
+                    <option value="6">Junho</option>
+                    <option value="7">Julho</option>
+                    <option value="8">Agosto</option>
+                    <option value="9">Setembro</option>
+                    <option value="10">Outubro</option>
+                    <option value="11">Novembro</option>
+                    <option value="12">Dezembro</option>
+                </select>
+                <select id="yearFilter" class="input-field">
+                    <option value="2026">2026</option>
+                    <option value="2025">2025</option>
+                    <option value="2024">2024</option>
+                </select>
+                <button id="exportBtn" class="btn-secondary">📥 Exportar</button>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- Current Balance (Liquid) -->
+            <div class="stat-card fade-in">
+                <div class="stat-label">Saldo Atual (Líquido)</div>
+                <div class="stat-value" id="totalBalance">R$ 0,00</div>
+                <div class="text-xs text-text-secondary mt-1">Recebido - Pago</div>
+            </div>
+
+            <!-- Projected Balance -->
+            <div class="stat-card fade-in" style="animation-delay: 0.1s">
+                <div class="stat-label">Saldo Projetado</div>
+                <div class="stat-value text-blue-400" id="projectedBalance">R$ 0,00</div>
+                <div class="text-xs text-text-secondary mt-1">Ao final do mês</div>
+            </div>
+
+            <!-- Remaining Budget -->
+            <div class="stat-card fade-in" style="animation-delay: 0.2s">
+                <div class="stat-label">Orçamento Restante</div>
+                <div class="stat-value" id="remainingBudget">R$ 0,00</div>
+                <div class="flex items-center gap-2 mt-2">
+                    <div class="flex-1 bg-dark-bg rounded-full h-2">
+                        <div id="budgetProgress" class="gradient-gold h-2 rounded-full" style="width: 0%"></div>
+                    </div>
+                    <span class="text-sm text-text-secondary" id="budgetPercent">0%</span>
+                </div>
+            </div>
+
+            <!-- Surplus -->
+            <div class="stat-card fade-in" style="animation-delay: 0.3s">
+                <div class="stat-label">Superávit Estimado</div>
+                <div class="stat-value text-green-400" id="surplusAmountTop">R$ 0,00</div>
+                <div class="text-xs text-text-secondary mt-1">Economia potencial</div>
+            </div>
+        </div>
+
+        <!-- Detailed Breakdown -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <!-- Income Stats -->
+            <div class="card fade-in">
+                <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
+                    <span class="p-1 rounded bg-green-500 bg-opacity-20 text-green-400">💰</span> Receitas
+                </h3>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center p-3 bg-dark-bg rounded-lg border border-dark-border">
+                        <span class="text-sm text-text-secondary">Recebido</span>
+                        <span class="font-bold text-green-400" id="receivedIncome">R$ 0,00</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-dark-bg rounded-lg border border-dark-border">
+                        <span class="text-sm text-text-secondary">Pendente</span>
+                        <span class="font-bold text-yellow-500" id="pendingIncome">R$ 0,00</span>
+                    </div>
+                    <div class="pt-2 border-t border-dark-border flex justify-between items-center">
+                        <span class="text-sm font-medium">Total Previsto</span>
+                        <span class="font-bold text-white" id="monthlyIncome">R$ 0,00</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Expense Stats -->
+            <div class="card fade-in" style="animation-delay: 0.1s">
+                <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
+                    <span class="p-1 rounded bg-red-500 bg-opacity-20 text-red-400">💸</span> Despesas
+                </h3>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center p-3 bg-dark-bg rounded-lg border border-dark-border">
+                        <span class="text-sm text-text-secondary">Pago</span>
+                        <span class="font-bold text-red-400" id="paidExpenses">R$ 0,00</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-dark-bg rounded-lg border border-dark-border">
+                        <span class="text-sm text-text-secondary">A Pagar</span>
+                        <span class="font-bold text-yellow-500" id="pendingExpenses">R$ 0,00</span>
+                    </div>
+                    <div class="pt-2 border-t border-dark-border flex justify-between items-center">
+                        <span class="text-sm font-medium">Total Previsto</span>
+                        <span class="font-bold text-white" id="monthlyExpenses">R$ 0,00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <!-- Cash Flow Chart -->
+            <div class="card lg:col-span-2 fade-in" style="animation-delay: 0.4s">
+                <h3 class="text-xl font-bold mb-4">Análise de Fluxo de Caixa</h3>
+                <p class="text-text-secondary text-sm mb-4">Receitas vs Despesas (Últimos 6 Meses)</p>
+                <div class="h-64 relative">
+                    <canvas id="cashFlowChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Expense Breakdown -->
+            <div class="card fade-in" style="animation-delay: 0.5s">
+                <h3 class="text-xl font-bold mb-4">Breakdown de Despesas</h3>
+                <div class="h-64 relative">
+                    <canvas id="expenseChart"></canvas>
+                </div>
+                <div id="expenseCategories" class="mt-4 space-y-2">
+                    <!-- Categories will be inserted here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Insights (Placeholder) -->
+        <div class="card fade-in" style="animation-delay: 0.6s">
+            <div class="flex items-start gap-4">
+                <div class="bg-gradient-to-r from-accent-purple to-accent-blue p-3 rounded-lg">
+                    <span class="text-2xl">💡</span>
+                </div>
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-2">
+                        <h3 class="text-lg font-bold">Insight Detectado</h3>
+                        <span class="px-2 py-1 bg-accent-gold bg-opacity-20 text-accent-gold text-xs rounded-full">AI
+                            INSIGHT</span>
+                    </div>
+                    <p class="text-text-secondary">
+                        Você tem um excedente de <span class="text-green-400 font-bold" id="surplusAmount">R$
+                            0,00</span> este mês
+                        comparado à sua média. Considere movê-lo para seu investimento "Fundo de Emergência".
+                    </p>
+                    <button class="mt-3 text-accent-purple hover:underline text-sm font-medium">
+                        Ver Sugestão →
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import authService from '/src/js/auth.js';
+        import dashboardService from '/src/js/services/dashboardService.js';
+
+        // Check authentication
+        if (!authService.isAuthenticated()) {
+            window.location.href = '/login.html';
+        }
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            authService.logout();
+        });
+
+        // Format currency
+        const formatCurrency = (value) => {
+            return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            }).format(value);
+        };
+
+        // Set current month/year
+        const now = new Date();
+        document.getElementById('monthFilter').value = now.getMonth() + 1;
+        document.getElementById('yearFilter').value = now.getFullYear();
+
+        // Event Listeners for Filters
+        document.getElementById('monthFilter').addEventListener('change', loadDashboard);
+        document.getElementById('yearFilter').addEventListener('change', loadDashboard);
+
+        // Load dashboard data
+        async function loadDashboard() {
+            try {
+                const month = document.getElementById('monthFilter').value;
+                const year = document.getElementById('yearFilter').value;
+
+                const data = await dashboardService.getDashboard(month, year);
+
+                // Update stats
+                document.getElementById('totalBalance').textContent = formatCurrency(data.totalBalance);
+                document.getElementById('projectedBalance').textContent = formatCurrency(data.projectedBalance);
+                document.getElementById('remainingBudget').textContent = formatCurrency(data.remainingBudget);
+                document.getElementById('surplusAmountTop').textContent = formatCurrency(Math.max(0, data.remainingBudget));
+
+                // Detailed metrics
+                document.getElementById('monthlyIncome').textContent = formatCurrency(data.monthlyIncome);
+                document.getElementById('receivedIncome').textContent = formatCurrency(data.receivedIncome);
+                document.getElementById('pendingIncome').textContent = formatCurrency(data.pendingIncome);
+
+                document.getElementById('monthlyExpenses').textContent = formatCurrency(data.monthlyExpenses);
+                document.getElementById('paidExpenses').textContent = formatCurrency(data.paidExpenses);
+                document.getElementById('pendingExpenses').textContent = formatCurrency(data.pendingExpenses);
+
+                // Update budget progress
+                const budgetPercent = data.monthlyIncome > 0
+                    ? ((data.remainingBudget / data.monthlyIncome) * 100).toFixed(0)
+                    : 0;
+                document.getElementById('budgetProgress').style.width = `${Math.min(100, Math.max(0, budgetPercent))}%`;
+                document.getElementById('budgetPercent').textContent = `${budgetPercent}% Restante`;
+
+                // Update surplus
+                document.getElementById('surplusAmount').textContent = formatCurrency(Math.max(0, data.remainingBudget));
+
+                // Create cash flow chart
+                createCashFlowChart(data.cashFlow);
+
+                // Create expense breakdown chart
+                createExpenseChart(data.expensesByCategory);
+
+            } catch (error) {
+                console.error('Failed to load dashboard:', error);
+            }
+        }
+
+        // Chart instances
+        let cashFlowChartInstance = null;
+        let expenseChartInstance = null;
+
+        // Cash Flow Chart
+        function createCashFlowChart(cashFlow) {
+            const ctx = document.getElementById('cashFlowChart');
+
+            if (cashFlowChartInstance) {
+                cashFlowChartInstance.destroy();
+            }
+
+            cashFlowChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: cashFlow.map(d => d.month),
+                    datasets: [
+                        {
+                            label: 'Receitas',
+                            data: cashFlow.map(d => d.income),
+                            backgroundColor: 'rgba(34, 197, 94, 0.8)',
+                            borderRadius: 8,
+                        },
+                        {
+                            label: 'Despesas',
+                            data: cashFlow.map(d => d.expense),
+                            backgroundColor: 'rgba(239, 68, 68, 0.8)',
+                            borderRadius: 8,
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#a0a0a0' }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: '#a0a0a0' },
+                            grid: { color: '#2a2a3e' }
+                        },
+                        x: {
+                            ticks: { color: '#a0a0a0' },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Expense Breakdown Chart
+        function createExpenseChart(expensesByCategory) {
+            const categories = Object.keys(expensesByCategory);
+            const values = Object.values(expensesByCategory);
+            const total = values.reduce((a, b) => a + b, 0);
+
+            const ctx = document.getElementById('expenseChart');
+
+            if (expenseChartInstance) {
+                expenseChartInstance.destroy();
+            }
+
+            expenseChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: categories,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: [
+                            '#8b5cf6',
+                            '#3b82f6',
+                            '#fbbf24',
+                            '#ef4444',
+                            '#10b981',
+                            '#f59e0b'
+                        ],
+                        borderWidth: 0,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+
+            // Display categories
+            const categoriesDiv = document.getElementById('expenseCategories');
+            categoriesDiv.innerHTML = categories.map((cat, i) => {
+                const percent = ((values[i] / total) * 100).toFixed(0);
+                return `
+          <div class="flex items-center justify-between text-sm">
+            <div class="flex items-center gap-2">
+              <div class="w-3 h-3 rounded-full" style="background: ${['#8b5cf6', '#3b82f6', '#fbbf24', '#ef4444', '#10b981', '#f59e0b'][i]}"></div>
+              <span>${cat}</span>
+            </div>
+            <span class="font-medium">${percent}%</span>
+          </div>
+        `;
+            }).join('');
+        }
+
+        // Load data on page load
+        loadDashboard();
+    </script>
+</body>
+
+</html>

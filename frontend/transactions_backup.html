@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transações - FinDash</title>
+    <link rel="stylesheet" href="/src/css/style.css">
+</head>
+
+<body class="min-h-screen">
+    <!-- Sidebar -->
+    <div class="fixed left-0 top-0 h-full w-64 bg-dark-card border-r border-dark-border p-6 slide-in">
+        <div class="mb-8">
+            <h1 class="text-2xl font-bold gradient-purple-blue bg-clip-text text-transparent">FinDash</h1>
+        </div>
+
+        <nav class="space-y-2">
+            <a href="/dashboard.html"
+                class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-dark-bg transition-colors text-text-secondary hover:text-text-primary">
+                <span>📊</span>
+                <span>Dashboard</span>
+            </a>
+            <a href="/transactions.html"
+                class="flex items-center gap-3 px-4 py-3 rounded-lg bg-accent-purple bg-opacity-20 text-accent-purple font-medium">
+                <span>💰</span>
+                <span>Transações</span>
+            </a>
+            <a href="/credit-cards.html"
+                class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-dark-bg transition-colors text-text-secondary hover:text-text-primary">
+                <span>💳</span>
+                <span>Cartões</span>
+            </a>
+            <a href="/investments.html"
+                class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-dark-bg transition-colors text-text-secondary hover:text-text-primary">
+                <span>📈</span>
+                <span>Investimentos</span>
+            </a>
+            <a href="/goals.html"
+                class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-dark-bg transition-colors text-text-secondary hover:text-text-primary">
+                <span>🎯</span>
+                <span>Metas</span>
+            </a>
+        </nav>
+
+        <div class="absolute bottom-6 left-6 right-6">
+            <button id="logoutBtn"
+                class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-dark-bg transition-colors text-text-secondary hover:text-red-400">
+                <span>🚪</span>
+                <span>Sair</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="ml-64 p-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <h2 class="text-3xl font-bold">Transações</h2>
+            <p class="text-text-secondary mt-1">Gerencie suas receitas e despesas mensais</p>
+
+            <!-- Filters -->
+            <div class="flex items-center gap-4 mt-4">
+                <select id="monthFilter" class="input-field">
+                    <option value="1">Janeiro</option>
+                    <option value="2">Fevereiro</option>
+                    <option value="3">Março</option>
+                    <option value="4">Abril</option>
+                    <option value="5">Maio</option>
+                    <option value="6">Junho</option>
+                    <option value="7">Julho</option>
+                    <option value="8">Agosto</option>
+                    <option value="9">Setembro</option>
+                    <option value="10">Outubro</option>
+                    <option value="11">Novembro</option>
+                    <option value="12">Dezembro</option>
+                </select>
+                <select id="yearFilter" class="input-field">
+                    <option value="2026">2026</option>
+                    <option value="2025">2025</option>
+                    <option value="2024">2024</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="flex gap-4 mb-6 border-b border-dark-border">
+            <button id="incomesTab" class="px-6 py-3 font-medium border-b-2 border-accent-purple text-accent-purple">
+                Receitas
+            </button>
+            <button id="expensesTab"
+                class="px-6 py-3 font-medium border-b-2 border-transparent text-text-secondary hover:text-text-primary">
+                Despesas
+            </button>
+        </div>
+
+        <!-- Incomes Section -->
+        <div id="incomesSection">
+            <!-- Add Income Button -->
+            <div class="mb-6">
+                <button id="addIncomeBtn" class="btn-primary">+ Nova Receita</button>
+            </div>
+
+            <!-- Incomes List -->
+            <div class="card">
+                <h3 class="text-xl font-bold mb-4">Minhas Receitas</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-dark-border">
+                                <th class="text-left py-3 px-4 text-sm font-medium text-text-secondary">DATA</th>
+                                <th class="text-left py-3 px-4 text-sm font-medium text-text-secondary">DESCRIÇÃO</th>
+                                <th class="text-left py-3 px-4 text-sm font-medium text-text-secondary">CATEGORIA</th>
+                                <th class="text-right py-3 px-4 text-sm font-medium text-text-secondary">VALOR</th>
+                                <th class="text-right py-3 px-4 text-sm font-medium text-text-secondary">AÇÕES</th>
+                            </tr>
+                        </thead>
+                        <tbody id="incomesTableBody">
+                            <tr>
+                                <td colspan="5" class="text-center py-8 text-text-secondary">Nenhuma receita encontrada
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-4 pt-4 border-t border-dark-border">
+                    <div class="flex items-center justify-between">
+                        <span class="text-text-secondary text-sm">Total de Receitas:</span>
+                        <span class="text-2xl font-bold text-green-400" id="totalIncome">R$ 0,00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Expenses Section -->
+        <div id="expensesSection" class="hidden">
+            <!-- Add Expense Button -->
+            <div class="mb-6">
+                <button id="addExpenseBtn" class="btn-primary">+ Nova Despesa</button>
+            </div>
+
+            <!-- Expenses List -->
+            <div class="card">
+                <h3 class="text-xl font-bold mb-4">Minhas Despesas</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-dark-border">
+                                <th class="text-left py-3 px-4 text-sm font-medium text-text-secondary">DATA</th>
+                                <th class="text-left py-3 px-4 text-sm font-medium text-text-secondary">DESCRIÇÃO</th>
+                                <th class="text-left py-3 px-4 text-sm font-medium text-text-secondary">CATEGORIA</th>
+                                <th class="text-left py-3 px-4 text-sm font-medium text-text-secondary">PAGAMENTO</th>
+                                <th class="text-right py-3 px-4 text-sm font-medium text-text-secondary">VALOR</th>
+                                <th class="text-right py-3 px-4 text-sm font-medium text-text-secondary">AÇÕES</th>
+                            </tr>
+                        </thead>
+                        <tbody id="expensesTableBody">
+                            <tr>
+                                <td colspan="6" class="text-center py-8 text-text-secondary">Nenhuma despesa encontrada
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-4 pt-4 border-t border-dark-border">
+                    <div class="flex items-center justify-between">
+                        <span class="text-text-secondary text-sm">Total de Despesas:</span>
+                        <span class="text-2xl font-bold text-red-400" id="totalExpense">R$ 0,00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Income Modal -->
+    <div id="addIncomeModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="card max-w-md w-full m-4 fade-in">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-bold">Nova Receita</h3>
+                <button id="closeIncomeModalBtn" class="text-text-secondary hover:text-text-primary">✕</button>
+            </div>
+
+            <form id="incomeForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Descrição</label>
+                    <input type="text" id="incomeDescription" class="input-field w-full" placeholder="Ex: Salário"
+                        required>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Valor</label>
+                        <input type="number" id="incomeAmount" class="input-field w-full" placeholder="5000.00"
+                            step="0.01" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Categoria</label>
+                        <select id="incomeCategory" class="input-field w-full" required>
+                            <option value="Salário">💼 Salário</option>
+                            <option value="Freelance">💻 Freelance</option>
+                            <option value="Investimentos">📈 Investimentos</option>
+                            <option value="Aluguel">🏠 Aluguel</option>
+                            <option value="Outros">📦 Outros</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2">Data</label>
+                    <input type="date" id="incomeDate" class="input-field w-full" required>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <input type="checkbox" id="incomeRecurring" class="w-4 h-4">
+                    <label for="incomeRecurring" class="text-sm">Receita recorrente (mensal)</label>
+                </div>
+
+                <div class="flex gap-3 pt-4">
+                    <button type="button" id="cancelIncomeBtn" class="btn-secondary flex-1">Cancelar</button>
+                    <button type="submit" class="btn-primary flex-1">Adicionar Receita</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Expense Modal -->
+    <div id="addExpenseModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="card max-w-md w-full m-4 fade-in">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-bold">Nova Despesa</h3>
+                <button id="closeExpenseModalBtn" class="text-text-secondary hover:text-text-primary">✕</button>
+            </div>
+
+            <form id="expenseForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Descrição</label>
+                    <input type="text" id="expenseDescription" class="input-field w-full" placeholder="Ex: Conta de luz"
+                        required>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Valor</label>
+                        <input type="number" id="expenseAmount" class="input-field w-full" placeholder="150.00"
+                            step="0.01" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Categoria</label>
+                        <select id="expenseCategory" class="input-field w-full" required>
+                            <option value="Alimentação">🍔 Alimentação</option>
+                            <option value="Transporte">🚗 Transporte</option>
+                            <option value="Moradia">🏠 Moradia</option>
+                            <option value="Saúde">💊 Saúde</option>
+                            <option value="Educação">📚 Educação</option>
+                            <option value="Lazer">🎮 Lazer</option>
+                            <option value="Outros">📦 Outros</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2">Forma de Pagamento</label>
+                    <select id="expensePaymentMethod" class="input-field w-full" required>
+                        <option value="Dinheiro">💵 Dinheiro</option>
+                        <option value="Débito">💳 Débito</option>
+                        <option value="Transferência">🏦 Transferência</option>
+                        <option value="PIX">📱 PIX</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2">Data</label>
+                    <input type="date" id="expenseDate" class="input-field w-full" required>
+                </div>
+
+                <div class="flex gap-3 pt-4">
+                    <button type="button" id="cancelExpenseBtn" class="btn-secondary flex-1">Cancelar</button>
+                    <button type="submit" class="btn-primary flex-1">Adicionar Despesa</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import authService from '/src/js/auth.js';
+        import transactionService from '/src/js/services/transactionService.js';
+
+        // Check authentication
+        if (!authService.isAuthenticated()) {
+            window.location.href = '/login.html';
+        }
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            authService.logout();
+        });
+
+        // Format currency
+        const formatCurrency = (value) => {
+            return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            }).format(value);
+        };
+
+        // Set current month/year
+        const now = new Date();
+        document.getElementById('monthFilter').value = now.getMonth() + 1;
+        document.getElementById('yearFilter').value = now.getFullYear();
+        document.getElementById('incomeDate').valueAsDate = now;
+        document.getElementById('expenseDate').valueAsDate = now;
+
+        // Tab switching
+        const incomesTab = document.getElementById('incomesTab');
+        const expensesTab = document.getElementById('expensesTab');
+        const incomesSection = document.getElementById('incomesSection');
+        const expensesSection = document.getElementById('expensesSection');
+
+        incomesTab.addEventListener('click', () => {
+            incomesTab.classList.add('border-accent-purple', 'text-accent-purple');
+            incomesTab.classList.remove('border-transparent', 'text-text-secondary');
+            expensesTab.classList.remove('border-accent-purple', 'text-accent-purple');
+            expensesTab.classList.add('border-transparent', 'text-text-secondary');
+            incomesSection.classList.remove('hidden');
+            expensesSection.classList.add('hidden');
+        });
+
+        expensesTab.addEventListener('click', () => {
+            expensesTab.classList.add('border-accent-purple', 'text-accent-purple');
+            expensesTab.classList.remove('border-transparent', 'text-text-secondary');
+            incomesTab.classList.remove('border-accent-purple', 'text-accent-purple');
+            incomesTab.classList.add('border-transparent', 'text-text-secondary');
+            expensesSection.classList.remove('hidden');
+            incomesSection.classList.add('hidden');
+        });
+
+        // Modal controls - Income
+        const incomeModal = document.getElementById('addIncomeModal');
+        const addIncomeBtn = document.getElementById('addIncomeBtn');
+        const closeIncomeModalBtn = document.getElementById('closeIncomeModalBtn');
+        const cancelIncomeBtn = document.getElementById('cancelIncomeBtn');
+
+        addIncomeBtn.addEventListener('click', () => {
+            incomeModal.classList.remove('hidden');
+            incomeModal.classList.add('flex');
+        });
+
+        [closeIncomeModalBtn, cancelIncomeBtn].forEach(btn => {
+            btn.addEventListener('click', () => {
+                incomeModal.classList.add('hidden');
+                incomeModal.classList.remove('flex');
+            });
+        });
+
+        // Modal controls - Expense
+        const expenseModal = document.getElementById('addExpenseModal');
+        const addExpenseBtn = document.getElementById('addExpenseBtn');
+        const closeExpenseModalBtn = document.getElementById('closeExpenseModalBtn');
+        const cancelExpenseBtn = document.getElementById('cancelExpenseBtn');
+
+        addExpenseBtn.addEventListener('click', () => {
+            expenseModal.classList.remove('hidden');
+            expenseModal.classList.add('flex');
+        });
+
+        [closeExpenseModalBtn, cancelExpenseBtn].forEach(btn => {
+            btn.addEventListener('click', () => {
+                expenseModal.classList.add('hidden');
+                expenseModal.classList.remove('flex');
+            });
+        });
+
+        // Load incomes
+        async function loadIncomes() {
+            try {
+                const month = document.getElementById('monthFilter').value;
+                const year = document.getElementById('yearFilter').value;
+                const incomes = await transactionService.getIncomes(month, year);
+
+                const tbody = document.getElementById('incomesTableBody');
+                if (incomes.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-text-secondary">Nenhuma receita encontrada</td></tr>';
+                    document.getElementById('totalIncome').textContent = 'R$ 0,00';
+                    return;
+                }
+
+                tbody.innerHTML = incomes.map(income => `
+          <tr class="border-b border-dark-border hover:bg-dark-bg transition-colors">
+            <td class="py-3 px-4 text-sm">${new Date(income.date).toLocaleDateString('pt-BR')}</td>
+            <td class="py-3 px-4">
+              <div class="font-medium">${income.description}</div>
+              ${income.isRecurring ? '<div class="text-xs text-accent-purple">🔄 Recorrente</div>' : ''}
+            </td>
+            <td class="py-3 px-4">
+              <span class="px-2 py-1 bg-green-500 bg-opacity-20 text-green-400 text-xs rounded-full">
+                ${income.category}
+              </span>
+            </td>
+            <td class="py-3 px-4 text-right font-medium text-green-400">${formatCurrency(income.amount)}</td>
+            <td class="py-3 px-4 text-right">
+              <button onclick="deleteIncome('${income.id}')" class="text-red-400 hover:text-red-300 text-sm">🗑️</button>
+            </td>
+          </tr>
+        `).join('');
+
+                const total = incomes.reduce((sum, income) => sum + parseFloat(income.amount), 0);
+                document.getElementById('totalIncome').textContent = formatCurrency(total);
+            } catch (error) {
+                console.error('Failed to load incomes:', error);
+            }
+        }
+
+        // Load expenses
+        async function loadExpenses() {
+            try {
+                const month = document.getElementById('monthFilter').value;
+                const year = document.getElementById('yearFilter').value;
+                const expenses = await transactionService.getExpenses(month, year);
+
+                const tbody = document.getElementById('expensesTableBody');
+                if (expenses.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-text-secondary">Nenhuma despesa encontrada</td></tr>';
+                    document.getElementById('totalExpense').textContent = 'R$ 0,00';
+                    return;
+                }
+
+                tbody.innerHTML = expenses.map(expense => `
+          <tr class="border-b border-dark-border hover:bg-dark-bg transition-colors">
+            <td class="py-3 px-4 text-sm">${new Date(expense.date).toLocaleDateString('pt-BR')}</td>
+            <td class="py-3 px-4 font-medium">${expense.description}</td>
+            <td class="py-3 px-4">
+              <span class="px-2 py-1 bg-red-500 bg-opacity-20 text-red-400 text-xs rounded-full">
+                ${expense.category}
+              </span>
+            </td>
+            <td class="py-3 px-4 text-sm text-text-secondary">${expense.paymentMethod}</td>
+            <td class="py-3 px-4 text-right font-medium text-red-400">${formatCurrency(expense.amount)}</td>
+            <td class="py-3 px-4 text-right">
+              <button onclick="deleteExpense('${expense.id}')" class="text-red-400 hover:text-red-300 text-sm">🗑️</button>
+            </td>
+          </tr>
+        `).join('');
+
+                const total = expenses.reduce((sum, expense) => sum + parseFloat(expense.amount), 0);
+                document.getElementById('totalExpense').textContent = formatCurrency(total);
+            } catch (error) {
+                console.error('Failed to load expenses:', error);
+            }
+        }
+
+        // Submit income form
+        document.getElementById('incomeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const incomeData = {
+                description: document.getElementById('incomeDescription').value,
+                amount: parseFloat(document.getElementById('incomeAmount').value),
+                category: document.getElementById('incomeCategory').value,
+                date: document.getElementById('incomeDate').value,
+                isRecurring: document.getElementById('incomeRecurring').checked
+            };
+
+            try {
+                await transactionService.createIncome(incomeData);
+                incomeModal.classList.add('hidden');
+                incomeModal.classList.remove('flex');
+                document.getElementById('incomeForm').reset();
+                loadIncomes();
+                alert('Receita adicionada com sucesso!');
+            } catch (error) {
+                alert('Erro ao adicionar receita: ' + error.message);
+            }
+        });
+
+        // Submit expense form
+        document.getElementById('expenseForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const expenseData = {
+                description: document.getElementById('expenseDescription').value,
+                amount: parseFloat(document.getElementById('expenseAmount').value),
+                category: document.getElementById('expenseCategory').value,
+                paymentMethod: document.getElementById('expensePaymentMethod').value,
+                date: document.getElementById('expenseDate').value
+            };
+
+            try {
+                await transactionService.createExpense(expenseData);
+                expenseModal.classList.add('hidden');
+                expenseModal.classList.remove('flex');
+                document.getElementById('expenseForm').reset();
+                loadExpenses();
+                alert('Despesa adicionada com sucesso!');
+            } catch (error) {
+                alert('Erro ao adicionar despesa: ' + error.message);
+            }
+        });
+
+        // Delete functions
+        window.deleteIncome = async (id) => {
+            if (confirm('Tem certeza que deseja excluir esta receita?')) {
+                try {
+                    await transactionService.deleteIncome(id);
+                    loadIncomes();
+                } catch (error) {
+                    alert('Erro ao excluir receita');
+                }
+            }
+        };
+
+        window.deleteExpense = async (id) => {
+            if (confirm('Tem certeza que deseja excluir esta despesa?')) {
+                try {
+                    await transactionService.deleteExpense(id);
+                    loadExpenses();
+                } catch (error) {
+                    alert('Erro ao excluir despesa');
+                }
+            }
+        };
+
+        // Filter change
+        document.getElementById('monthFilter').addEventListener('change', () => {
+            loadIncomes();
+            loadExpenses();
+        });
+
+        document.getElementById('yearFilter').addEventListener('change', () => {
+            loadIncomes();
+            loadExpenses();
+        });
+
+        // Load data on page load
+        loadIncomes();
+        loadExpenses();
+    </script>
+</body>
+
+</html>

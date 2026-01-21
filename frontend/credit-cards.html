@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meus Cartões - FinDash</title>
+    <link rel="stylesheet" href="/src/css/style.css">
+</head>
+
+<body class="min-h-screen bg-dark-bg text-text-primary font-sans antialiased">
+    <!-- Sidebar (same as dashboard) -->
+    <div class="fixed left-0 top-0 h-full w-64 bg-dark-card border-r border-dark-border p-6">
+        <div class="mb-8">
+            <h1 class="text-2xl font-bold gradient-purple-blue bg-clip-text text-transparent">FinDash</h1>
+        </div>
+
+        <nav class="space-y-2">
+            <a href="/dashboard.html"
+                class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-dark-bg transition-colors text-text-secondary hover:text-text-primary">
+                <span>📊</span>
+                <span>Dashboard</span>
+            </a>
+            <a href="/transactions.html"
+                class="flex items-center gap-3 px-4 py-3 rounded-lg bg-accent-purple bg-opacity-20 text-accent-purple font-medium">
+                <span>💰</span>
+                <span>Transações</span>
+            </a>
+            <a href="/investments.html"
+                class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-dark-bg transition-colors text-text-secondary hover:text-text-primary">
+                <span>📈</span>
+                <span>Investimentos</span>
+            </a>
+            <a href="/goals.html"
+                class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-dark-bg transition-colors text-text-secondary hover:text-text-primary">
+                <span>🎯</span>
+                <span>Metas</span>
+            </a>
+        </nav>
+
+        <div class="absolute bottom-6 left-6 right-6">
+            <button id="logoutBtn"
+                class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-dark-bg transition-colors text-text-secondary hover:text-red-400">
+                <span>🚪</span>
+                <span>Sair</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="ml-64 p-8">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <h2 class="text-3xl font-bold">Meus Cartões</h2>
+                <p class="text-text-secondary mt-1">Gerencie limites, faturas e parcelamentos em um só lugar.</p>
+            </div>
+            <div class="flex gap-3">
+                <button id="addNewCardBtn" class="btn-secondary">+ Novo Cartão</button>
+                <button id="addCardBtn" class="btn-primary">+ Nova Despesa</button>
+            </div>
+        </div>
+
+        <!-- Credit Cards Grid -->
+        <div id="cardsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <!-- Cards will be inserted here -->
+        </div>
+
+        <!-- Invoice Section -->
+        <div class="card mb-8">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-bold">Fatura de Outubro</h3>
+                <div class="flex items-center gap-2">
+                    <span class="text-sm text-text-secondary">Aberta</span>
+                    <button class="text-sm text-accent-purple hover:underline">Filtrar</button>
+                    <button class="text-sm text-accent-purple hover:underline">📤 Exportar</button>
+                </div>
+            </div>
+
+            <!-- Invoice Table -->
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b border-dark-border">
+                            <th class="text-left py-3 px-4 text-sm font-medium text-text-secondary">DATA</th>
+                            <th class="text-left py-3 px-4 text-sm font-medium text-text-secondary">DESCRIÇÃO</th>
+                            <th class="text-left py-3 px-4 text-sm font-medium text-text-secondary">CATEGORIA</th>
+                            <th class="text-left py-3 px-4 text-sm font-medium text-text-secondary">PARC.</th>
+                            <th class="text-right py-3 px-4 text-sm font-medium text-text-secondary">VALOR</th>
+                        </tr>
+                    </thead>
+                    <tbody id="invoiceTableBody">
+                        <!-- Transactions will be inserted here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-6 pt-6 border-t border-dark-border">
+                <div class="flex items-center justify-between text-sm mb-2">
+                    <span class="text-text-secondary">Mostrando 5 de 142 transações</span>
+                    <div class="flex gap-2">
+                        <button class="px-3 py-1 rounded hover:bg-dark-bg">Anterior</button>
+                        <button class="px-3 py-1 rounded hover:bg-dark-bg">Próximo</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add New Card Modal -->
+    <div id="addNewCardModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="card max-w-md w-full m-4 fade-in">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-bold">Novo Cartão de Crédito</h3>
+                <button id="closeNewCardModalBtn" class="text-text-secondary hover:text-text-primary">✕</button>
+            </div>
+
+            <form id="newCardForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Nome do Cartão</label>
+                    <input type="text" id="cardName" class="input-field w-full" placeholder="Ex: Nubank Roxinho"
+                        required>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Últimos 4 Dígitos</label>
+                        <input type="text" id="lastFourDigits" class="input-field w-full" placeholder="1234"
+                            maxlength="4" pattern="[0-9]{4}" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Bandeira</label>
+                        <select id="cardBrand" class="input-field w-full" required>
+                            <option value="Visa">Visa</option>
+                            <option value="Mastercard">Mastercard</option>
+                            <option value="Elo">Elo</option>
+                            <option value="American Express">American Express</option>
+                            <option value="Hipercard">Hipercard</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2">Limite de Crédito</label>
+                    <input type="number" id="creditLimit" class="input-field w-full" placeholder="5000.00" step="0.01"
+                        required>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Dia de Fechamento</label>
+                        <input type="number" id="closingDay" class="input-field w-full" placeholder="10" min="1"
+                            max="31" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Dia de Vencimento</label>
+                        <input type="number" id="dueDay" class="input-field w-full" placeholder="15" min="1" max="31"
+                            required>
+                    </div>
+                </div>
+
+                <div class="bg-dark-bg rounded-lg p-3 text-sm text-text-secondary">
+                    💡 <strong>Dica:</strong> O melhor dia para comprar é um dia antes do fechamento da fatura.
+                </div>
+
+                <div class="flex gap-3 pt-4">
+                    <button type="button" id="cancelNewCardBtn" class="btn-secondary flex-1">Cancelar</button>
+                    <button type="submit" class="btn-primary flex-1">Adicionar Cartão</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Card Modal -->
+    <div id="editCardModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="card max-w-md w-full m-4 fade-in">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-bold">Editar Cartão</h3>
+                <button id="closeEditCardModalBtn" class="text-text-secondary hover:text-text-primary">✕</button>
+            </div>
+
+            <form id="editCardForm" class="space-y-4">
+                <input type="hidden" id="editCardId">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Nome do Cartão</label>
+                    <input type="text" id="editCardName" class="input-field w-full" required>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Últimos 4 Dígitos</label>
+                        <input type="text" id="editLastFourDigits" class="input-field w-full" maxlength="4"
+                            pattern="[0-9]{4}" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Bandeira</label>
+                        <select id="editCardBrand" class="input-field w-full" required>
+                            <option value="Visa">Visa</option>
+                            <option value="Mastercard">Mastercard</option>
+                            <option value="Elo">Elo</option>
+                            <option value="American Express">American Express</option>
+                            <option value="Hipercard">Hipercard</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2">Limite de Crédito</label>
+                    <input type="number" id="editCreditLimit" class="input-field w-full" step="0.01" required>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Dia de Fechamento</label>
+                        <input type="number" id="editClosingDay" class="input-field w-full" min="1" max="31" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Dia de Vencimento</label>
+                        <input type="number" id="editDueDay" class="input-field w-full" min="1" max="31" required>
+                    </div>
+                </div>
+
+                <div class="flex gap-3 pt-4">
+                    <button type="button" id="cancelEditCardBtn" class="btn-secondary flex-1">Cancelar</button>
+                    <button type="submit" class="btn-primary flex-1">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Transaction Modal -->
+    <div id="addTransactionModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="card max-w-md w-full m-4 fade-in">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-bold">Nova Despesa no Cartão</h3>
+                <button id="closeModalBtn" class="text-text-secondary hover:text-text-primary">✕</button>
+            </div>
+
+            <form id="transactionForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Cartão</label>
+                    <select id="cardSelect" class="input-field w-full" required>
+                        <option value="">Selecione um cartão</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2">Descrição</label>
+                    <input type="text" id="description" class="input-field w-full"
+                        placeholder="Ex: TV Samsung 55 polegadas" required>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Valor Total</label>
+                        <input type="number" id="totalAmount" class="input-field w-full" placeholder="1200.00"
+                            step="0.01" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Parcelas</label>
+                        <select id="installments" class="input-field w-full" required>
+                            <option value="1">1x (à vista)</option>
+                            <option value="2">2x</option>
+                            <option value="3">3x</option>
+                            <option value="4">4x</option>
+                            <option value="5">5x</option>
+                            <option value="6">6x</option>
+                            <option value="7">7x</option>
+                            <option value="8">8x</option>
+                            <option value="9">9x</option>
+                            <option value="10">10x</option>
+                            <option value="11">11x</option>
+                            <option value="12">12x</option>
+                            <option value="18">18x</option>
+                            <option value="24">24x</option>
+                            <option value="36">36x</option>
+                            <option value="48">48x</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="installmentPreview" class="bg-dark-bg rounded-lg p-4 hidden">
+                    <div class="text-sm text-text-secondary mb-1">Valor da parcela:</div>
+                    <div class="text-2xl font-bold text-accent-purple" id="installmentAmount">R$ 0,00</div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2">Categoria</label>
+                    <select id="category" class="input-field w-full" required>
+                        <option value="Eletrônicos">📱 Eletrônicos</option>
+                        <option value="Alimentação">🍔 Alimentação</option>
+                        <option value="Transporte">🚗 Transporte</option>
+                        <option value="Casa">🏠 Casa</option>
+                        <option value="Serviços">💼 Serviços</option>
+                        <option value="Outros">📦 Outros</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2">Data da Compra</label>
+                    <input type="date" id="purchaseDate" class="input-field w-full" required>
+                </div>
+
+                <div class="flex gap-3 pt-4">
+                    <button type="button" id="cancelBtn" class="btn-secondary flex-1">Cancelar</button>
+                    <button type="submit" class="btn-primary flex-1">Adicionar Despesa</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import authService from '/src/js/auth.js';
+        import creditCardService from '/src/js/services/creditCardService.js';
+
+        // Check authentication
+        if (!authService.isAuthenticated()) {
+            window.location.href = '/login.html';
+        }
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            authService.logout();
+        });
+
+        // Format currency
+        const formatCurrency = (value) => {
+            return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            }).format(value);
+        };
+
+        // Set today's date
+        document.getElementById('purchaseDate').valueAsDate = new Date();
+
+        // Calculate installment amount
+        const totalAmountInput = document.getElementById('totalAmount');
+        const installmentsSelect = document.getElementById('installments');
+        const installmentPreview = document.getElementById('installmentPreview');
+        const installmentAmountDisplay = document.getElementById('installmentAmount');
+
+        function updateInstallmentPreview() {
+            const total = parseFloat(totalAmountInput.value) || 0;
+            const installments = parseInt(installmentsSelect.value) || 1;
+
+            if (total > 0) {
+                const installmentAmount = total / installments;
+                installmentAmountDisplay.textContent = formatCurrency(installmentAmount);
+                installmentPreview.classList.remove('hidden');
+            } else {
+                installmentPreview.classList.add('hidden');
+            }
+        }
+
+        totalAmountInput.addEventListener('input', updateInstallmentPreview);
+        installmentsSelect.addEventListener('change', updateInstallmentPreview);
+
+        // Load credit cards
+        async function loadCreditCards() {
+            try {
+                const cards = await creditCardService.getAll();
+
+                // Populate cards grid
+                const cardsGrid = document.getElementById('cardsGrid');
+                cardsGrid.innerHTML = cards.map(card => createCardHTML(card)).join('');
+
+                // Populate card select
+                const cardSelect = document.getElementById('cardSelect');
+                cardSelect.innerHTML = '<option value="">Selecione um cartão</option>' +
+                    cards.map(card => `<option value="${card.id}">${card.name} - ${card.brand}</option>`).join('');
+
+                // Load transactions for first card
+                if (cards.length > 0) {
+                    loadInvoice(cards[0].id);
+                }
+            } catch (error) {
+                console.error('Failed to load cards:', error);
+            }
+        }
+
+        // Create card HTML
+        function createCardHTML(card) {
+            const usagePercent = card.usagePercentage || 0;
+            const currentBalance = card.currentBalance || 0;
+            const availableCredit = card.availableCredit || 0;
+            const creditLimit = card.creditLimit || 0;
+
+            const isHealthy = availableCredit > 0;
+
+            // Save card data to window object for easy access during edit
+            if (!window.cardsData) window.cardsData = {};
+            window.cardsData[card.id] = card;
+
+            return `
+        <div id="card-${card.id}" class="card cursor-pointer hover:border-accent-purple transition-colors relative border border-transparent" onclick="handleCardClick(event, '${card.id}')">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <div class="text-sm text-text-secondary">${card.brand}</div>
+              <div class="font-bold">•••• ${card.lastFourDigits}</div>
+            </div>
+            <div class="relative card-menu">
+                <button class="text-text-secondary hover:text-text-primary p-1 rounded hover:bg-dark-bg" onclick="toggleCardMenu(event, '${card.id}')">⋮</button>
+                <div id="cardMenu-${card.id}" class="hidden absolute right-0 top-8 bg-dark-card border border-dark-border rounded-lg shadow-xl z-10 w-32 py-1">
+                    <button onclick="openEditCardModal('${card.id}')" class="w-full text-left px-4 py-2 text-sm text-text-secondary hover:text-text-primary hover:bg-dark-bg">✏️ Editar</button>
+                    <button onclick="if(confirm('Tem certeza que deseja excluir?')) deleteCard('${card.id}')" class="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-dark-bg">🗑️ Excluir</button>
+                </div>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <div class="text-sm text-text-secondary">Fatura Atual (Total Pendente)</div>
+            <div class="text-2xl font-bold text-white">${formatCurrency(currentBalance)}</div>
+          </div>
+
+          <div class="mb-2">
+            <div class="flex items-center justify-between text-sm mb-1">
+              <span class="text-text-secondary">Vence em</span>
+              <span class="text-accent-gold">Dia ${card.dueDay}</span>
+            </div>
+          </div>
+
+          <div class="mt-4 pt-4 border-t border-dark-border">
+            <div class="flex items-center justify-between text-sm mb-2">
+              <span class="text-text-secondary">Limite Disponível</span>
+              <span class="${isHealthy ? 'text-green-400' : 'text-red-400'} font-medium">${isHealthy ? 'Saudável' : 'Crítico'}</span>
+            </div>
+            
+            <div class="mb-2">
+              <div class="flex items-center justify-between text-sm mb-1">
+                <span class="text-text-secondary">Utilizado</span>
+                <span>${formatCurrency(currentBalance)}</span>
+              </div>
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-text-secondary">Disponível</span>
+                <span class="${isHealthy ? 'text-green-400' : 'text-red-400'}">${formatCurrency(availableCredit)}</span>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <div class="flex-1 bg-dark-bg rounded-full h-2">
+                <div class="gradient-purple-blue h-2 rounded-full" style="width: ${Math.min(100, Math.max(0, usagePercent))}%"></div>
+              </div>
+              <span class="text-sm font-medium">${Math.round(usagePercent)}%</span>
+            </div>
+
+            <div class="mt-3 text-sm text-text-secondary">
+              Melhor dia de compra: <span class="text-accent-purple font-medium">Dia ${card.closingDay}</span>
+            </div>
+          </div>
+        </div>
+      `;
+        }
+
+        // Window helper functions
+        window.handleCardClick = (event, cardId) => {
+            // Prevent if click came from menu or buttons
+            if (event.target.closest('button') || event.target.closest('.card-menu')) return;
+            loadInvoice(cardId);
+        };
+
+        window.toggleCardMenu = (event, cardId) => {
+            event.stopPropagation();
+            // Close all other menus
+            document.querySelectorAll('[id^="cardMenu-"]').forEach(el => {
+                if (el.id !== `cardMenu-${cardId}`) el.classList.add('hidden');
+            });
+            const menu = document.getElementById(`cardMenu-${cardId}`);
+            menu.classList.toggle('hidden');
+        };
+
+        // Close menus when clicking outside
+        document.addEventListener('click', () => {
+            document.querySelectorAll('[id^="cardMenu-"]').forEach(el => el.classList.add('hidden'));
+        });
+
+        function updateCardSelection(selectedCardId) {
+            // Remove highlighting from all cards
+            document.querySelectorAll('.card[id^="card-"]').forEach(el => {
+                el.classList.remove('border-accent-purple');
+                el.classList.remove('ring-2');
+                el.classList.remove('ring-accent-purple');
+                el.classList.add('border-transparent');
+            });
+
+            // Add highlighting to selected card
+            const selectedCard = document.getElementById(`card-${selectedCardId}`);
+            if (selectedCard) {
+                selectedCard.classList.remove('border-transparent');
+                selectedCard.classList.add('border-accent-purple');
+                selectedCard.classList.add('ring-2', 'ring-accent-purple');
+            }
+        }
+
+        window.openEditCardModal = (cardId) => {
+            const card = window.cardsData[cardId];
+            if (!card) return;
+
+            document.getElementById('editCardId').value = card.id;
+            document.getElementById('editCardName').value = card.name;
+            document.getElementById('editLastFourDigits').value = card.lastFourDigits;
+            document.getElementById('editCardBrand').value = card.brand;
+            document.getElementById('editCreditLimit').value = card.creditLimit;
+            document.getElementById('editClosingDay').value = card.closingDay;
+            document.getElementById('editDueDay').value = card.dueDay;
+
+            document.getElementById('editCardModal').classList.remove('hidden');
+            document.getElementById('editCardModal').classList.add('flex');
+        };
+
+        window.deleteCard = async (cardId) => {
+            try {
+                await creditCardService.delete(cardId);
+                loadCreditCards();
+            } catch (error) {
+                alert('Erro ao excluir cartão');
+            }
+        };
+
+        // Edit Card Modal Controls
+        const editCardModal = document.getElementById('editCardModal');
+        const closeEditCardModalBtn = document.getElementById('closeEditCardModalBtn');
+        const cancelEditCardBtn = document.getElementById('cancelEditCardBtn');
+
+        [closeEditCardModalBtn, cancelEditCardBtn].forEach(btn => {
+            btn.addEventListener('click', () => {
+                editCardModal.classList.add('hidden');
+                editCardModal.classList.remove('flex');
+            });
+        });
+
+        // Submit Edit Form
+        document.getElementById('editCardForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('editCardId').value;
+            const cardData = {
+                name: document.getElementById('editCardName').value,
+                lastFourDigits: document.getElementById('editLastFourDigits').value,
+                brand: document.getElementById('editCardBrand').value,
+                creditLimit: parseFloat(document.getElementById('editCreditLimit').value),
+                closingDay: parseInt(document.getElementById('editClosingDay').value),
+                dueDay: parseInt(document.getElementById('editDueDay').value)
+            };
+
+            try {
+                await creditCardService.update(id, cardData);
+                editCardModal.classList.add('hidden');
+                editCardModal.classList.remove('flex');
+                loadCreditCards();
+                alert('Cartão atualizado com sucesso!');
+            } catch (error) {
+                alert('Erro ao atualizar cartão: ' + error.message);
+            }
+        });
+
+        // Load invoice
+        async function loadInvoice(cardId) {
+            try {
+                updateCardSelection(cardId);
+                const now = new Date();
+                // Store current view params
+                window.currentCardId = cardId;
+                window.currentMonth = now.getMonth() + 1;
+                window.currentYear = now.getFullYear();
+
+                const invoice = await creditCardService.getInvoice(cardId, window.currentMonth, window.currentYear);
+
+                // Update Header Status
+                const statusSpan = document.querySelector('.card .text-sm.text-text-secondary'); // "Aberta" element
+                const invoiceTitle = document.querySelector('.card .text-xl.font-bold');
+
+                invoiceTitle.textContent = `Fatura de ${new Date().toLocaleString('default', { month: 'long' })}`;
+
+                // Add Pay Button if not exists
+                let payBtn = document.getElementById('payInvoiceBtn');
+                if (!payBtn) {
+                    // Find the actions div (in the invoice card, not the small cards)
+                    const invoiceCard = document.querySelector('.card.mb-8'); // The main invoice card
+                    if (invoiceCard) {
+                        const actionsDiv = invoiceCard.querySelector('.flex.items-center.gap-2');
+                        if (actionsDiv) {
+                            payBtn = document.createElement('button');
+                            payBtn.id = 'payInvoiceBtn';
+                            payBtn.className = 'text-sm text-green-400 hover:underline ml-2 font-bold';
+                            actionsDiv.insertBefore(payBtn, actionsDiv.firstChild);
+                        }
+                    }
+                }
+
+                // Safety check if payBtn was created
+                if (payBtn) {
+                    // Update UI based on status
+                    if (invoice.isPaid) {
+                        statusSpan.textContent = 'Paga ✅';
+                        statusSpan.className = 'text-sm text-green-400 font-bold';
+                        payBtn.textContent = 'Reabrir Fatura';
+                        payBtn.className = 'text-sm text-red-400 hover:underline ml-2 font-bold';
+                    } else {
+                        statusSpan.textContent = 'Aberta';
+                        statusSpan.className = 'text-sm text-text-secondary';
+                        payBtn.textContent = 'Pagar Fatura';
+                        payBtn.className = 'text-sm text-green-400 hover:underline ml-2 font-bold';
+                    }
+
+                    // Attach click handler (re-create to avoid duplicates)
+                    const newPayBtn = payBtn.cloneNode(true);
+                    payBtn.parentNode.replaceChild(newPayBtn, payBtn);
+                    newPayBtn.addEventListener('click', async () => {
+                        if (confirm(invoice.isPaid ? 'Deseja reabrir esta fatura?' : `Confirmar pagamento da fatura de R$ ${formatCurrency(invoice.totalAmount)}?`)) {
+                            try {
+                                await creditCardService.payInvoice(cardId, window.currentMonth, window.currentYear, invoice.totalAmount);
+                                loadInvoice(cardId); // Reload
+                                loadCreditCards(); // Reload cards to update usage (optional)
+                            } catch (err) {
+                                alert('Erro ao atualizar fatura');
+                            }
+                        }
+                    });
+                }
+
+                // Existing Table Logic
+                const tbody = document.getElementById('invoiceTableBody');
+                tbody.innerHTML = invoice.items.map(item => `
+          <tr class="border-b border-dark-border hover:bg-dark-bg transition-colors">
+            <td class="py-3 px-4">
+              <div class="flex items-center gap-2">
+                <span class="text-sm">📅</span>
+                <span class="text-sm">${new Date(item.purchaseDate).toLocaleDateString('pt-BR')}</span>
+              </div>
+            </td>
+            <td class="py-3 px-4">
+              <div class="font-medium">${item.description}</div>
+              <div class="text-sm text-text-secondary">${item.displayText}</div>
+            </td>
+            <td class="py-3 px-4">
+              <span class="px-2 py-1 bg-accent-blue bg-opacity-20 text-accent-blue text-xs rounded-full">
+                ${item.category}
+              </span>
+            </td>
+            <td class="py-3 px-4 text-sm text-text-secondary">
+              ${item.installmentNumber}/${item.installments}
+            </td>
+            <td class="py-3 px-4 text-right font-medium">
+              ${formatCurrency(item.installmentAmount)}
+            </td>
+          </tr>
+        `).join('');
+            } catch (error) {
+                console.error('Failed to load invoice:', error);
+            }
+        }
+
+        // New Card Modal controls
+        const newCardModal = document.getElementById('addNewCardModal');
+        const addNewCardBtn = document.getElementById('addNewCardBtn');
+        const closeNewCardModalBtn = document.getElementById('closeNewCardModalBtn');
+        const cancelNewCardBtn = document.getElementById('cancelNewCardBtn');
+
+        addNewCardBtn.addEventListener('click', () => {
+            newCardModal.classList.remove('hidden');
+            newCardModal.classList.add('flex');
+        });
+
+        [closeNewCardModalBtn, cancelNewCardBtn].forEach(btn => {
+            btn.addEventListener('click', () => {
+                newCardModal.classList.add('hidden');
+                newCardModal.classList.remove('flex');
+            });
+        });
+
+        // Submit new card form
+        document.getElementById('newCardForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const cardData = {
+                name: document.getElementById('cardName').value,
+                lastFourDigits: document.getElementById('lastFourDigits').value,
+                brand: document.getElementById('cardBrand').value,
+                creditLimit: parseFloat(document.getElementById('creditLimit').value),
+                closingDay: parseInt(document.getElementById('closingDay').value),
+                dueDay: parseInt(document.getElementById('dueDay').value)
+            };
+
+            try {
+                await creditCardService.create(cardData);
+                newCardModal.classList.add('hidden');
+                newCardModal.classList.remove('flex');
+                document.getElementById('newCardForm').reset();
+                loadCreditCards();
+                alert('Cartão adicionado com sucesso!');
+            } catch (error) {
+                alert('Erro ao adicionar cartão: ' + error.message);
+            }
+        });
+
+        // Transaction Modal controls
+        const modal = document.getElementById('addTransactionModal');
+        const addCardBtn = document.getElementById('addCardBtn');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+
+        addCardBtn.addEventListener('click', () => {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        });
+
+        [closeModalBtn, cancelBtn].forEach(btn => {
+            btn.addEventListener('click', () => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            });
+        });
+
+        // Submit transaction
+        document.getElementById('transactionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const cardId = document.getElementById('cardSelect').value;
+            const description = document.getElementById('description').value;
+            const totalAmount = parseFloat(document.getElementById('totalAmount').value);
+            const installments = parseInt(document.getElementById('installments').value);
+            const category = document.getElementById('category').value;
+            const purchaseDate = document.getElementById('purchaseDate').value;
+
+            try {
+                await creditCardService.addTransaction(cardId, {
+                    description,
+                    totalAmount,
+                    installments,
+                    category,
+                    purchaseDate
+                });
+
+                // Close modal and reload
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                loadCreditCards();
+
+                // Show success message
+                alert(`Despesa adicionada com sucesso! ${installments}x de ${formatCurrency(totalAmount / installments)}`);
+            } catch (error) {
+                alert('Erro ao adicionar despesa: ' + error.message);
+            }
+        });
+
+        // Load cards on page load
+        loadCreditCards();
+
+        // Make selectCard global
+        window.selectCard = loadInvoice;
+    </script>
+</body>
+
+</html>
