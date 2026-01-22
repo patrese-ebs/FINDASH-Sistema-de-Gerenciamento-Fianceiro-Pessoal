@@ -22,10 +22,10 @@ export const connectDatabase = async (): Promise<void> => {
         await sequelize.authenticate();
         console.log('✅ Database connection established successfully.');
 
-        if (config.nodeEnv === 'development') {
-            await sequelize.sync({ alter: false });
-            console.log('✅ Database models synchronized.');
-        }
+        // Sync models in both dev and prod for this setup
+        // "alter: true" adjusts tables to match models without deleting data
+        await sequelize.sync({ alter: true });
+        console.log('✅ Database models synchronized.');
     } catch (error) {
         console.error('❌ Unable to connect to the database:', error);
         process.exit(1);
