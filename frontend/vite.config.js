@@ -8,5 +8,17 @@ export default defineConfig({
     build: {
         outDir: 'dist',
         sourcemap: true,
+        rollupOptions: {
+            input: {
+                main: 'index.html',
+                login: 'login.html',
+                register: 'register.html',
+                dashboard: 'dashboard.html',
+                transactions: 'transactions.html',
+                creditCards: 'credit-cards.html',
+                forgotPassword: 'forgot-password.html',
+                resetPassword: 'reset-password.html',
+            },
+        },
     },
 });
