@@ -9,10 +9,55 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres123
       POSTGRES_DB: financial_manager
-    ports:
-      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app_network
+
+  backend:
+    build:
+      context: ./backend
+    container_name: financial_manager_backend
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DB_HOST: db
+      DB_USER: postgres
+      DB_PASSWORD: postgres123
+      DB_NAME: financial_manager
+      JWT_SECRET: ${JWT_SECRET:-secret_jwt_key_change_in_prod}
+      # Email config (replace with real SMTP in prod)
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASS: ${SMTP_PASS}
+    ports:
+      - "3001:3000"
+    depends_on:
+      - db
+    networks:
+      - app_network
+
+  frontend:
+    build:
+      context: ./frontend
+      # Pass API URL at build time for Vite
+      args:
+        # Note: In Portainer/Compose, build args are static. 
+        # For dynamic runtime config, we'd need a different approach (e.g., config.js).
+        # For now, we assume user will set this or use default.
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:3000/api}
+    container_name: financial_manager_frontend
+    restart: always
+    ports:
+      - "8081:80"
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge
 
 volumes:
   postgres_data:

@@ -21,8 +21,9 @@ class TransactionService {
         return response.data;
     }
 
-    async deleteIncome(id) {
-        await api.delete(`/incomes/${id}`);
+    async deleteIncome(id, deleteRecurring = false) {
+        const query = deleteRecurring ? '?deleteRecurring=true' : '';
+        await api.delete(`/incomes/${id}${query}`);
     }
 
     // Expense methods
@@ -45,8 +46,9 @@ class TransactionService {
         return response.data;
     }
 
-    async deleteExpense(id) {
-        await api.delete(`/expenses/${id}`);
+    async deleteExpense(id, deleteRecurring = false) {
+        const query = deleteRecurring ? '?deleteRecurring=true' : '';
+        await api.delete(`/expenses/${id}${query}`);
     }
 }
 

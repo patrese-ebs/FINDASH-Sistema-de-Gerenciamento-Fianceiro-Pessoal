@@ -994,6 +994,115 @@
         setStatusByDate('incomeDate', 'incomeIsPaid');
         setStatusByDate('expenseDate', 'expenseIsPaid');
 
+        // Delete functions with Modal
+        let pendingDeleteId = null;
+        let pendingDeleteType = null; // 'income' or 'expense'
+
+        // Add Modal HTML dynamically if not exists
+        if (!document.getElementById('deleteConfirmationModal')) {
+            const modalHtml = `
+            <div id="deleteConfirmationModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+                <div class="card max-w-sm w-full m-4 fade-in">
+                    <h3 class="text-xl font-bold mb-4">Confirmar Exclusão</h3>
+                    <p class="mb-6 text-text-secondary">Como você deseja excluir este item recorrente?</p>
+                    
+                    <div class="space-y-3">
+                        <button id="deleteOnlyOneBtn" class="w-full btn-secondary text-left px-4 py-3 flex items-center gap-3 hover:bg-dark-bg transition-colors">
+                            <span>🗑️</span>
+                            <div>
+                                <div class="font-bold text-text-primary">Apenas este</div>
+                                <div class="text-xs">Exclui somente o item selecionado</div>
+                            </div>
+                        </button>
+                        
+                        <button id="deleteAllBtn" class="w-full btn-secondary text-left px-4 py-3 flex items-center gap-3 hover:bg-dark-bg transition-colors">
+                            <span>🔥</span>
+                            <div>
+                                <div class="font-bold text-text-primary">Todos os futuros</div>
+                                <div class="text-xs">Exclui este e todos os próximos</div>
+                            </div>
+                        </button>
+
+                        <button id="cancelDeleteBtn" class="w-full btn-secondary mt-4">Cancelar</button>
+                    </div>
+                </div>
+            </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+            // Modal Event Listeners
+            const modal = document.getElementById('deleteConfirmationModal');
+            const close = () => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                pendingDeleteId = null;
+                pendingDeleteType = null;
+            };
+
+            document.getElementById('cancelDeleteBtn').addEventListener('click', close);
+
+            document.getElementById('deleteOnlyOneBtn').addEventListener('click', async () => {
+                if (pendingDeleteId && pendingDeleteType) {
+                    await performDelete(pendingDeleteId, pendingDeleteType, false);
+                }
+                close();
+            });
+
+            document.getElementById('deleteAllBtn').addEventListener('click', async () => {
+                if (pendingDeleteId && pendingDeleteType) {
+                    await performDelete(pendingDeleteId, pendingDeleteType, true);
+                }
+                close();
+            });
+        }
+
+        async function performDelete(id, type, deleteRecurring) {
+            try {
+                if (type === 'income') {
+                    await transactionService.deleteIncome(id, deleteRecurring);
+                    loadIncomes();
+                } else {
+                    await transactionService.deleteExpense(id, deleteRecurring);
+                    loadExpenses();
+                }
+            } catch (error) {
+                console.error('Failed to delete:', error);
+                alert('Erro ao excluir item.');
+            }
+        }
+
+        window.deleteIncome = async (id) => {
+            const income = window.allIncomes.find(i => String(i.id) === String(id));
+            // Check if it's recurring OR if it has a recurrenceId (backward compatibility if needed)
+            // But relying on isRecurring is safest for UI
+            if (income && income.isRecurring) {
+                pendingDeleteId = id;
+                pendingDeleteType = 'income';
+                const modal = document.getElementById('deleteConfirmationModal');
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            } else {
+                if (confirm('Tem certeza que deseja excluir esta receita?')) {
+                    await performDelete(id, 'income', false);
+                }
+            }
+        };
+
+        window.deleteExpense = async (id) => {
+            const expense = window.allExpenses.find(e => String(e.id) === String(id));
+            if (expense && expense.isRecurring) {
+                pendingDeleteId = id;
+                pendingDeleteType = 'expense';
+                const modal = document.getElementById('deleteConfirmationModal');
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            } else {
+                if (confirm('Tem certeza que deseja excluir esta despesa?')) {
+                    await performDelete(id, 'expense', false);
+                }
+            }
+        };
+
         loadIncomes();
         loadExpenses();
     </script>
