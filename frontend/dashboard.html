@@ -7,396 +7,456 @@
     <title>Dashboard - FinDash</title>
     <link rel="stylesheet" href="/src/css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        #app-content {
+            display: none;
+        }
+
+        #loading-screen {
+            position: fixed;
+            inset: 0;
+            background-color: #0f172a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .loader {
+            border: 4px solid #1e293b;
+            border-top: 4px solid #818cf8;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+    <script>
+        if (!localStorage.getItem('token')) window.location.href = '/login.html';
+    </script>
 </head>
 
 <body class="min-h-screen bg-dark-bg text-text-primary font-sans antialiased">
-    <!-- Sidebar -->
-    <div class="fixed left-0 top-0 h-full w-64 bg-dark-card border-r border-dark-border p-6 slide-in">
-        <div class="mb-8">
-            <h1 class="text-2xl font-bold gradient-purple-blue bg-clip-text text-transparent">FinDash</h1>
-        </div>
-
-        <nav class="space-y-2">
-            <a href="/dashboard.html"
-                class="flex items-center gap-3 px-4 py-3 rounded-lg bg-accent-purple bg-opacity-20 text-accent-purple font-medium">
-                <span>📊</span>
-                <span>Dashboard</span>
-            </a>
-            <a href="/transactions.html"
-                class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-dark-bg transition-colors text-text-secondary hover:text-text-primary">
-                <span>💰</span>
-                <span>Transações</span>
-            </a>
-            <a href="/investments.html"
-                class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-dark-bg transition-colors text-text-secondary hover:text-text-primary">
-                <span>📈</span>
-                <span>Investimentos</span>
-            </a>
-            <a href="/goals.html"
-                class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-dark-bg transition-colors text-text-secondary hover:text-text-primary">
-                <span>🎯</span>
-                <span>Metas</span>
-            </a>
-        </nav>
-
-        <div class="absolute bottom-6 left-6 right-6">
-            <button id="logoutBtn"
-                class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-dark-bg transition-colors text-text-secondary hover:text-red-400">
-                <span>🚪</span>
-                <span>Sair</span>
-            </button>
-        </div>
+    <div id="loading-screen">
+        <div class="loader mb-4"></div>
+        <div class="text-accent-purple font-bold animate-pulse">Carregando FinDash...</div>
     </div>
-
-    <!-- Main Content -->
-    <div class="ml-64 p-8">
-        <!-- Header -->
-        <div class="mb-8">
-            <h2 class="text-3xl font-bold">Visão Geral Financeira</h2>
-            <p class="text-text-secondary mt-1">Bem-vindo de volta, aqui está o que está acontecendo com seu dinheiro
-                hoje.</p>
-            <div class="flex items-center gap-4 mt-4">
-                <select id="monthFilter" class="input-field">
-                    <option value="1">Janeiro</option>
-                    <option value="2">Fevereiro</option>
-                    <option value="3">Março</option>
-                    <option value="4">Abril</option>
-                    <option value="5">Maio</option>
-                    <option value="6">Junho</option>
-                    <option value="7">Julho</option>
-                    <option value="8">Agosto</option>
-                    <option value="9">Setembro</option>
-                    <option value="10">Outubro</option>
-                    <option value="11">Novembro</option>
-                    <option value="12">Dezembro</option>
-                </select>
-                <select id="yearFilter" class="input-field">
-                    <option value="2026">2026</option>
-                    <option value="2025">2025</option>
-                    <option value="2024">2024</option>
-                </select>
-                <button id="exportBtn" class="btn-secondary">📥 Exportar</button>
-            </div>
-        </div>
-
-        <!-- Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <!-- Current Balance (Liquid) -->
-            <div class="stat-card fade-in">
-                <div class="stat-label">Saldo Atual (Líquido)</div>
-                <div class="stat-value" id="totalBalance">R$ 0,00</div>
-                <div class="text-xs text-text-secondary mt-1">Recebido - Pago</div>
+    <div id="app-content">
+        <!-- Sidebar -->
+        <div class="fixed left-0 top-0 h-full w-64 bg-dark-card border-r border-dark-border p-6 slide-in">
+            <div class="mb-8">
+                <h1 class="text-2xl font-bold gradient-purple-blue bg-clip-text text-transparent">FinDash</h1>
             </div>
 
-            <!-- Projected Balance -->
-            <div class="stat-card fade-in" style="animation-delay: 0.1s">
-                <div class="stat-label">Saldo Projetado</div>
-                <div class="stat-value text-blue-400" id="projectedBalance">R$ 0,00</div>
-                <div class="text-xs text-text-secondary mt-1">Ao final do mês</div>
-            </div>
+            <nav class="space-y-2">
+                <a href="/dashboard.html"
+                    class="flex items-center gap-3 px-4 py-3 rounded-lg bg-accent-purple bg-opacity-20 text-accent-purple font-medium">
+                    <span>📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/transactions.html"
+                    class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-dark-bg transition-colors text-text-secondary hover:text-text-primary">
+                    <span>💰</span>
+                    <span>Transações</span>
+                </a>
+                <a href="/investments.html"
+                    class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-dark-bg transition-colors text-text-secondary hover:text-text-primary">
+                    <span>📈</span>
+                    <span>Investimentos</span>
+                </a>
+                <a href="/goals.html"
+                    class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-dark-bg transition-colors text-text-secondary hover:text-text-primary">
+                    <span>🎯</span>
+                    <span>Metas</span>
+                </a>
+            </nav>
 
-            <!-- Remaining Budget -->
-            <div class="stat-card fade-in" style="animation-delay: 0.2s">
-                <div class="stat-label">Orçamento Restante</div>
-                <div class="stat-value" id="remainingBudget">R$ 0,00</div>
-                <div class="flex items-center gap-2 mt-2">
-                    <div class="flex-1 bg-dark-bg rounded-full h-2">
-                        <div id="budgetProgress" class="gradient-gold h-2 rounded-full" style="width: 0%"></div>
-                    </div>
-                    <span class="text-sm text-text-secondary" id="budgetPercent">0%</span>
-                </div>
-            </div>
-
-            <!-- Surplus -->
-            <div class="stat-card fade-in" style="animation-delay: 0.3s">
-                <div class="stat-label">Superávit Estimado</div>
-                <div class="stat-value text-green-400" id="surplusAmountTop">R$ 0,00</div>
-                <div class="text-xs text-text-secondary mt-1">Economia potencial</div>
-            </div>
-        </div>
-
-        <!-- Detailed Breakdown -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <!-- Income Stats -->
-            <div class="card fade-in">
-                <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
-                    <span class="p-1 rounded bg-green-500 bg-opacity-20 text-green-400">💰</span> Receitas
-                </h3>
-                <div class="space-y-4">
-                    <div class="flex justify-between items-center p-3 bg-dark-bg rounded-lg border border-dark-border">
-                        <span class="text-sm text-text-secondary">Recebido</span>
-                        <span class="font-bold text-green-400" id="receivedIncome">R$ 0,00</span>
-                    </div>
-                    <div class="flex justify-between items-center p-3 bg-dark-bg rounded-lg border border-dark-border">
-                        <span class="text-sm text-text-secondary">Pendente</span>
-                        <span class="font-bold text-yellow-500" id="pendingIncome">R$ 0,00</span>
-                    </div>
-                    <div class="pt-2 border-t border-dark-border flex justify-between items-center">
-                        <span class="text-sm font-medium">Total Previsto</span>
-                        <span class="font-bold text-white" id="monthlyIncome">R$ 0,00</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Expense Stats -->
-            <div class="card fade-in" style="animation-delay: 0.1s">
-                <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
-                    <span class="p-1 rounded bg-red-500 bg-opacity-20 text-red-400">💸</span> Despesas
-                </h3>
-                <div class="space-y-4">
-                    <div class="flex justify-between items-center p-3 bg-dark-bg rounded-lg border border-dark-border">
-                        <span class="text-sm text-text-secondary">Pago</span>
-                        <span class="font-bold text-red-400" id="paidExpenses">R$ 0,00</span>
-                    </div>
-                    <div class="flex justify-between items-center p-3 bg-dark-bg rounded-lg border border-dark-border">
-                        <span class="text-sm text-text-secondary">A Pagar</span>
-                        <span class="font-bold text-yellow-500" id="pendingExpenses">R$ 0,00</span>
-                    </div>
-                    <div class="pt-2 border-t border-dark-border flex justify-between items-center">
-                        <span class="text-sm font-medium">Total Previsto</span>
-                        <span class="font-bold text-white" id="monthlyExpenses">R$ 0,00</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Charts Row -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-            <!-- Cash Flow Chart -->
-            <div class="card lg:col-span-2 fade-in" style="animation-delay: 0.4s">
-                <h3 class="text-xl font-bold mb-4">Análise de Fluxo de Caixa</h3>
-                <p class="text-text-secondary text-sm mb-4">Receitas vs Despesas (Últimos 6 Meses)</p>
-                <div class="h-64 relative">
-                    <canvas id="cashFlowChart"></canvas>
-                </div>
-            </div>
-
-            <!-- Expense Breakdown -->
-            <div class="card fade-in" style="animation-delay: 0.5s">
-                <h3 class="text-xl font-bold mb-4">Breakdown de Despesas</h3>
-                <div class="h-64 relative">
-                    <canvas id="expenseChart"></canvas>
-                </div>
-                <div id="expenseCategories" class="mt-4 space-y-2">
-                    <!-- Categories will be inserted here -->
-                </div>
-            </div>
-        </div>
-
-        <!-- AI Insights (Placeholder) -->
-        <div class="card fade-in" style="animation-delay: 0.6s">
-            <div class="flex items-start gap-4">
-                <div class="bg-gradient-to-r from-accent-purple to-accent-blue p-3 rounded-lg">
-                    <span class="text-2xl">💡</span>
-                </div>
-                <div class="flex-1">
-                    <div class="flex items-center gap-2 mb-2">
-                        <h3 class="text-lg font-bold">Insight Detectado</h3>
-                        <span class="px-2 py-1 bg-accent-gold bg-opacity-20 text-accent-gold text-xs rounded-full">AI
-                            INSIGHT</span>
-                    </div>
-                    <p class="text-text-secondary">
-                        Você tem um excedente de <span class="text-green-400 font-bold" id="surplusAmount">R$
-                            0,00</span> este mês
-                        comparado à sua média. Considere movê-lo para seu investimento "Fundo de Emergência".
-                    </p>
-                    <button class="mt-3 text-accent-purple hover:underline text-sm font-medium">
-                        Ver Sugestão →
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Magic AI Button -->
-    <button id="aiFabBtn"
-        class="fixed bottom-8 right-8 w-16 h-16 rounded-full gradient-purple-blue flex items-center justify-center shadow-lg hover:shadow-purple-500/50 hover:scale-105 transition-all z-40 group">
-        <span class="text-2xl group-hover:animate-pulse">✨</span>
-    </button>
-
-    <!-- AI Smart Add Modal -->
-    <div id="aiModal"
-        class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center z-50 backdrop-blur-sm">
-        <div class="card max-w-lg w-full m-4 fade-in relative overflow-hidden">
-            <!-- Loading Overlay -->
-            <div id="aiLoading"
-                class="absolute inset-0 bg-dark-card flex flex-col items-center justify-center z-10 hidden">
-                <div
-                    class="w-16 h-16 border-4 border-accent-purple border-t-transparent rounded-full animate-spin mb-4">
-                </div>
-                <h3 class="text-xl font-bold animate-pulse">Analisando com IA...</h3>
-                <p class="text-text-secondary mt-2">Extraindo detalhes da sua despesa</p>
-            </div>
-
-            <div class="flex items-center justify-between mb-6">
-                <h3 class="text-xl font-bold flex items-center gap-2">
-                    <span class="text-2xl">✨</span> Adicionar Despesa Inteligente
-                </h3>
-                <button id="closeAiModalBtn" class="text-text-secondary hover:text-text-primary">✕</button>
-            </div>
-
-            <!-- Tabs -->
-            <div class="flex border-b border-dark-border mb-6">
-                <button id="tabText"
-                    class="flex-1 py-3 text-center border-b-2 border-accent-purple font-medium text-white transition-colors">
-                    📝 Texto
-                </button>
-                <button id="tabFile"
-                    class="flex-1 py-3 text-center border-b-2 border-transparent text-text-secondary hover:text-white transition-colors">
-                    📄 Arquivo/Foto
+            <div class="absolute bottom-6 left-6 right-6">
+                <button id="logoutBtn"
+                    class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-dark-bg transition-colors text-text-secondary hover:text-red-400">
+                    <span>🚪</span>
+                    <span>Sair</span>
                 </button>
             </div>
-
-            <!-- Text Input View -->
-            <div id="viewText" class="space-y-4">
-                <p class="text-text-secondary text-sm">Descreva sua despesa naturalmente.</p>
-                <textarea id="aiTextInput" class="input-field w-full h-32 resize-none"
-                    placeholder="Ex: Gastei 45,90 no almoço hoje no Restaurante Silva em alimentação"></textarea>
-                <div class="flex justify-end">
-                    <button id="submitAiText" class="btn-primary flex items-center gap-2">
-                        <span>✨</span> Processar
-                    </button>
-                </div>
-            </div>
-
-            <!-- File Input View -->
-            <div id="viewFile" class="hidden space-y-4">
-                <p class="text-text-secondary text-sm">Envie uma foto do cupom ou extrato.</p>
-                <div id="dropZone"
-                    class="border-2 border-dashed border-dark-border rounded-lg p-8 text-center hover:border-accent-purple transition-colors cursor-pointer">
-                    <span class="text-4xl block mb-2">📸</span>
-                    <p class="font-medium">Clique ou arraste uma imagem aqui</p>
-                    <p class="text-xs text-text-secondary mt-1">Suporta JPG, PNG, PDF</p>
-                    <input type="file" id="aiFileInput" class="hidden" accept="image/*,.pdf">
-                </div>
-                <div id="filePreview" class="hidden flex items-center gap-3 bg-dark-bg p-3 rounded-lg">
-                    <span class="text-2xl">📄</span>
-                    <div class="flex-1 truncate text-sm" id="fileName">...</div>
-                    <button id="removeFileBtn" class="text-red-400 hover:text-red-300">✕</button>
-                </div>
-                <div class="flex justify-end">
-                    <button id="submitAiFile" class="btn-primary flex items-center gap-2" disabled>
-                        <span>✨</span> Processar
-                    </button>
-                </div>
-            </div>
         </div>
-    </div>
 
-    <!-- Bulk Review Modal -->
-    <div id="bulkReviewModal" class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center z-50">
-        <div class="card max-w-4xl w-full m-4 fade-in max-h-[90vh] flex flex-col">
-            <div class="flex items-center justify-between mb-6">
-                <h3 class="text-xl font-bold flex items-center gap-2">
-                    <span>📋</span> Revisão em Lote
-                </h3>
-                <button id="closeBulkModalBtn" class="text-text-secondary hover:text-text-primary">✕</button>
-            </div>
-
-            <div class="overflow-y-auto flex-1 mb-6">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="text-text-secondary border-b border-dark-border">
-                            <th class="p-3">Descrição</th>
-                            <th class="p-3">Valor</th>
-                            <th class="p-3">Data</th>
-                            <th class="p-3">Categoria</th>
-                            <th class="p-3">Status</th>
-                            <th class="p-3">Ação</th>
-                        </tr>
-                    </thead>
-                    <tbody id="bulkReviewBody">
-                        <!-- Rows injected by JS -->
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="flex justify-end gap-3 pt-4 border-t border-dark-border">
-                <button id="cancelBulkBtn" class="btn-secondary">Cancelar</button>
-                <div class="flex items-center gap-4">
-                    <span class="text-text-secondary">Totais: <span id="bulkTotalCount"
-                            class="font-bold text-white">0</span> itens | <span id="bulkTotalValue"
-                            class="font-bold text-green-400">R$ 0,00</span></span>
-                    <button id="saveBulkBtn" class="btn-primary">Salvar Todos</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Review Modal (Standard Transaction Modal pre-filled) -->
-    <div id="reviewModal" class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center z-50">
-        <!-- ... existing review modal content ... -->
-        <div class="card max-w-md w-full m-4 fade-in">
-            <div class="flex items-center justify-between mb-6">
-                <h3 class="text-xl font-bold">Confirme os Dados</h3>
-                <button id="closeReviewModalBtn" class="text-text-secondary hover:text-text-primary">✕</button>
-            </div>
-
-            <form id="aiReviewForm" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium mb-2">Descrição</label>
-                    <input type="text" id="reviewDesc" class="input-field w-full" required>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Valor</label>
-                        <input type="number" id="reviewAmount" class="input-field w-full" step="0.01" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Status</label>
-                        <div class="flex gap-2">
-                            <button type="button" id="reviewStatusBtn"
-                                class="flex-1 py-2 rounded bg-green-500 bg-opacity-20 text-green-400 border border-green-500 font-bold text-sm">
-                                ✅ Pago
-                            </button>
-                        </div>
-                        <input type="hidden" id="reviewIsPaid" value="true">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-2">Categoria</label>
-                    <select id="reviewCategory" class="input-field w-full" required>
-                        <option value="Eletrônicos">📱 Eletrônicos</option>
-                        <option value="Alimentação">🍔 Alimentação</option>
-                        <option value="Transporte">🚗 Transporte</option>
-                        <option value="Casa">🏠 Casa</option>
-                        <option value="Serviços">💼 Serviços</option>
-                        <option value="Outros">📦 Outros</option>
+        <!-- Main Content -->
+        <div class="ml-64 p-8">
+            <!-- Header -->
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold">Visão Geral Financeira</h2>
+                <p class="text-text-secondary mt-1">Bem-vindo de volta, aqui está o que está acontecendo com seu
+                    dinheiro
+                    hoje.</p>
+                <div class="flex items-center gap-4 mt-4">
+                    <select id="monthFilter" class="input-field">
+                        <option value="1">Janeiro</option>
+                        <option value="2">Fevereiro</option>
+                        <option value="3">Março</option>
+                        <option value="4">Abril</option>
+                        <option value="5">Maio</option>
+                        <option value="6">Junho</option>
+                        <option value="7">Julho</option>
+                        <option value="8">Agosto</option>
+                        <option value="9">Setembro</option>
+                        <option value="10">Outubro</option>
+                        <option value="11">Novembro</option>
+                        <option value="12">Dezembro</option>
                     </select>
+                    <select id="yearFilter" class="input-field">
+                        <option value="2026">2026</option>
+                        <option value="2025">2025</option>
+                        <option value="2024">2024</option>
+                    </select>
+                    <button id="exportBtn" class="btn-secondary">📥 Exportar</button>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <!-- Current Balance (Liquid) -->
+                <div class="stat-card fade-in">
+                    <div class="stat-label">Saldo Atual (Líquido)</div>
+                    <div class="stat-value" id="totalBalance">R$ 0,00</div>
+                    <div class="text-xs text-text-secondary mt-1">Recebido - Pago</div>
                 </div>
 
-                <!-- Payment Method Section -->
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Método de Pagamento</label>
-                        <select id="reviewPaymentMethod" class="input-field w-full"
-                            onchange="toggleReviewCardSelect(this.value)">
-                            <option value="debit">Débito</option>
-                            <option value="credit">Crédito</option>
-                        </select>
+                <!-- Projected Balance -->
+                <div class="stat-card fade-in" style="animation-delay: 0.1s">
+                    <div class="stat-label">Saldo Projetado</div>
+                    <div class="stat-value text-blue-400" id="projectedBalance">R$ 0,00</div>
+                    <div class="text-xs text-text-secondary mt-1">Ao final do mês</div>
+                </div>
+
+                <!-- Remaining Budget -->
+                <div class="stat-card fade-in" style="animation-delay: 0.2s">
+                    <div class="stat-label">Orçamento Restante</div>
+                    <div class="stat-value" id="remainingBudget">R$ 0,00</div>
+                    <div class="flex items-center gap-2 mt-2">
+                        <div class="flex-1 bg-dark-bg rounded-full h-2">
+                            <div id="budgetProgress" class="gradient-gold h-2 rounded-full" style="width: 0%"></div>
+                        </div>
+                        <span class="text-sm text-text-secondary" id="budgetPercent">0%</span>
                     </div>
-                    <div id="reviewCardGroup" class="hidden">
-                        <label class="block text-sm font-medium mb-2">Cartão de Crédito</label>
-                        <select id="reviewCard" class="input-field w-full">
-                            <option value="">Selecione...</option>
-                        </select>
+                </div>
+
+                <!-- Surplus -->
+                <div class="stat-card fade-in" style="animation-delay: 0.3s">
+                    <div class="stat-label">Superávit Estimado</div>
+                    <div class="stat-value text-green-400" id="surplusAmountTop">R$ 0,00</div>
+                    <div class="text-xs text-text-secondary mt-1">Economia potencial</div>
+                </div>
+            </div>
+
+            <!-- Detailed Breakdown -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <!-- Income Stats -->
+                <div class="card fade-in">
+                    <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
+                        <span class="p-1 rounded bg-green-500 bg-opacity-20 text-green-400">💰</span> Receitas
+                    </h3>
+                    <div class="space-y-4">
+                        <div
+                            class="flex justify-between items-center p-3 bg-dark-bg rounded-lg border border-dark-border">
+                            <span class="text-sm text-text-secondary">Recebido</span>
+                            <span class="font-bold text-green-400" id="receivedIncome">R$ 0,00</span>
+                        </div>
+                        <div
+                            class="flex justify-between items-center p-3 bg-dark-bg rounded-lg border border-dark-border">
+                            <span class="text-sm text-text-secondary">Pendente</span>
+                            <span class="font-bold text-yellow-500" id="pendingIncome">R$ 0,00</span>
+                        </div>
+                        <div class="pt-2 border-t border-dark-border flex justify-between items-center">
+                            <span class="text-sm font-medium">Total Previsto</span>
+                            <span class="font-bold text-white" id="monthlyIncome">R$ 0,00</span>
+                        </div>
                     </div>
                 </div>
 
-                <div>
-                    <label class="block text-sm font-medium mb-2">Data</label>
-                    <input type="date" id="reviewDate" class="input-field w-full" required>
+                <!-- Expense Stats -->
+                <div class="card fade-in" style="animation-delay: 0.1s">
+                    <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
+                        <span class="p-1 rounded bg-red-500 bg-opacity-20 text-red-400">💸</span> Despesas
+                    </h3>
+                    <div class="space-y-4">
+                        <div
+                            class="flex justify-between items-center p-3 bg-dark-bg rounded-lg border border-dark-border">
+                            <span class="text-sm text-text-secondary">Pago</span>
+                            <span class="font-bold text-red-400" id="paidExpenses">R$ 0,00</span>
+                        </div>
+                        <div
+                            class="flex justify-between items-center p-3 bg-dark-bg rounded-lg border border-dark-border">
+                            <span class="text-sm text-text-secondary">A Pagar</span>
+                            <span class="font-bold text-yellow-500" id="pendingExpenses">R$ 0,00</span>
+                        </div>
+                        <div class="pt-2 border-t border-dark-border flex justify-between items-center">
+                            <span class="text-sm font-medium">Total Previsto</span>
+                            <span class="font-bold text-white" id="monthlyExpenses">R$ 0,00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                <!-- Cash Flow Chart -->
+                <div class="card lg:col-span-2 fade-in" style="animation-delay: 0.4s">
+                    <h3 class="text-xl font-bold mb-4">Análise de Fluxo de Caixa</h3>
+                    <p class="text-text-secondary text-sm mb-4">Receitas vs Despesas (Últimos 6 Meses)</p>
+                    <div class="h-64 relative">
+                        <canvas id="cashFlowChart"></canvas>
+                    </div>
                 </div>
 
-                <div class="flex gap-3 pt-4">
-                    <button type="button" id="cancelReviewBtn" class="btn-secondary flex-1">Cancelar</button>
-                    <button type="submit" class="btn-primary flex-1">Salvar Despesa</button>
+                <!-- Expense Breakdown -->
+                <div class="card fade-in" style="animation-delay: 0.5s">
+                    <h3 class="text-xl font-bold mb-4">Breakdown de Despesas</h3>
+                    <div class="h-64 relative">
+                        <canvas id="expenseChart"></canvas>
+                    </div>
+                    <div id="expenseCategories" class="mt-4 space-y-2">
+                        <!-- Categories will be inserted here -->
+                    </div>
                 </div>
-            </form>
+            </div>
+
+            <!-- AI Insights (Placeholder) -->
+            <div class="card fade-in" style="animation-delay: 0.6s">
+                <div class="flex items-start gap-4">
+                    <div class="bg-gradient-to-r from-accent-purple to-accent-blue p-3 rounded-lg">
+                        <span class="text-2xl">💡</span>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-2">
+                            <h3 class="text-lg font-bold">Insight Detectado</h3>
+                            <span
+                                class="px-2 py-1 bg-accent-gold bg-opacity-20 text-accent-gold text-xs rounded-full">AI
+                                INSIGHT</span>
+                        </div>
+                        <p class="text-text-secondary">
+                            Você tem um excedente de <span class="text-green-400 font-bold" id="surplusAmount">R$
+                                0,00</span> este mês
+                            comparado à sua média. Considere movê-lo para seu investimento "Fundo de Emergência".
+                        </p>
+                        <button class="mt-3 text-accent-purple hover:underline text-sm font-medium">
+                            Ver Sugestão →
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
+
+        <!-- Magic AI Button -->
+        <button id="aiFabBtn"
+            class="fixed bottom-8 right-8 w-16 h-16 rounded-full gradient-purple-blue flex items-center justify-center shadow-lg hover:shadow-purple-500/50 hover:scale-105 transition-all z-40 group">
+            <span class="text-2xl group-hover:animate-pulse">✨</span>
+        </button>
+
+        <!-- AI Smart Add Modal -->
+        <div id="aiModal"
+            class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center z-50 backdrop-blur-sm">
+            <div class="card max-w-lg w-full m-4 fade-in relative overflow-hidden">
+                <!-- Loading Overlay -->
+                <div id="aiLoading"
+                    class="absolute inset-0 bg-dark-card flex flex-col items-center justify-center z-10 hidden">
+                    <div
+                        class="w-16 h-16 border-4 border-accent-purple border-t-transparent rounded-full animate-spin mb-4">
+                    </div>
+                    <h3 class="text-xl font-bold animate-pulse">Analisando com IA...</h3>
+                    <p class="text-text-secondary mt-2">Extraindo detalhes da sua despesa</p>
+                </div>
+
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-bold flex items-center gap-2">
+                        <span class="text-2xl">✨</span> Adicionar Despesa Inteligente
+                    </h3>
+                    <button id="closeAiModalBtn" class="text-text-secondary hover:text-text-primary">✕</button>
+                </div>
+
+                <!-- Tabs -->
+                <div class="flex border-b border-dark-border mb-6">
+                    <button id="tabText"
+                        class="flex-1 py-3 text-center border-b-2 border-accent-purple font-medium text-white transition-colors">
+                        📝 Texto
+                    </button>
+                    <button id="tabFile"
+                        class="flex-1 py-3 text-center border-b-2 border-transparent text-text-secondary hover:text-white transition-colors">
+                        📄 Arquivo/Foto
+                    </button>
+                </div>
+
+                <!-- Text Input View -->
+                <div id="viewText" class="space-y-4">
+                    <p class="text-text-secondary text-sm">Descreva sua despesa naturalmente.</p>
+                    <textarea id="aiTextInput" class="input-field w-full h-32 resize-none"
+                        placeholder="Ex: Gastei 45,90 no almoço hoje no Restaurante Silva em alimentação"></textarea>
+                    <div class="flex justify-end">
+                        <button id="submitAiText" class="btn-primary flex items-center gap-2">
+                            <span>✨</span> Processar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- File Input View -->
+                <div id="viewFile" class="hidden space-y-4">
+                    <p class="text-text-secondary text-sm">Envie uma foto do cupom ou extrato.</p>
+                    <div id="dropZone"
+                        class="border-2 border-dashed border-dark-border rounded-lg p-8 text-center hover:border-accent-purple transition-colors cursor-pointer">
+                        <span class="text-4xl block mb-2">📸</span>
+                        <p class="font-medium">Clique ou arraste uma imagem aqui</p>
+                        <p class="text-xs text-text-secondary mt-1">Suporta JPG, PNG, PDF</p>
+                        <input type="file" id="aiFileInput" class="hidden" accept="image/*,.pdf">
+                    </div>
+                    <div id="filePreview" class="hidden flex items-center gap-3 bg-dark-bg p-3 rounded-lg">
+                        <span class="text-2xl">📄</span>
+                        <div class="flex-1 truncate text-sm" id="fileName">...</div>
+                        <button id="removeFileBtn" class="text-red-400 hover:text-red-300">✕</button>
+                    </div>
+                    <div class="flex justify-end">
+                        <button id="submitAiFile" class="btn-primary flex items-center gap-2" disabled>
+                            <span>✨</span> Processar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bulk Review Modal -->
+        <div id="bulkReviewModal" class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center z-50">
+            <div class="card max-w-4xl w-full m-4 fade-in max-h-[90vh] flex flex-col">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-bold flex items-center gap-2">
+                        <span>📋</span> Revisão em Lote
+                    </h3>
+                    <button id="closeBulkModalBtn" class="text-text-secondary hover:text-text-primary">✕</button>
+                </div>
+
+                <div class="overflow-y-auto flex-1 mb-6">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="text-text-secondary border-b border-dark-border">
+                                <th class="p-3">Descrição</th>
+                                <th class="p-3">Valor</th>
+                                <th class="p-3">Data</th>
+                                <th class="p-3">Categoria</th>
+                                <th class="p-3">Status</th>
+                                <th class="p-3">Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bulkReviewBody">
+                            <!-- Rows injected by JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4 border-t border-dark-border">
+                    <button id="cancelBulkBtn" class="btn-secondary">Cancelar</button>
+                    <div class="flex items-center gap-4">
+                        <span class="text-text-secondary">Totais: <span id="bulkTotalCount"
+                                class="font-bold text-white">0</span> itens | <span id="bulkTotalValue"
+                                class="font-bold text-green-400">R$ 0,00</span></span>
+                        <button id="saveBulkBtn" class="btn-primary">Salvar Todos</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Review Modal (Standard Transaction Modal pre-filled) -->
+        <div id="reviewModal" class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center z-50">
+            <!-- ... existing review modal content ... -->
+            <div class="card max-w-md w-full m-4 fade-in">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-bold">Confirme os Dados</h3>
+                    <button id="closeReviewModalBtn" class="text-text-secondary hover:text-text-primary">✕</button>
+                </div>
+
+                <form id="aiReviewForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Descrição</label>
+                        <input type="text" id="reviewDesc" class="input-field w-full" required>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Valor</label>
+                            <input type="number" id="reviewAmount" class="input-field w-full" step="0.01" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Status</label>
+                            <div class="flex gap-2">
+                                <button type="button" id="reviewStatusBtn"
+                                    class="flex-1 py-2 rounded bg-green-500 bg-opacity-20 text-green-400 border border-green-500 font-bold text-sm">
+                                    ✅ Pago
+                                </button>
+                            </div>
+                            <input type="hidden" id="reviewIsPaid" value="true">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Categoria</label>
+                        <select id="reviewCategory" class="input-field w-full" required>
+                            <option value="Eletrônicos">📱 Eletrônicos</option>
+                            <option value="Alimentação">🍔 Alimentação</option>
+                            <option value="Transporte">🚗 Transporte</option>
+                            <option value="Casa">🏠 Casa</option>
+                            <option value="Serviços">💼 Serviços</option>
+                            <option value="Outros">📦 Outros</option>
+                        </select>
+                    </div>
+
+                    <!-- Payment Method Section -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Método de Pagamento</label>
+                            <select id="reviewPaymentMethod" class="input-field w-full"
+                                onchange="toggleReviewCardSelect(this.value)">
+                                <option value="debit">Débito</option>
+                                <option value="credit">Crédito</option>
+                            </select>
+                        </div>
+                        <div id="reviewCardGroup" class="hidden">
+                            <label class="block text-sm font-medium mb-2">Cartão de Crédito</label>
+                            <select id="reviewCard" class="input-field w-full">
+                                <option value="">Selecione...</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Data</label>
+                        <input type="date" id="reviewDate" class="input-field w-full" required>
+                    </div>
+
+                    <div class="flex gap-3 pt-4">
+                        <button type="button" id="cancelReviewBtn" class="btn-secondary flex-1">Cancelar</button>
+                        <button type="submit" class="btn-primary flex-1">Salvar Despesa</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
     </div>
 
     <script type="module">
+        // Remove loading screen and show content
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                const loader = document.getElementById('loading-screen');
+                const app = document.getElementById('app-content');
+                if (loader) loader.style.display = 'none';
+                if (app) app.style.display = 'block';
+            }, 500);
+        });
         import authService from '/src/js/auth.js';
         import dashboardService from '/src/js/services/dashboardService.js';
         import expenseService from '/src/js/services/expenseService.js';
