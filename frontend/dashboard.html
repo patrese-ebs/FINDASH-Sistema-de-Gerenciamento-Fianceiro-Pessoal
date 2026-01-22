@@ -448,6 +448,8 @@
     </div>
 
     <script type="module">
+        import authService from '/src/js/auth.js';
+
         // Remove loading screen and show content
         document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
@@ -457,7 +459,6 @@
                 if (app) app.style.display = 'block';
             }, 500);
         });
-        import authService from '/src/js/auth.js';
         import dashboardService from '/src/js/services/dashboardService.js';
         import expenseService from '/src/js/services/expenseService.js';
         import creditCardService from '/src/js/services/creditCardService.js';
