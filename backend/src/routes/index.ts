@@ -9,7 +9,18 @@ import { ReportController } from '../controllers/ReportController';
 import aiRoutes from './aiRoutes';
 import { authMiddleware } from '../middleware/auth';
 
+import rateLimit from 'express-rate-limit';
+
 const router = Router();
+
+// Rate Limiters
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 10, // Limit each IP to 10 requests per windowMs
+    message: { error: 'Too many login attempts, please try again after 15 minutes' },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
 
 // Initialize controllers
 const authController = new AuthController();
@@ -21,8 +32,11 @@ const financialPlanController = new FinancialPlanController();
 const reportController = new ReportController();
 
 // Auth routes
-router.post('/auth/register', authController.register.bind(authController));
-router.post('/auth/login', authController.login.bind(authController));
+// Apply rate limit specifically to login/register/forgot
+router.post('/auth/register', authLimiter, authController.register.bind(authController));
+router.post('/auth/login', authLimiter, authController.login.bind(authController));
+router.post('/auth/forgot-password', authLimiter, authController.forgotPassword.bind(authController));
+router.post('/auth/reset-password', authLimiter, authController.resetPassword.bind(authController));
 router.get('/auth/me', authMiddleware, authController.getMe.bind(authController));
 
 // Income routes

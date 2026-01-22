@@ -14,12 +14,13 @@ interface IncomeAttributes {
     isRecurring: boolean;
     recurrenceFrequency?: string;
     recurrenceEndDate?: Date;
+    recurrenceId?: string;
     isPaid: boolean;
     createdAt?: Date;
     updatedAt?: Date;
 }
 
-interface IncomeCreationAttributes extends Optional<IncomeAttributes, 'id' | 'isRecurring' | 'recurrenceFrequency' | 'recurrenceEndDate'> { }
+interface IncomeCreationAttributes extends Optional<IncomeAttributes, 'id' | 'isRecurring' | 'recurrenceFrequency' | 'recurrenceEndDate' | 'recurrenceId'> { }
 
 class Income extends Model<IncomeAttributes, IncomeCreationAttributes> implements IncomeAttributes {
     public id!: string;
@@ -33,6 +34,7 @@ class Income extends Model<IncomeAttributes, IncomeCreationAttributes> implement
     public isRecurring!: boolean;
     public recurrenceFrequency?: string;
     public recurrenceEndDate?: Date;
+    public recurrenceId?: string;
     public isPaid!: boolean;
     public readonly createdAt!: Date;
     public readonly updatedAt!: Date;
@@ -88,6 +90,10 @@ Income.init(
         },
         recurrenceEndDate: {
             type: DataTypes.DATEONLY,
+            allowNull: true,
+        },
+        recurrenceId: {
+            type: DataTypes.UUID,
             allowNull: true,
         },
         isPaid: {

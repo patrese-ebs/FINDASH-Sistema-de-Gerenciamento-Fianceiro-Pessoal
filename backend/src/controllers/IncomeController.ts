@@ -46,6 +46,8 @@ export class IncomeController {
 
             const initialDate = new Date(date);
             const incomesToCreate = [];
+            const { v4: uuidv4 } = require('uuid');
+            const recurrenceId = isRecurring ? uuidv4() : null;
 
             // Add the initial income
             incomesToCreate.push({
@@ -59,6 +61,7 @@ export class IncomeController {
                 isRecurring: isRecurring || false,
                 recurrenceFrequency: isRecurring ? recurrenceFrequency : null,
                 recurrenceEndDate: isRecurring ? recurrenceEndDate : null,
+                recurrenceId,
                 isPaid: isPaid ?? false,
             });
 
@@ -89,6 +92,7 @@ export class IncomeController {
                         isRecurring: true,
                         recurrenceFrequency,
                         recurrenceEndDate: recurrenceEndDate || null,
+                        recurrenceId,
                         isPaid: false, // Future recurring items default to unpaid
                     });
 
@@ -149,6 +153,7 @@ export class IncomeController {
     async delete(req: AuthRequest, res: Response): Promise<void> {
         try {
             const { id } = req.params;
+            const { deleteRecurring } = req.query; // Check for query param
             const userId = req.userId;
 
             if (!userId) {
@@ -163,7 +168,22 @@ export class IncomeController {
                 return;
             }
 
-            await income.destroy();
+            if (deleteRecurring === 'true' && income.recurrenceId) {
+                const { Op } = require('sequelize');
+                // Delete all future occurrences (including this one)
+                await Income.destroy({
+                    where: {
+                        userId,
+                        recurrenceId: income.recurrenceId,
+                        date: {
+                            [Op.gte]: income.date
+                        }
+                    }
+                });
+            } else {
+                await income.destroy();
+            }
+
             res.status(204).send();
         } catch (error) {
             res.status(500).json({ error: 'Failed to delete income' });

@@ -79,4 +79,68 @@ export class AuthService {
             { expiresIn: config.jwt.expiresIn } as jwt.SignOptions
         );
     }
+
+    async forgotPassword(email: string) {
+        const user = await User.findOne({ where: { email } });
+        if (!user) {
+            // Security: Don't reveal if user exists
+            return;
+        }
+
+        // Generate reset token
+        const { v4: uuidv4 } = require('uuid');
+        const token = uuidv4();
+        const expiresAt = new Date();
+        expiresAt.setHours(expiresAt.getHours() + 1); // 1 hour expiration
+
+        // Hash token before storing (Good practice, though simplified here)
+        // For simplicity in this demo, storing plain UUID token but linked to user
+        await import('../models/PasswordResetToken').then(({ default: PasswordResetToken }) => {
+            PasswordResetToken.create({
+                userId: user.id,
+                token,
+                expiresAt,
+            });
+        });
+
+        // Send Email
+        const { EmailService } = await import('./EmailService');
+        const emailService = new EmailService();
+        const resetLink = `${config.cors.origin || 'http://localhost:4200'}/reset-password.html?token=${token}`;
+
+        await emailService.sendPasswordResetEmail(user.email, resetLink, user.name);
+    }
+
+    async resetPassword(token: string, newPassword: string) {
+        const { default: PasswordResetToken } = await import('../models/PasswordResetToken');
+        const { Op } = require('sequelize');
+
+        const resetToken = await PasswordResetToken.findOne({
+            where: {
+                token,
+                expiresAt: {
+                    [Op.gt]: new Date(),
+                },
+            },
+            include: [{ model: User, as: 'user' }],
+        });
+
+        if (!resetToken) {
+            throw new Error('Invalid or expired token');
+        }
+
+        const user = resetToken.user;
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        // Hash new password
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        // Update user
+        await user.update({ password: hashedPassword });
+
+        // Delete used token (and potentially all other tokens for this user)
+        await PasswordResetToken.destroy({ where: { userId: user.id } });
+    }
 }

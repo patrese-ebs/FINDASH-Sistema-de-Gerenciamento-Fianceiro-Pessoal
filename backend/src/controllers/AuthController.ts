@@ -62,4 +62,39 @@ export class AuthController {
             }
         }
     }
+
+    async forgotPassword(req: Request, res: Response): Promise<void> {
+        try {
+            const { email } = req.body;
+            if (!email) {
+                res.status(400).json({ error: 'Email required' });
+                return;
+            }
+
+            await authService.forgotPassword(email);
+            // Always return success to prevent email enumeration
+            res.status(200).json({ message: 'If your email is registered, you will receive a reset link.' });
+        } catch (error) {
+            res.status(500).json({ error: 'Internal server error' });
+        }
+    }
+
+    async resetPassword(req: Request, res: Response): Promise<void> {
+        try {
+            const { token, newPassword } = req.body;
+            if (!token || !newPassword) {
+                res.status(400).json({ error: 'Token and new password required' });
+                return;
+            }
+
+            await authService.resetPassword(token, newPassword);
+            res.status(200).json({ message: 'Password reset successfully' });
+        } catch (error) {
+            if (error instanceof Error) {
+                res.status(400).json({ error: error.message });
+            } else {
+                res.status(500).json({ error: 'Internal server error' });
+            }
+        }
+    }
 }

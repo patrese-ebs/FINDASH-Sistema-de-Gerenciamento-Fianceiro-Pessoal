@@ -46,10 +46,12 @@ export class ExpenseController {
 
             const initialDate = new Date(date);
             const expensesToCreate = [];
+            const { v4: uuidv4 } = require('uuid');
+            const recurrenceId = (isRecurring || (installments && parseInt(installments.toString()) > 1)) ? uuidv4() : null;
 
             // Handle Installments (Fixed number of payments)
-            if (installments && parseInt(installments) > 1) {
-                const numInstallments = parseInt(installments);
+            if (installments && parseInt(installments.toString()) > 1) {
+                const numInstallments = parseInt(installments.toString());
                 for (let i = 0; i < numInstallments; i++) {
                     const nextDate = new Date(initialDate);
                     nextDate.setMonth(nextDate.getMonth() + i);
@@ -65,6 +67,9 @@ export class ExpenseController {
                         paymentMethod,
                         creditCardId: creditCardId || null,
                         isRecurring: false,
+                        // Installments are technically recurring but treated as separate entries here, 
+                        // but let's link them with recurrenceId for easier management if desired
+                        recurrenceId,
                         isPaid: i === 0 ? (isPaid ?? false) : false, // Only first one adopts the paid status
                     });
                 }
@@ -85,6 +90,7 @@ export class ExpenseController {
                     isRecurring: true,
                     recurrenceFrequency,
                     recurrenceEndDate,
+                    recurrenceId,
                     isPaid: isPaid ?? false,
                 });
 
@@ -115,6 +121,7 @@ export class ExpenseController {
                         isRecurring: true,
                         recurrenceFrequency,
                         recurrenceEndDate: recurrenceEndDate || null,
+                        recurrenceId,
                         isPaid: false, // Future recurring items default to unpaid
                     });
 
@@ -147,25 +154,10 @@ export class ExpenseController {
                 await CreditCardTransaction.create({
                     creditCardId,
                     description,
-                    totalAmount: isRecurring ? totalAmt : (installments ? totalAmt * numInst : totalAmt), // If it was split above, amount is per installment. If single, amount is total.
-                    // Actually, frontend sends 'amount' as the PER ITEM amount usually? 
-                    // Let's check frontend payload. 
-                    // Frontend "Review Modal" sends `amount` as the value in the input. 
-                    // If installments > 1, is that value the TOTAL or PER INSTALLMENT?
-                    // Typically users enter TOTAL value.
-                    // ExpenseController lines 60: `amount` // Assuming amount is per installment? 
-                    // Wait, line 60 says "Assuming amount is per installment". 
-                    // BUT Frontend typically sends TOTAL. 
-                    // Let's assume input `amount` is the TOTAL transaction value.
-                    // So line 60 `amount` currently puts the TOTAL in EACH installment? That would be wrong.
-                    // I need to fix the installment logic effectively if it's wrong too.
-                    // Let's assume strictly for CreditCardTransaction creation now:
-                    // Input `amount` = Total Transaction Value.
-
-                    totalAmount: parseFloat(amount.toString()),
+                    totalAmount: totalAmt,
                     installments: numInst,
                     currentInstallment: 1,
-                    installmentAmount: parseFloat(amount.toString()) / numInst,
+                    installmentAmount: totalAmt / numInst,
                     purchaseDate: initialDate,
                     category
                 });
@@ -224,6 +216,7 @@ export class ExpenseController {
     async delete(req: AuthRequest, res: Response): Promise<void> {
         try {
             const { id } = req.params;
+            const { deleteRecurring } = req.query; // Check for query param
             const userId = req.userId;
 
             if (!userId) {
@@ -238,9 +231,25 @@ export class ExpenseController {
                 return;
             }
 
-            await expense.destroy();
+            if (deleteRecurring === 'true' && expense.recurrenceId) {
+                const { Op } = require('sequelize');
+                // Delete all future occurrences (including this one)
+                await Expense.destroy({
+                    where: {
+                        userId,
+                        recurrenceId: expense.recurrenceId,
+                        date: {
+                            [Op.gte]: expense.date
+                        }
+                    }
+                });
+            } else {
+                await expense.destroy();
+            }
+
             res.status(204).send();
         } catch (error) {
+            console.error('Error deleting expense:', error);
             res.status(500).json({ error: 'Failed to delete expense' });
         }
     }

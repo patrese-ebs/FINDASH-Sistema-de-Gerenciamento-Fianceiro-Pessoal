@@ -16,12 +16,13 @@ interface ExpenseAttributes {
     isRecurring: boolean;
     recurrenceFrequency?: string;
     recurrenceEndDate?: Date;
+    recurrenceId?: string;
     isPaid: boolean;
     createdAt?: Date;
     updatedAt?: Date;
 }
 
-interface ExpenseCreationAttributes extends Optional<ExpenseAttributes, 'id' | 'creditCardId' | 'isRecurring' | 'recurrenceFrequency' | 'recurrenceEndDate'> { }
+interface ExpenseCreationAttributes extends Optional<ExpenseAttributes, 'id' | 'creditCardId' | 'isRecurring' | 'recurrenceFrequency' | 'recurrenceEndDate' | 'recurrenceId'> { }
 
 class Expense extends Model<ExpenseAttributes, ExpenseCreationAttributes> implements ExpenseAttributes {
     public id!: string;
@@ -37,6 +38,7 @@ class Expense extends Model<ExpenseAttributes, ExpenseCreationAttributes> implem
     public isRecurring!: boolean;
     public recurrenceFrequency?: string;
     public recurrenceEndDate?: Date;
+    public recurrenceId?: string;
     public isPaid!: boolean;
     public readonly createdAt!: Date;
     public readonly updatedAt!: Date;
@@ -105,6 +107,10 @@ Expense.init(
         },
         recurrenceEndDate: {
             type: DataTypes.DATEONLY,
+            allowNull: true,
+        },
+        recurrenceId: {
+            type: DataTypes.UUID,
             allowNull: true,
         },
         isPaid: {
