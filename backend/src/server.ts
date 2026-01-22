@@ -11,6 +11,9 @@ dotenv.config();
 
 const app: Application = express();
 
+// Trust proxy (needed for Nginx/Docker)
+app.set('trust proxy', 1);
+
 // Middleware
 app.use(cors({
     origin: config.cors.origin,
