@@ -208,9 +208,623 @@
         </div>
     </div>
 
+    <!-- Magic AI Button -->
+    <button id="aiFabBtn"
+        class="fixed bottom-8 right-8 w-16 h-16 rounded-full gradient-purple-blue flex items-center justify-center shadow-lg hover:shadow-purple-500/50 hover:scale-105 transition-all z-40 group">
+        <span class="text-2xl group-hover:animate-pulse">✨</span>
+    </button>
+
+    <!-- AI Smart Add Modal -->
+    <div id="aiModal"
+        class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center z-50 backdrop-blur-sm">
+        <div class="card max-w-lg w-full m-4 fade-in relative overflow-hidden">
+            <!-- Loading Overlay -->
+            <div id="aiLoading"
+                class="absolute inset-0 bg-dark-card flex flex-col items-center justify-center z-10 hidden">
+                <div
+                    class="w-16 h-16 border-4 border-accent-purple border-t-transparent rounded-full animate-spin mb-4">
+                </div>
+                <h3 class="text-xl font-bold animate-pulse">Analisando com IA...</h3>
+                <p class="text-text-secondary mt-2">Extraindo detalhes da sua despesa</p>
+            </div>
+
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-bold flex items-center gap-2">
+                    <span class="text-2xl">✨</span> Adicionar Despesa Inteligente
+                </h3>
+                <button id="closeAiModalBtn" class="text-text-secondary hover:text-text-primary">✕</button>
+            </div>
+
+            <!-- Tabs -->
+            <div class="flex border-b border-dark-border mb-6">
+                <button id="tabText"
+                    class="flex-1 py-3 text-center border-b-2 border-accent-purple font-medium text-white transition-colors">
+                    📝 Texto
+                </button>
+                <button id="tabFile"
+                    class="flex-1 py-3 text-center border-b-2 border-transparent text-text-secondary hover:text-white transition-colors">
+                    📄 Arquivo/Foto
+                </button>
+            </div>
+
+            <!-- Text Input View -->
+            <div id="viewText" class="space-y-4">
+                <p class="text-text-secondary text-sm">Descreva sua despesa naturalmente.</p>
+                <textarea id="aiTextInput" class="input-field w-full h-32 resize-none"
+                    placeholder="Ex: Gastei 45,90 no almoço hoje no Restaurante Silva em alimentação"></textarea>
+                <div class="flex justify-end">
+                    <button id="submitAiText" class="btn-primary flex items-center gap-2">
+                        <span>✨</span> Processar
+                    </button>
+                </div>
+            </div>
+
+            <!-- File Input View -->
+            <div id="viewFile" class="hidden space-y-4">
+                <p class="text-text-secondary text-sm">Envie uma foto do cupom ou extrato.</p>
+                <div id="dropZone"
+                    class="border-2 border-dashed border-dark-border rounded-lg p-8 text-center hover:border-accent-purple transition-colors cursor-pointer">
+                    <span class="text-4xl block mb-2">📸</span>
+                    <p class="font-medium">Clique ou arraste uma imagem aqui</p>
+                    <p class="text-xs text-text-secondary mt-1">Suporta JPG, PNG, PDF</p>
+                    <input type="file" id="aiFileInput" class="hidden" accept="image/*,.pdf">
+                </div>
+                <div id="filePreview" class="hidden flex items-center gap-3 bg-dark-bg p-3 rounded-lg">
+                    <span class="text-2xl">📄</span>
+                    <div class="flex-1 truncate text-sm" id="fileName">...</div>
+                    <button id="removeFileBtn" class="text-red-400 hover:text-red-300">✕</button>
+                </div>
+                <div class="flex justify-end">
+                    <button id="submitAiFile" class="btn-primary flex items-center gap-2" disabled>
+                        <span>✨</span> Processar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Review Modal -->
+    <div id="bulkReviewModal" class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center z-50">
+        <div class="card max-w-4xl w-full m-4 fade-in max-h-[90vh] flex flex-col">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-bold flex items-center gap-2">
+                    <span>📋</span> Revisão em Lote
+                </h3>
+                <button id="closeBulkModalBtn" class="text-text-secondary hover:text-text-primary">✕</button>
+            </div>
+
+            <div class="overflow-y-auto flex-1 mb-6">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="text-text-secondary border-b border-dark-border">
+                            <th class="p-3">Descrição</th>
+                            <th class="p-3">Valor</th>
+                            <th class="p-3">Data</th>
+                            <th class="p-3">Categoria</th>
+                            <th class="p-3">Status</th>
+                            <th class="p-3">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bulkReviewBody">
+                        <!-- Rows injected by JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="flex justify-end gap-3 pt-4 border-t border-dark-border">
+                <button id="cancelBulkBtn" class="btn-secondary">Cancelar</button>
+                <div class="flex items-center gap-4">
+                    <span class="text-text-secondary">Totais: <span id="bulkTotalCount"
+                            class="font-bold text-white">0</span> itens | <span id="bulkTotalValue"
+                            class="font-bold text-green-400">R$ 0,00</span></span>
+                    <button id="saveBulkBtn" class="btn-primary">Salvar Todos</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Review Modal (Standard Transaction Modal pre-filled) -->
+    <div id="reviewModal" class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center z-50">
+        <!-- ... existing review modal content ... -->
+        <div class="card max-w-md w-full m-4 fade-in">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-bold">Confirme os Dados</h3>
+                <button id="closeReviewModalBtn" class="text-text-secondary hover:text-text-primary">✕</button>
+            </div>
+
+            <form id="aiReviewForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Descrição</label>
+                    <input type="text" id="reviewDesc" class="input-field w-full" required>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Valor</label>
+                        <input type="number" id="reviewAmount" class="input-field w-full" step="0.01" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Status</label>
+                        <div class="flex gap-2">
+                            <button type="button" id="reviewStatusBtn"
+                                class="flex-1 py-2 rounded bg-green-500 bg-opacity-20 text-green-400 border border-green-500 font-bold text-sm">
+                                ✅ Pago
+                            </button>
+                        </div>
+                        <input type="hidden" id="reviewIsPaid" value="true">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Categoria</label>
+                    <select id="reviewCategory" class="input-field w-full" required>
+                        <option value="Eletrônicos">📱 Eletrônicos</option>
+                        <option value="Alimentação">🍔 Alimentação</option>
+                        <option value="Transporte">🚗 Transporte</option>
+                        <option value="Casa">🏠 Casa</option>
+                        <option value="Serviços">💼 Serviços</option>
+                        <option value="Outros">📦 Outros</option>
+                    </select>
+                </div>
+
+                <!-- Payment Method Section -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Método de Pagamento</label>
+                        <select id="reviewPaymentMethod" class="input-field w-full"
+                            onchange="toggleReviewCardSelect(this.value)">
+                            <option value="debit">Débito</option>
+                            <option value="credit">Crédito</option>
+                        </select>
+                    </div>
+                    <div id="reviewCardGroup" class="hidden">
+                        <label class="block text-sm font-medium mb-2">Cartão de Crédito</label>
+                        <select id="reviewCard" class="input-field w-full">
+                            <option value="">Selecione...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2">Data</label>
+                    <input type="date" id="reviewDate" class="input-field w-full" required>
+                </div>
+
+                <div class="flex gap-3 pt-4">
+                    <button type="button" id="cancelReviewBtn" class="btn-secondary flex-1">Cancelar</button>
+                    <button type="submit" class="btn-primary flex-1">Salvar Despesa</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script type="module">
         import authService from '/src/js/auth.js';
         import dashboardService from '/src/js/services/dashboardService.js';
+        import expenseService from '/src/js/services/expenseService.js';
+        import creditCardService from '/src/js/services/creditCardService.js';
+
+        // --- AI Feature Logic ---
+        const aiFabBtn = document.getElementById('aiFabBtn');
+        const aiModal = document.getElementById('aiModal');
+        const closeAiModalBtn = document.getElementById('closeAiModalBtn');
+        // ... (tabs and file logic same as before) ...
+        const tabText = document.getElementById('tabText');
+        const tabFile = document.getElementById('tabFile');
+        const viewText = document.getElementById('viewText');
+        const viewFile = document.getElementById('viewFile');
+        const aiLoading = document.getElementById('aiLoading');
+
+        let bulkExpensesData = []; // Store temporary bulk data
+        let availableCreditCards = [];
+
+        async function loadCreditCards() {
+            try {
+                availableCreditCards = await creditCardService.getAll();
+                updateCardSelects();
+            } catch (e) {
+                console.error('Failed to load credit cards', e);
+            }
+        }
+
+        function updateCardSelects() {
+            const options = availableCreditCards.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+            const cardSelect = document.getElementById('reviewCard');
+            // If exists (single modal)
+            if (cardSelect) {
+                cardSelect.innerHTML = `<option value="">Selecione...</option>${options}`;
+            }
+        }
+
+        loadCreditCards();
+
+        // Toggle Modal
+        aiFabBtn.addEventListener('click', () => {
+            aiModal.classList.remove('hidden');
+            aiModal.classList.add('flex');
+        });
+
+        closeAiModalBtn.addEventListener('click', () => {
+            aiModal.classList.add('hidden');
+            aiModal.classList.remove('flex');
+        });
+
+        // Tabs
+        tabText.addEventListener('click', () => {
+            tabText.classList.add('border-accent-purple', 'text-white');
+            tabText.classList.remove('border-transparent', 'text-text-secondary');
+            tabFile.classList.remove('border-accent-purple', 'text-white');
+            tabFile.classList.add('border-transparent', 'text-text-secondary');
+            viewText.classList.remove('hidden');
+            viewFile.classList.add('hidden');
+        });
+
+        tabFile.addEventListener('click', () => {
+            tabFile.classList.add('border-accent-purple', 'text-white');
+            tabFile.classList.remove('border-transparent', 'text-text-secondary');
+            tabText.classList.remove('border-accent-purple', 'text-white');
+            tabText.classList.add('border-transparent', 'text-text-secondary');
+            viewFile.classList.remove('hidden');
+            viewText.classList.add('hidden');
+        });
+
+        // File Dropzone
+        const dropZone = document.getElementById('dropZone');
+        const aiFileInput = document.getElementById('aiFileInput');
+        const filePreview = document.getElementById('filePreview');
+        const fileName = document.getElementById('fileName');
+        const removeFileBtn = document.getElementById('removeFileBtn');
+        const submitAiFile = document.getElementById('submitAiFile');
+
+        dropZone.addEventListener('click', () => aiFileInput.click());
+        aiFileInput.addEventListener('change', handleFileSelect);
+
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-accent-purple'); });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-accent-purple'));
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('border-accent-purple');
+            if (e.dataTransfer.files.length) {
+                aiFileInput.files = e.dataTransfer.files;
+                handleFileSelect();
+            }
+        });
+
+        function handleFileSelect() {
+            const file = aiFileInput.files[0];
+            if (file) {
+                fileName.textContent = file.name;
+                dropZone.classList.add('hidden');
+                filePreview.classList.remove('hidden');
+                filePreview.classList.add('flex');
+                submitAiFile.disabled = false;
+            }
+        }
+
+        removeFileBtn.addEventListener('click', () => {
+            aiFileInput.value = '';
+            dropZone.classList.remove('hidden');
+            filePreview.classList.add('hidden');
+            filePreview.classList.remove('flex');
+            submitAiFile.disabled = true;
+        });
+
+        // API Calls
+        async function processAiRequest(payload, isFile = false) {
+            aiLoading.classList.remove('hidden');
+            try {
+                let body;
+                let headers = {};
+
+                if (isFile) {
+                    body = new FormData();
+                    body.append('file', payload);
+                } else {
+                    body = JSON.stringify({ text: payload });
+                    headers['Content-Type'] = 'application/json';
+                }
+
+                const token = localStorage.getItem('token');
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+
+                if (isFile) delete headers['Content-Type'];
+
+                const response = await fetch('http://localhost:3000/api/ai/parse', {
+                    method: 'POST',
+                    headers: headers,
+                    body: body
+                });
+
+                if (!response.ok) {
+                    const errData = await response.json();
+                    throw new Error(errData.details || 'Falha na análise da IA');
+                }
+
+                const data = await response.json();
+
+                aiModal.classList.add('hidden');
+                aiModal.classList.remove('flex');
+
+                if (Array.isArray(data) && data.length > 1) {
+                    openBulkReviewModal(data);
+                } else {
+                    openReviewModal(Array.isArray(data) ? data[0] : data);
+                }
+
+            } catch (error) {
+                alert('Erro na IA: ' + error.message);
+            } finally {
+                aiLoading.classList.add('hidden');
+            }
+        }
+
+        document.getElementById('submitAiText').addEventListener('click', () => {
+            const text = document.getElementById('aiTextInput').value;
+            if (text.trim()) processAiRequest(text);
+        });
+
+        document.getElementById('submitAiFile').addEventListener('click', () => {
+            const file = aiFileInput.files[0];
+            if (file) processAiRequest(file, true);
+        });
+
+        // Bulk Review Logic
+        const bulkReviewModal = document.getElementById('bulkReviewModal');
+        const bulkReviewBody = document.getElementById('bulkReviewBody');
+
+        function openBulkReviewModal(items) {
+            bulkExpensesData = items;
+            renderBulkTable();
+            bulkReviewModal.classList.remove('hidden');
+            bulkReviewModal.classList.add('flex');
+        }
+
+        function renderBulkTable() {
+            bulkReviewBody.innerHTML = '';
+            let totalVal = 0;
+
+            const cardOptions = availableCreditCards.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+
+            bulkExpensesData.forEach((item, index) => {
+                totalVal += parseFloat(item.totalAmount || item.amount || 0);
+                const isCredit = item.paymentMethod === 'credit';
+
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-dark-border hover:bg-dark-bg transition-colors';
+                tr.innerHTML = `
+                    <td class="p-3">
+                        <input type="text" value="${item.description}" class="bg-transparent w-full text-white outline-none border-b border-transparent focus:border-accent-purple" onchange="updateBulkItem(${index}, 'description', this.value)">
+                    </td>
+                    <td class="p-3">
+                        <input type="number" step="0.01" value="${item.totalAmount || item.amount}" class="bg-transparent w-24 text-white outline-none border-b border-transparent focus:border-accent-purple" onchange="updateBulkItem(${index}, 'amount', this.value)">
+                    </td>
+                    <td class="p-3">
+                         <div class="flex flex-col gap-1">
+                            <select class="bg-dark-bg text-sm rounded p-1" onchange="updateBulkItem(${index}, 'paymentMethod', this.value); renderBulkTable();">
+                                <option value="debit" ${!isCredit ? 'selected' : ''}>Débito</option>
+                                <option value="credit" ${isCredit ? 'selected' : ''}>Crédito</option>
+                            </select>
+                            ${isCredit ? `
+                                <select class="bg-dark-bg text-xs rounded p-1 text-accent-purple" onchange="updateBulkItem(${index}, 'creditCardId', this.value)">
+                                    <option value="">Selecione Cartão...</option>
+                                    ${cardOptions}
+                                </select>
+                            ` : ''}
+                        </div>
+                    </td>
+                    <td class="p-3">
+                        <input type="date" value="${item.purchaseDate || item.date}" class="bg-transparent w-32 text-white outline-none border-b border-transparent focus:border-accent-purple" onchange="updateBulkItem(${index}, 'date', this.value)">
+                    </td>
+                    <td class="p-3">
+                         <select class="bg-dark-bg text-sm rounded p-1" onchange="updateBulkItem(${index}, 'category', this.value)">
+                            <option value="Eletrônicos" ${item.category === 'Eletrônicos' ? 'selected' : ''}>📱 Eletrônicos</option>
+                            <option value="Alimentação" ${item.category === 'Alimentação' ? 'selected' : ''}>🍔 Alimentação</option>
+                            <option value="Transporte" ${item.category === 'Transporte' ? 'selected' : ''}>🚗 Transporte</option>
+                            <option value="Casa" ${item.category === 'Casa' ? 'selected' : ''}>🏠 Casa</option>
+                            <option value="Serviços" ${item.category === 'Serviços' ? 'selected' : ''}>💼 Serviços</option>
+                            <option value="Outros" ${item.category === 'Outros' ? 'selected' : ''}>📦 Outros</option>
+                        </select>
+                    </td>
+                    <td class="p-3">
+                        <button class="text-xs px-2 py-1 rounded ${item.isPaid ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-500'}" onclick="toggleBulkPaid(${index})">
+                            ${item.isPaid ? 'Pago' : 'Pendente'}
+                        </button>
+                    </td>
+                    <td class="p-3">
+                        <button class="text-red-400 hover:text-red-300" onclick="removeBulkItem(${index})">✕</button>
+                    </td>
+                `;
+                bulkReviewBody.appendChild(tr);
+            });
+
+            document.getElementById('bulkTotalCount').textContent = bulkExpensesData.length;
+            document.getElementById('bulkTotalValue').textContent = formatCurrency(totalVal);
+        }
+
+        window.updateBulkItem = (index, field, value) => {
+            if (field === 'amount') value = parseFloat(value);
+            bulkExpensesData[index][field] = value;
+            if (field === 'amount') {
+                // Update total visual only
+                const total = bulkExpensesData.reduce((acc, curr) => acc + (parseFloat(curr.amount || curr.totalAmount) || 0), 0);
+                document.getElementById('bulkTotalValue').textContent = formatCurrency(total);
+            }
+        };
+
+        window.toggleBulkPaid = (index) => {
+            bulkExpensesData[index].isPaid = !bulkExpensesData[index].isPaid;
+            renderBulkTable();
+        };
+
+        window.removeBulkItem = (index) => {
+            bulkExpensesData.splice(index, 1);
+            renderBulkTable();
+        };
+
+        document.getElementById('closeBulkModalBtn').addEventListener('click', () => {
+            bulkReviewModal.classList.add('hidden');
+            bulkReviewModal.classList.remove('flex');
+        });
+
+        document.getElementById('cancelBulkBtn').addEventListener('click', () => {
+            bulkReviewModal.classList.add('hidden');
+            bulkReviewModal.classList.remove('flex');
+        });
+
+        document.getElementById('saveBulkBtn').addEventListener('click', async () => {
+            const btn = document.getElementById('saveBulkBtn');
+            const originalText = btn.textContent;
+            btn.textContent = 'Salvando...';
+            btn.disabled = true;
+
+            let successCount = 0;
+            let errors = [];
+
+            for (const item of bulkExpensesData) {
+                try {
+                    const isCredit = item.paymentMethod === 'credit';
+                    const payload = {
+                        description: item.description,
+                        amount: parseFloat(item.amount || item.totalAmount),
+                        category: item.category,
+                        date: item.date || item.purchaseDate,
+                        paymentMethod: item.paymentMethod || 'debit',
+                        creditCardId: isCredit ? item.creditCardId : null,
+                        isPaid: isCredit ? false : (item.isPaid ?? true),
+                        installments: item.installments || 1
+                    };
+                    await expenseService.create(payload);
+                    successCount++;
+                } catch (e) {
+                    errors.push(`${item.description}: ${e.message}`);
+                }
+            }
+
+            btn.textContent = originalText;
+            btn.disabled = false;
+
+            bulkReviewModal.classList.add('hidden');
+            bulkReviewModal.classList.remove('flex');
+            loadDashboard();
+
+            if (errors.length > 0) {
+                alert(`Salvos: ${successCount}\nErros:\n${errors.join('\n')}`);
+            } else {
+                alert(`${successCount} despesas salvas com sucesso! 🚀`);
+                // Clear inputs
+                document.getElementById('aiTextInput').value = '';
+                aiFileInput.value = '';
+                const removeBtn = document.getElementById('removeFileBtn');
+                if (removeBtn) removeBtn.click();
+            }
+        });
+
+        // Review Modal Logic (Single)
+        const reviewModal = document.getElementById('reviewModal');
+        const reviewIsPaidInput = document.getElementById('reviewIsPaid');
+        const reviewStatusBtn = document.getElementById('reviewStatusBtn');
+        const reviewPaymentMethod = document.getElementById('reviewPaymentMethod');
+        const reviewCardGroup = document.getElementById('reviewCardGroup');
+        const reviewCard = document.getElementById('reviewCard');
+
+        window.toggleReviewCardSelect = (method) => {
+            if (method === 'credit') {
+                reviewCardGroup.classList.remove('hidden');
+                reviewStatusBtn.parentElement.parentElement.classList.add('opacity-50', 'pointer-events-none'); // Disable status
+                // Auto set to pending for credit
+                toggleReviewStatus(false);
+            } else {
+                reviewCardGroup.classList.add('hidden');
+                reviewStatusBtn.parentElement.parentElement.classList.remove('opacity-50', 'pointer-events-none');
+                toggleReviewStatus(true); // Default back to paid for debit
+            }
+        };
+
+        function openReviewModal(data) {
+            document.getElementById('reviewDesc').value = data.description || '';
+            document.getElementById('reviewAmount').value = data.totalAmount || data.amount || '';
+            document.getElementById('reviewDate').value = data.purchaseDate || data.date || new Date().toISOString().split('T')[0];
+
+            // Handle Category
+            const catSelect = document.getElementById('reviewCategory');
+            catSelect.value = data.category || 'Outros';
+
+            // Handle Payment Method
+            const method = data.paymentMethod || 'debit';
+            reviewPaymentMethod.value = method;
+            toggleReviewCardSelect(method);
+
+            // Handle Status
+            const isPaid = method === 'credit' ? false : (data.isPaid !== false);
+            toggleReviewStatus(isPaid);
+
+            reviewModal.classList.remove('hidden');
+            reviewModal.classList.add('flex');
+        }
+
+        function toggleReviewStatus(paid) {
+            reviewIsPaidInput.value = paid;
+            if (paid) {
+                reviewStatusBtn.className = 'flex-1 py-2 rounded bg-green-500 bg-opacity-20 text-green-400 border border-green-500 font-bold text-sm';
+                reviewStatusBtn.innerHTML = '✅ Pago';
+            } else {
+                reviewStatusBtn.className = 'flex-1 py-2 rounded bg-yellow-500 bg-opacity-20 text-yellow-500 border border-yellow-500 font-bold text-sm';
+                reviewStatusBtn.innerHTML = '🕒 Pendente';
+            }
+        }
+
+        reviewStatusBtn.addEventListener('click', () => {
+            // Only toggle if not credit
+            if (reviewPaymentMethod.value !== 'credit') {
+                const current = reviewIsPaidInput.value === 'true';
+                toggleReviewStatus(!current);
+            }
+        });
+
+        document.getElementById('closeReviewModalBtn').addEventListener('click', () => {
+            reviewModal.classList.add('hidden');
+            reviewModal.classList.remove('flex');
+        });
+
+        document.getElementById('cancelReviewBtn').addEventListener('click', () => {
+            reviewModal.classList.add('hidden');
+            reviewModal.classList.remove('flex');
+        });
+
+        // Save Transaction
+        document.getElementById('aiReviewForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const method = reviewPaymentMethod.value;
+            const expenseData = {
+                description: document.getElementById('reviewDesc').value,
+                amount: parseFloat(document.getElementById('reviewAmount').value),
+                category: document.getElementById('reviewCategory').value,
+                date: document.getElementById('reviewDate').value,
+                paymentMethod: method,
+                creditCardId: method === 'credit' ? reviewCard.value : null,
+                isPaid: reviewIsPaidInput.value === 'true',
+                installments: 1
+            };
+
+            try {
+                await expenseService.create(expenseData);
+                reviewModal.classList.add('hidden');
+                reviewModal.classList.remove('flex');
+                loadDashboard(); // Refresh dashboard
+                alert('Despesa salva com sucesso!');
+
+                // Clear inputs
+                document.getElementById('aiTextInput').value = '';
+                aiFileInput.value = '';
+                const removeBtn = document.getElementById('removeFileBtn');
+                if (removeBtn) removeBtn.click(); // Reset file view
+
+            } catch (error) {
+                alert('Erro ao salvar: ' + error.message);
+            }
+        });
+
+
 
         // Check authentication
         if (!authService.isAuthenticated()) {

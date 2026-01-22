@@ -6,6 +6,7 @@ import { CreditCardController } from '../controllers/CreditCardController';
 import { InvestmentController } from '../controllers/InvestmentController';
 import { FinancialPlanController } from '../controllers/FinancialPlanController';
 import { ReportController } from '../controllers/ReportController';
+import aiRoutes from './aiRoutes';
 import { authMiddleware } from '../middleware/auth';
 
 const router = Router();
@@ -62,5 +63,8 @@ router.delete('/financial-plans/:id', authMiddleware, financialPlanController.de
 // Report routes
 router.get('/reports/dashboard', authMiddleware, reportController.getDashboard.bind(reportController));
 router.get('/reports/monthly/:month/:year', authMiddleware, reportController.getMonthlyReport.bind(reportController));
+
+// AI routes
+router.use('/ai', aiRoutes);
 
 export default router;
