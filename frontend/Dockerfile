@@ -7,6 +7,12 @@ COPY package*.json ./
 RUN npm install
 
 COPY . .
+
+# Receive the argument from docker-compose
+ARG VITE_API_URL
+# Set it as environment variable for the build process
+ENV VITE_API_URL=$VITE_API_URL
+
 RUN npm run build
 
 # Production Stage
