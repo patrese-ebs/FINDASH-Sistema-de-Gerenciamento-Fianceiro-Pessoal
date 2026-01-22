@@ -449,6 +449,9 @@
 
     <script type="module">
         import authService from '/src/js/auth.js';
+        import dashboardService from '/src/js/services/dashboardService.js';
+        import expenseService from '/src/js/services/expenseService.js';
+        import creditCardService from '/src/js/services/creditCardService.js';
 
         // Remove loading screen and show content
         document.addEventListener('DOMContentLoaded', () => {
@@ -459,9 +462,6 @@
                 if (app) app.style.display = 'block';
             }, 500);
         });
-        import dashboardService from '/src/js/services/dashboardService.js';
-        import expenseService from '/src/js/services/expenseService.js';
-        import creditCardService from '/src/js/services/creditCardService.js';
 
         // --- AI Feature Logic ---
         const aiFabBtn = document.getElementById('aiFabBtn');
