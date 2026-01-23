@@ -609,6 +609,107 @@
             }
         };
 
+        // Window helper functions (Restored)
+        window.handleCardClick = (event, cardId) => {
+            // Prevent if click came from menu or buttons
+            if (event.target.closest('button') || event.target.closest('.card-menu')) return;
+            loadInvoice(cardId);
+        };
+
+        window.toggleCardMenu = (event, cardId) => {
+            event.stopPropagation();
+            // Close all other menus
+            document.querySelectorAll('[id^="cardMenu-"]').forEach(el => {
+                if (el.id !== `cardMenu-${cardId}`) el.classList.add('hidden');
+            });
+            const menu = document.getElementById(`cardMenu-${cardId}`);
+            menu.classList.toggle('hidden');
+        };
+
+        // Close menus when clicking outside
+        document.addEventListener('click', () => {
+            document.querySelectorAll('[id^="cardMenu-"]').forEach(el => el.classList.add('hidden'));
+        });
+
+        function updateCardSelection(selectedCardId) {
+            // Remove highlighting from all cards
+            document.querySelectorAll('.card[id^="card-"]').forEach(el => {
+                el.classList.remove('border-accent-purple');
+                el.classList.remove('ring-2');
+                el.classList.remove('ring-accent-purple');
+                el.classList.add('border-transparent');
+            });
+
+            // Add highlighting to selected card
+            const selectedCard = document.getElementById(`card-${selectedCardId}`);
+            if (selectedCard) {
+                selectedCard.classList.remove('border-transparent');
+                selectedCard.classList.add('border-accent-purple');
+                selectedCard.classList.add('ring-2', 'ring-accent-purple');
+            }
+        }
+
+        window.openEditCardModal = (cardId) => {
+            const card = window.cardsData[cardId];
+            if (!card) return;
+
+            document.getElementById('editCardId').value = card.id;
+            document.getElementById('editCardName').value = card.name;
+            document.getElementById('editLastFourDigits').value = card.lastFourDigits;
+            document.getElementById('editCardBrand').value = card.brand;
+            document.getElementById('editCreditLimit').value = card.creditLimit;
+            document.getElementById('editClosingDay').value = card.closingDay;
+            document.getElementById('editDueDay').value = card.dueDay;
+
+            document.getElementById('editCardModal').classList.remove('hidden');
+            document.getElementById('editCardModal').classList.add('flex');
+        };
+
+        window.deleteCard = async (cardId) => {
+            try {
+                await creditCardService.delete(cardId);
+                loadCreditCards();
+            } catch (error) {
+                alert('Erro ao excluir cartão');
+            }
+        };
+
+        // Edit Card Modal controls (Restored)
+        const editCardModal = document.getElementById('editCardModal');
+        const closeEditCardModalBtn = document.getElementById('closeEditCardModalBtn');
+        const cancelEditCardBtn = document.getElementById('cancelEditCardBtn');
+
+        [closeEditCardModalBtn, cancelEditCardBtn].forEach(btn => {
+            btn.addEventListener('click', () => {
+                editCardModal.classList.add('hidden');
+                editCardModal.classList.remove('flex');
+            });
+        });
+
+        // Submit Edit Form
+        document.getElementById('editCardForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('editCardId').value;
+            const cardData = {
+                name: document.getElementById('editCardName').value,
+                lastFourDigits: document.getElementById('editLastFourDigits').value,
+                brand: document.getElementById('editCardBrand').value,
+                creditLimit: parseFloat(document.getElementById('editCreditLimit').value),
+                closingDay: parseInt(document.getElementById('editClosingDay').value),
+                dueDay: parseInt(document.getElementById('editDueDay').value)
+            };
+
+            try {
+                await creditCardService.update(id, cardData);
+                editCardModal.classList.add('hidden');
+                editCardModal.classList.remove('flex');
+                loadCreditCards();
+                alert('Cartão atualizado com sucesso!');
+            } catch (error) {
+                alert('Erro ao atualizar cartão: ' + error.message);
+            }
+        });
+
         // Load invoice
         async function loadInvoice(cardId = null) {
             try {
