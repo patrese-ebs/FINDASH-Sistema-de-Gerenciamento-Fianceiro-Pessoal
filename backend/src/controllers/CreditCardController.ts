@@ -323,6 +323,8 @@ export class CreditCardController {
     async payInvoice(req: AuthRequest, res: Response): Promise<void> {
         try {
             const { id } = req.params;
+            // amount here is the PAYMENT amount entered by user
+            // If amount is provided, we check logic. If missing, assumes full toggle (legacy behavior or just toggle).
             const { month, year, amount } = req.body;
             const userId = req.userId;
 
@@ -331,28 +333,105 @@ export class CreditCardController {
                 return;
             }
 
-            // Find or create invoice record
-            let invoice = await CreditCardInvoice.findOne({
-                where: {
-                    creditCardId: id as string,
-                    month,
-                    year
-                }
+            // 1. Get Current Invoice Total to check for Partial
+            const creditCard = await CreditCard.findOne({ where: { id, userId } });
+            if (!creditCard) {
+                res.status(404).json({ error: 'Card not found' });
+                return;
+            }
+
+            // Fetch transactions to calculate real total
+            const transactions = await CreditCardTransaction.findAll({ where: { creditCardId: id } });
+
+            // Calculate total for this specific month/year (Reusing logic from getInvoice roughly)
+            // Simplified sum logic for performance, assuming frontend sent correct 'amount' if full. 
+            // Better to trust the user input 'amount' implies what they WANT to pay.
+            // But to do Rollover, we need the ACTUAL total.
+
+            // Let's rely on a helper or reuse getInvoice logic if possible, 
+            // but for now let's reproduce the filter quickly to get accurate total.
+            const invoiceItems = transactions.filter(transaction => {
+                const dateStr = transaction.purchaseDate.toString();
+                const [pYear, pMonth] = dateStr.includes('T') ? dateStr.split('T')[0].split('-').map(Number) : dateStr.split('-').map(Number);
+                const monthsElapsed = (year - pYear) * 12 + (month - pMonth);
+                return monthsElapsed >= 0 && monthsElapsed < transaction.installments;
+            }).map(t => {
+                return { ...t.toJSON(), installmentAmount: parseFloat(t.installmentAmount.toString()) };
             });
 
-            if (invoice) {
-                // Toggle status
-                await invoice.update({ isPaid: !invoice.isPaid });
-            } else {
-                // Create new record as Paid
-                invoice = await CreditCardInvoice.create({
+            const currentTotal = invoiceItems.reduce((sum, item) => sum + item.installmentAmount, 0);
+
+            // Handle Invoice Record
+            let invoice = await CreditCardInvoice.findOne({
+                where: { creditCardId: id as string, month, year }
+            });
+
+            const paymentAmount = parseFloat(amount);
+            const isPartial = paymentAmount < currentTotal && paymentAmount > 0;
+
+            if (isPartial) {
+                const remainder = currentTotal - paymentAmount;
+
+                // 1. Create Negative Transaction in CURRENT month to reduce balance
+                // "Pagamento Parcial - Abatimento"
+                // Date: 1st of current month (or today)
+                await CreditCardTransaction.create({
                     creditCardId: id as string,
-                    month,
-                    year,
-                    amount,
-                    isPaid: true,
-                    paymentDate: new Date()
+                    description: 'Pagamento Parcial (Abatimento)',
+                    totalAmount: -paymentAmount,
+                    installments: 1,
+                    currentInstallment: 1,
+                    installmentAmount: -paymentAmount,
+                    purchaseDate: new Date(year, month - 1, 10), // mid-month
+                    category: 'Pagamentos'
                 });
+
+                // 2. Create Positive Transaction in NEXT month for Rollover
+                // "Restante Fatura Anterior"
+                // Date: 1 month later
+                // Handle year rollover
+                let nextMonth = month + 1;
+                let nextYear = year;
+                if (nextMonth > 12) { nextMonth = 1; nextYear++; }
+
+                await CreditCardTransaction.create({
+                    creditCardId: id as string,
+                    description: 'Restante Fatura Anterior',
+                    totalAmount: remainder,
+                    installments: 1,
+                    currentInstallment: 1,
+                    installmentAmount: remainder,
+                    purchaseDate: new Date(nextYear, nextMonth - 1, 10),
+                    category: 'Dívidas'
+                });
+
+                // 3. Mark invoice as Paid (Settled)
+                if (invoice) {
+                    await invoice.update({ isPaid: true, amount: paymentAmount, paymentDate: new Date() });
+                } else {
+                    invoice = await CreditCardInvoice.create({
+                        creditCardId: id as string,
+                        month,
+                        year,
+                        amount: paymentAmount,
+                        isPaid: true,
+                        paymentDate: new Date()
+                    });
+                }
+            } else {
+                // Full Payment (Standard Behavior)
+                if (invoice) {
+                    await invoice.update({ isPaid: !invoice.isPaid }); // Toggle
+                } else {
+                    invoice = await CreditCardInvoice.create({
+                        creditCardId: id,
+                        month,
+                        year,
+                        amount: paymentAmount, // Store full amount
+                        isPaid: true,
+                        paymentDate: new Date()
+                    });
+                }
             }
 
             res.status(200).json(invoice);

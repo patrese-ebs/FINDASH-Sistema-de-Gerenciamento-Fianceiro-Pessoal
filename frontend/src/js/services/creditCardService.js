@@ -30,6 +30,15 @@ class CreditCardService {
         return response.data;
     }
 
+    async updateTransaction(cardId, transactionId, transactionData) {
+        const response = await api.put(`/credit-cards/${cardId}/transactions/${transactionId}`, transactionData);
+        return response.data;
+    }
+
+    async deleteTransaction(cardId, transactionId) {
+        await api.delete(`/credit-cards/${cardId}/transactions/${transactionId}`);
+    }
+
     async getInvoice(cardId, month, year) {
         const response = await api.get(`/credit-cards/${cardId}/invoice/${month}/${year}`);
         return response.data;
