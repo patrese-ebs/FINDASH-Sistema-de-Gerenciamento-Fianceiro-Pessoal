@@ -388,6 +388,71 @@
         </div>
     </div>
 
+    <!-- Edit Transaction Modal -->
+    <div id="editTransactionModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="card max-w-md w-full m-4 fade-in">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-bold">Editar Despesa</h3>
+                <button id="closeEditTransactionModalBtn" class="text-text-secondary hover:text-text-primary">✕</button>
+            </div>
+
+            <form id="editTransactionForm" class="space-y-4">
+                <input type="hidden" id="editTransactionId">
+                <input type="hidden" id="editTransactionCardId">
+
+                <div>
+                    <label class="block text-sm font-medium mb-2">Descrição</label>
+                    <input type="text" id="editDescription" class="input-field w-full" required>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2">Valor Total</label>
+                    <input type="number" id="editTotalAmount" class="input-field w-full" step="0.01" required>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2">Parcelas</label>
+                    <select id="editInstallments" class="input-field w-full" required>
+                        <option value="1">1x (à vista)</option>
+                        <option value="2">2x</option>
+                        <option value="3">3x</option>
+                        <option value="4">4x</option>
+                        <option value="5">5x</option>
+                        <option value="6">6x</option>
+                        <option value="7">7x</option>
+                        <option value="8">8x</option>
+                        <option value="9">9x</option>
+                        <option value="10">10x</option>
+                        <option value="11">11x</option>
+                        <option value="12">12x</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2">Categoria</label>
+                    <select id="editCategory" class="input-field w-full" required>
+                        <option value="Eletrônicos">📱 Eletrônicos</option>
+                        <option value="Alimentação">🍔 Alimentação</option>
+                        <option value="Transporte">🚗 Transporte</option>
+                        <option value="Casa">🏠 Casa</option>
+                        <option value="Serviços">💼 Serviços</option>
+                        <option value="Outros">📦 Outros</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2">Data da Compra</label>
+                    <input type="date" id="editPurchaseDate" class="input-field w-full" required>
+                </div>
+
+                <div class="flex gap-3 pt-4">
+                    <button type="button" id="cancelEditTransactionBtn" class="btn-secondary flex-1">Cancelar</button>
+                    <button type="submit" class="btn-primary flex-1">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script type="module">
         import authService from '/src/js/auth.js';
         import creditCardService from '/src/js/services/creditCardService.js';
@@ -465,6 +530,12 @@
         const invoiceYearFilter = document.getElementById('invoiceYearFilter');
         const invoiceCardFilter = document.getElementById('invoiceCardFilter'); // New
 
+        // Apply dark mode to options
+        [invoiceMonthFilter, invoiceYearFilter, invoiceCardFilter].forEach(select => {
+            // Browser support for styling options is limited, but this helps in some
+            // We can also re-render options with classes in JS, which we do for card filter below
+        });
+
         // Listen for filter changes
         invoiceMonthFilter.addEventListener('change', () => {
             const cardId = invoiceCardFilter.value || window.currentCardId;
@@ -494,11 +565,11 @@
 
                 // Populate card select (Modal)
                 const cardSelect = document.getElementById('cardSelect');
-                cardSelect.innerHTML = '<option value="">Selecione um cartão</option>' +
-                    cards.map(card => `<option value="${card.id}">${card.name} - ${card.brand}</option>`).join('');
+                cardSelect.innerHTML = '<option value="" class="bg-dark-card text-white">Selecione um cartão</option>' +
+                    cards.map(card => `<option value="${card.id}" class="bg-dark-card text-white">${card.name} - ${card.brand}</option>`).join('');
 
                 // Populate invoice card filter
-                invoiceCardFilter.innerHTML = cards.map(card => `<option value="${card.id}">${card.name}</option>`).join('');
+                invoiceCardFilter.innerHTML = cards.map(card => `<option value="${card.id}" class="bg-dark-card text-white">${card.name}</option>`).join('');
 
                 // Load transactions for first card or currently selected
                 if (cards.length > 0) {
@@ -674,6 +745,63 @@
             }
         };
 
+        // Edit Transaction Modal Controls
+        const editTransactionModal = document.getElementById('editTransactionModal');
+        const closeEditTransactionModalBtn = document.getElementById('closeEditTransactionModalBtn');
+        const cancelEditTransactionBtn = document.getElementById('cancelEditTransactionBtn');
+
+        [closeEditTransactionModalBtn, cancelEditTransactionBtn].forEach(btn => {
+            btn.addEventListener('click', () => {
+                editTransactionModal.classList.add('hidden');
+                editTransactionModal.classList.remove('flex');
+            });
+        });
+
+        // Open Edit Transaction Modal (Made global)
+        window.openEditTransactionModal = (cardId, transactionJson) => {
+            const transaction = JSON.parse(decodeURIComponent(transactionJson));
+
+            document.getElementById('editTransactionId').value = transaction.id || transaction.transactionId;
+            document.getElementById('editTransactionCardId').value = cardId;
+            document.getElementById('editDescription').value = transaction.description;
+            document.getElementById('editTotalAmount').value = transaction.totalAmount;
+            document.getElementById('editInstallments').value = transaction.installments;
+            document.getElementById('editCategory').value = transaction.category;
+
+            // Format date for input type="date"
+            const date = new Date(transaction.purchaseDate);
+            document.getElementById('editPurchaseDate').value = date.toISOString().split('T')[0];
+
+            editTransactionModal.classList.remove('hidden');
+            editTransactionModal.classList.add('flex');
+        }
+
+        // Submit Edit Transaction Form
+        document.getElementById('editTransactionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const cardId = document.getElementById('editTransactionCardId').value;
+            const transactionId = document.getElementById('editTransactionId').value;
+
+            const transactionData = {
+                description: document.getElementById('editDescription').value,
+                totalAmount: parseFloat(document.getElementById('editTotalAmount').value),
+                installments: parseInt(document.getElementById('editInstallments').value),
+                category: document.getElementById('editCategory').value,
+                purchaseDate: document.getElementById('editPurchaseDate').value
+            };
+
+            try {
+                await creditCardService.updateTransaction(cardId, transactionId, transactionData);
+                editTransactionModal.classList.add('hidden');
+                editTransactionModal.classList.remove('flex');
+                loadInvoice(cardId);
+                loadCreditCards();
+                alert('Despesa atualizada com sucesso!');
+            } catch (error) {
+                alert('Erro ao atualizar despesa: ' + error.message);
+            }
+        });
+
         // Edit Card Modal controls (Restored)
         const editCardModal = document.getElementById('editCardModal');
         const closeEditCardModalBtn = document.getElementById('closeEditCardModalBtn');
@@ -726,6 +854,12 @@
                     invoiceYearFilter.value = now.getFullYear();
                     window.filtersInitialized = true;
                 }
+
+                // FORCE DARK MODE COLORS ON OPTIONS (Workaround for select elements)
+                // We iterate over options and ensure they have classes
+                Array.from(invoiceMonthFilter.options).forEach(opt => opt.classList.add('bg-dark-card', 'text-white'));
+                Array.from(invoiceYearFilter.options).forEach(opt => opt.classList.add('bg-dark-card', 'text-white'));
+                Array.from(invoiceCardFilter.options).forEach(opt => opt.classList.add('bg-dark-card', 'text-white'));
 
                 // Get values from filters
                 const selectedMonth = parseInt(invoiceMonthFilter.value);
@@ -811,8 +945,8 @@
                     <button onclick="deleteCardTransaction('${idToLoad}', '${item.id || item.transactionId}')" class="text-red-400 hover:text-red-300 p-1 rounded hover:bg-red-400 hover:bg-opacity-10" title="Excluir">
                         🗑️
                     </button>
-                    <!-- Edit button placeholder - requires Edit Modal -->
-                    <button onclick="alert('Edição de despesa em breve!')" class="text-text-secondary hover:text-text-primary p-1 rounded hover:bg-dark-bg" title="Editar">
+                    <!-- Edit button wired to openEditTransactionModal -->
+                    <button onclick="openEditTransactionModal('${idToLoad}', '${encodeURIComponent(JSON.stringify(item))}')" class="text-text-secondary hover:text-text-primary p-1 rounded hover:bg-dark-bg" title="Editar">
                         ✏️
                     </button>
                 </div>

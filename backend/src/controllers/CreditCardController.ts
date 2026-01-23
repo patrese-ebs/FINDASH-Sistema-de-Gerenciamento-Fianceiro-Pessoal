@@ -198,6 +198,54 @@ export class CreditCardController {
         }
     }
 
+    async updateTransaction(req: AuthRequest, res: Response): Promise<void> {
+        try {
+            const { id, transactionId } = req.params;
+            const { description, totalAmount, installments, category, purchaseDate } = req.body;
+            const userId = req.userId;
+
+            if (!userId) {
+                res.status(401).json({ error: 'Unauthorized' });
+                return;
+            }
+
+            const creditCard = await CreditCard.findOne({ where: { id, userId } });
+
+            if (!creditCard) {
+                res.status(404).json({ error: 'Credit card not found' });
+                return;
+            }
+
+            const transaction = await CreditCardTransaction.findOne({
+                where: { id: transactionId, creditCardId: id }
+            });
+
+            if (!transaction) {
+                res.status(404).json({ error: 'Transaction not found' });
+                return;
+            }
+
+            // Calculate new installment amount if needed
+            const newTotal = totalAmount !== undefined ? totalAmount : transaction.totalAmount;
+            const newInstallments = installments !== undefined ? installments : transaction.installments;
+            const installmentAmount = newTotal / newInstallments;
+
+            await transaction.update({
+                description: description || transaction.description,
+                totalAmount: newTotal,
+                installments: newInstallments,
+                installmentAmount: installmentAmount,
+                category: category || transaction.category,
+                purchaseDate: purchaseDate ? new Date(purchaseDate) : transaction.purchaseDate
+            });
+
+            res.status(200).json(transaction);
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ error: 'Failed to update transaction' });
+        }
+    }
+
     async deleteTransaction(req: AuthRequest, res: Response): Promise<void> {
         try {
             const { id, transactionId } = req.params;
