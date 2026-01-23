@@ -401,8 +401,12 @@
         <div id="card-${card.id}" class="card cursor-pointer hover:border-accent-purple transition-colors relative border border-transparent" onclick="handleCardClick(event, '${card.id}')">
           <div class="flex items-center justify-between mb-4">
             <div>
-              <div class="text-sm text-text-secondary">${card.brand}</div>
-              <div class="font-bold">•••• ${card.lastFourDigits}</div>
+              <div class="font-bold text-lg mb-1">${card.name}</div>
+              <div class="text-sm text-text-secondary flex items-center gap-2">
+                <span>${card.brand}</span>
+                <span class="text-xs">•</span>
+                <span>•••• ${card.lastFourDigits}</span>
+              </div>
             </div>
             <div class="relative card-menu">
                 <button class="text-text-secondary hover:text-text-primary p-1 rounded hover:bg-dark-bg" onclick="toggleCardMenu(event, '${card.id}')">⋮</button>
