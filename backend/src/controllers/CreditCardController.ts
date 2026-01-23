@@ -198,6 +198,40 @@ export class CreditCardController {
         }
     }
 
+    async deleteTransaction(req: AuthRequest, res: Response): Promise<void> {
+        try {
+            const { id, transactionId } = req.params;
+            const userId = req.userId;
+
+            if (!userId) {
+                res.status(401).json({ error: 'Unauthorized' });
+                return;
+            }
+
+            const creditCard = await CreditCard.findOne({ where: { id, userId } });
+
+            if (!creditCard) {
+                res.status(404).json({ error: 'Credit card not found' });
+                return;
+            }
+
+            const transaction = await CreditCardTransaction.findOne({
+                where: { id: transactionId, creditCardId: id }
+            });
+
+            if (!transaction) {
+                res.status(404).json({ error: 'Transaction not found' });
+                return;
+            }
+
+            await transaction.destroy();
+            res.status(204).send();
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ error: 'Failed to delete transaction' });
+        }
+    }
+
     async getInvoice(req: AuthRequest, res: Response): Promise<void> {
         try {
             const { id, month, year } = req.params;

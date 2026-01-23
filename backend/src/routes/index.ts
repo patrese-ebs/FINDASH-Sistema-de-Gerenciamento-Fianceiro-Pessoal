@@ -59,6 +59,7 @@ router.put('/credit-cards/:id', authMiddleware, creditCardController.update.bind
 router.delete('/credit-cards/:id', authMiddleware, creditCardController.delete.bind(creditCardController));
 router.get('/credit-cards/:id/transactions', authMiddleware, creditCardController.getTransactions.bind(creditCardController));
 router.post('/credit-cards/:id/transactions', authMiddleware, creditCardController.addTransaction.bind(creditCardController));
+router.delete('/credit-cards/:id/transactions/:transactionId', authMiddleware, creditCardController.deleteTransaction.bind(creditCardController));
 router.get('/credit-cards/:id/invoice/:month/:year', authMiddleware, creditCardController.getInvoice.bind(creditCardController));
 router.post('/credit-cards/:id/invoice/pay', authMiddleware, creditCardController.payInvoice.bind(creditCardController));
 router.get('/credit-cards/:id/balance', authMiddleware, creditCardController.getBalance.bind(creditCardController));
