@@ -6,6 +6,9 @@ export class CreditCardController {
     async getAll(req: AuthRequest, res: Response): Promise<void> {
         try {
             const userId = req.userId;
+            const now = new Date();
+            const currentMonth = now.getMonth() + 1;
+            const currentYear = now.getFullYear();
 
             if (!userId) {
                 res.status(401).json({ error: 'Unauthorized' });
@@ -24,19 +27,41 @@ export class CreditCardController {
             const cardsWithBalance = creditCards.map(card => {
                 const transactions = (card as any).transactions || [];
 
-                // Calculate total pending installments (current balance/invoice total roughly)
-                const totalPending = transactions.reduce((sum: number, transaction: any) => {
+                // 1. Total Pending (Liability) - Future + Current
+                const totalLiability = transactions.reduce((sum: number, transaction: any) => {
                     const remainingInstallments = transaction.installments - transaction.currentInstallment + 1;
                     return sum + (parseFloat(transaction.installmentAmount.toString()) * remainingInstallments);
                 }, 0);
 
+                // 2. Current Invoice Amount (Estimate for current calendar month)
+                // Reusing invoice filter logic roughly
+                const currentInvoiceAmount = transactions.reduce((sum: number, transaction: any) => {
+                    const dateStr = transaction.purchaseDate.toString();
+                    const [pYear, pMonth] = dateStr.includes('T')
+                        ? dateStr.split('T')[0].split('-').map(Number)
+                        : dateStr.split('-').map(Number);
+
+                    const monthsElapsed = (currentYear - pYear) * 12 + (currentMonth - pMonth);
+
+                    const hasInstallmentThisMonth = monthsElapsed >= 0 &&
+                        monthsElapsed < transaction.installments &&
+                        transaction.currentInstallment + monthsElapsed <= transaction.installments;
+
+                    if (hasInstallmentThisMonth) {
+                        return sum + parseFloat(transaction.installmentAmount.toString());
+                    }
+                    return sum;
+                }, 0);
+
                 const creditLimit = parseFloat(card.creditLimit.toString());
-                const availableCredit = creditLimit - totalPending;
-                const usagePercentage = creditLimit > 0 ? (totalPending / creditLimit) * 100 : 0;
+                const availableCredit = creditLimit - totalLiability;
+                const usagePercentage = creditLimit > 0 ? (totalLiability / creditLimit) * 100 : 0;
 
                 return {
                     ...card.toJSON(),
-                    currentBalance: totalPending,
+                    currentInvoiceAmount, // Due this month
+                    totalLiability,       // Total debt
+                    currentBalance: totalLiability, // Keeping for backward compat, but UI should prefer totalLiability
                     availableCredit,
                     usagePercentage: usagePercentage.toFixed(2)
                 };
@@ -46,6 +71,71 @@ export class CreditCardController {
         } catch (error) {
             console.error(error);
             res.status(500).json({ error: 'Failed to fetch credit cards' });
+        }
+    }
+
+    async getSummary(req: AuthRequest, res: Response): Promise<void> {
+        try {
+            const userId = req.userId;
+            if (!userId) {
+                res.status(401).json({ error: 'Unauthorized' });
+                return;
+            }
+
+            // We can reuse getAll logic or re-query. Re-using logic is safer to keep consistent.
+            // Since getAll helps construct the response, we can just call the internal logic 
+            // but we can't easily call 'getAll' because it sends a response.
+            // Let's duplicate the aggregation logic briefly or refactor. 
+            // For now, duplication with shared logic is fine for speed.
+
+            const now = new Date();
+            const currentMonth = now.getMonth() + 1;
+            const currentYear = now.getFullYear();
+
+            const creditCards = await CreditCard.findAll({
+                where: { userId },
+                include: [{ model: CreditCardTransaction, as: 'transactions' }]
+            });
+
+            let totalLimit = 0;
+            let totalLiability = 0;
+            let totalDueThisMonth = 0;
+
+            creditCards.forEach(card => {
+                const transactions = (card as any).transactions || [];
+                const creditLimit = parseFloat(card.creditLimit.toString());
+
+                totalLimit += creditLimit;
+
+                transactions.forEach((transaction: any) => {
+                    const remainingInstallments = transaction.installments - transaction.currentInstallment + 1;
+                    const installmentAmount = parseFloat(transaction.installmentAmount.toString());
+
+                    totalLiability += (installmentAmount * remainingInstallments);
+
+                    // Check for current month due
+                    const dateStr = transaction.purchaseDate.toString();
+                    const [pYear, pMonth] = dateStr.includes('T') ? dateStr.split('T')[0].split('-').map(Number) : dateStr.split('-').map(Number);
+                    const monthsElapsed = (currentYear - pYear) * 12 + (currentMonth - pMonth);
+
+                    if (monthsElapsed >= 0 && monthsElapsed < transaction.installments && transaction.currentInstallment + monthsElapsed <= transaction.installments) {
+                        totalDueThisMonth += installmentAmount;
+                    }
+                });
+            });
+
+            const totalAvailable = totalLimit - totalLiability;
+
+            res.status(200).json({
+                totalLimit,
+                totalLiability,
+                totalAvailable,
+                totalDueThisMonth
+            });
+
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ error: 'Failed to fetch summary' });
         }
     }
 

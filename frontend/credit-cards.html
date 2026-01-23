@@ -61,6 +61,27 @@
             </div>
         </div>
 
+        <!-- Summary Cards -->
+        <div id="cardsSummary" class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <!-- Populated by JS -->
+            <div class="stat-card fade-in" style="animation-delay: 0.1s">
+                <div class="stat-label">Limite Total</div>
+                <div class="stat-value text-white" id="summaryLimit">R$ 0,00</div>
+            </div>
+            <div class="stat-card fade-in" style="animation-delay: 0.2s">
+                <div class="stat-label">Total Gasto (Dívida)</div>
+                <div class="stat-value text-red-400" id="summaryLiability">R$ 0,00</div>
+            </div>
+            <div class="stat-card fade-in" style="animation-delay: 0.3s">
+                <div class="stat-label">Disponível Total</div>
+                <div class="stat-value text-green-400" id="summaryAvailable">R$ 0,00</div>
+            </div>
+            <div class="stat-card fade-in" style="animation-delay: 0.4s">
+                <div class="stat-label">Faturas Abertas (Mês)</div>
+                <div class="stat-value text-accent-gold" id="summaryDue">R$ 0,00</div>
+            </div>
+        </div>
+
         <!-- Credit Cards Grid -->
         <div id="cardsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             <!-- Cards will be inserted here -->
@@ -557,6 +578,7 @@
         // Load credit cards
         async function loadCreditCards() {
             try {
+                loadSummary(); // Load summary stats
                 const cards = await creditCardService.getAll();
 
                 // Populate cards grid
@@ -582,10 +604,30 @@
             }
         }
 
+        async function loadSummary() {
+            try {
+                const summary = await creditCardService.getSummary();
+                const safeValue = (val) => val !== undefined ? val : 0;
+
+                document.getElementById('summaryLimit').textContent = formatCurrency(safeValue(summary.totalLimit));
+                document.getElementById('summaryLiability').textContent = formatCurrency(safeValue(summary.totalLiability));
+                document.getElementById('summaryAvailable').textContent = formatCurrency(safeValue(summary.totalAvailable));
+                document.getElementById('summaryDue').textContent = formatCurrency(safeValue(summary.totalDueThisMonth));
+            } catch (error) {
+                console.error('Failed to load summary', error);
+                // Fallback to 0
+                document.getElementById('summaryLimit').textContent = formatCurrency(0);
+                document.getElementById('summaryLiability').textContent = formatCurrency(0);
+                document.getElementById('summaryAvailable').textContent = formatCurrency(0);
+                document.getElementById('summaryDue').textContent = formatCurrency(0);
+            }
+        }
+
         // Create card HTML
         function createCardHTML(card) {
             const usagePercent = card.usagePercentage || 0;
-            const currentBalance = card.currentBalance || 0;
+            const totalLiability = card.totalLiability || 0;
+            const currentInvoiceAmount = card.currentInvoiceAmount || 0;
             const availableCredit = card.availableCredit || 0;
             const creditLimit = card.creditLimit || 0;
 
@@ -616,8 +658,13 @@
           </div>
 
           <div class="mb-4">
-            <div class="text-sm text-text-secondary">Fatura Atual (Total Pendente)</div>
-            <div class="text-2xl font-bold text-white">${formatCurrency(currentBalance)}</div>
+            <div class="text-sm text-text-secondary">Fatura Atual (Mês Atual)</div>
+            <div class="text-2xl font-bold text-white">${formatCurrency(currentInvoiceAmount)}</div>
+            
+            <div class="text-xs text-text-secondary mt-1 flex justify-between">
+                <span>Total Comprado (Dívida Total):</span>
+                <span>${formatCurrency(totalLiability)}</span>
+            </div>
           </div>
 
           <div class="mb-2">
@@ -636,7 +683,7 @@
             <div class="mb-2">
               <div class="flex items-center justify-between text-sm mb-1">
                 <span class="text-text-secondary">Utilizado</span>
-                <span>${formatCurrency(currentBalance)}</span>
+                <span>${formatCurrency(totalLiability)}</span>
               </div>
               <div class="flex items-center justify-between text-sm">
                 <span class="text-text-secondary">Disponível</span>
@@ -653,7 +700,7 @@
 
             <div class="text-sm text-text-secondary flex justify-between items-center">
               <span>Melhor dia: <span class="text-accent-purple font-medium">Dia ${card.closingDay}</span></span>
-              ${currentBalance > 0 ? `<button onclick="window.scrollToInvoice()" class="text-xs bg-accent-purple bg-opacity-20 text-accent-purple px-2 py-1 rounded hover:bg-opacity-30">Pagar</button>` : ''}
+              ${currentInvoiceAmount > 0 ? `<button onclick="window.scrollToInvoice()" class="text-xs bg-accent-purple bg-opacity-20 text-accent-purple px-2 py-1 rounded hover:bg-opacity-30">Pagar</button>` : ''}
             </div>
           </div>
         </div>

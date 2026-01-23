@@ -53,6 +53,7 @@ router.put('/expenses/:id', authMiddleware, expenseController.update.bind(expens
 router.delete('/expenses/:id', authMiddleware, expenseController.delete.bind(expenseController));
 
 // Credit Card routes
+router.get('/credit-cards/summary', authMiddleware, creditCardController.getSummary.bind(creditCardController));
 router.get('/credit-cards', authMiddleware, creditCardController.getAll.bind(creditCardController));
 router.post('/credit-cards', authMiddleware, creditCardController.create.bind(creditCardController));
 router.put('/credit-cards/:id', authMiddleware, creditCardController.update.bind(creditCardController));
