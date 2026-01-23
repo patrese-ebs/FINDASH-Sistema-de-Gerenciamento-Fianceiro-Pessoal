@@ -424,7 +424,7 @@ export class CreditCardController {
                     await invoice.update({ isPaid: !invoice.isPaid }); // Toggle
                 } else {
                     invoice = await CreditCardInvoice.create({
-                        creditCardId: id,
+                        creditCardId: id as string,
                         month,
                         year,
                         amount: paymentAmount, // Store full amount
