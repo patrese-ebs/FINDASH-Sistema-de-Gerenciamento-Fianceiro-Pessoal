@@ -49,12 +49,22 @@ export class ExpenseController {
             const { v4: uuidv4 } = require('uuid');
             const recurrenceId = (isRecurring || (installments && parseInt(installments.toString()) > 1)) ? uuidv4() : null;
 
+            const originalDay = initialDate.getDate();
+            const getNextDate = (startDate: Date, offset: number) => {
+                const d = new Date(startDate);
+                d.setMonth(d.getMonth() + offset);
+                if (d.getDate() !== originalDay) {
+                    d.setDate(0);
+                }
+                return d;
+            };
+
             // Handle Installments (Fixed number of payments)
             if (installments && parseInt(installments.toString()) > 1) {
                 const numInstallments = parseInt(installments.toString());
                 for (let i = 0; i < numInstallments; i++) {
-                    const nextDate = new Date(initialDate);
-                    nextDate.setMonth(nextDate.getMonth() + i);
+                    // Use helper for correctness, though i=0 is just initialDate
+                    const nextDate = getNextDate(initialDate, i);
 
                     expensesToCreate.push({
                         userId,
@@ -102,10 +112,9 @@ export class ExpenseController {
                     endDate = new Date(initialDate);
                     endDate.setFullYear(endDate.getFullYear() + 5);
                 }
-                let nextDate = new Date(initialDate);
 
-                // Advance to next month for the first recurring entry
-                nextDate.setMonth(nextDate.getMonth() + 1);
+                let currentMonthOffset = 1;
+                let nextDate = getNextDate(initialDate, currentMonthOffset);
 
                 while (nextDate <= endDate) {
                     expensesToCreate.push({
@@ -113,7 +122,7 @@ export class ExpenseController {
                         description,
                         amount,
                         category,
-                        date: new Date(nextDate),
+                        date: nextDate,
                         month: nextDate.getMonth() + 1,
                         year: nextDate.getFullYear(),
                         paymentMethod,
@@ -126,7 +135,8 @@ export class ExpenseController {
                     });
 
                     // Advance to next month
-                    nextDate.setMonth(nextDate.getMonth() + 1);
+                    currentMonthOffset++;
+                    nextDate = getNextDate(initialDate, currentMonthOffset);
                 }
             }
             // Single Expense

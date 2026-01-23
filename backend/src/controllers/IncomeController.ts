@@ -75,10 +75,21 @@ export class IncomeController {
                     endDate = new Date(initialDate);
                     endDate.setFullYear(endDate.getFullYear() + 5);
                 }
-                let nextDate = new Date(initialDate);
+                const originalDay = initialDate.getDate();
+                let currentMonthOffset = 1;
 
-                // Advance to next month for the first recurring entry
-                nextDate.setMonth(nextDate.getMonth() + 1);
+                // Calculate next date based on offset to avoid month drift accumulation
+                const getNextDate = (startDate: Date, offset: number) => {
+                    const d = new Date(startDate);
+                    d.setMonth(d.getMonth() + offset);
+                    // If day changed (e.g., Jan 31 -> Feb 28/Mar 2), clamp to last day of previous month
+                    if (d.getDate() !== originalDay) {
+                        d.setDate(0);
+                    }
+                    return d;
+                };
+
+                let nextDate = getNextDate(initialDate, currentMonthOffset);
 
                 while (nextDate <= endDate) {
                     incomesToCreate.push({
@@ -86,7 +97,7 @@ export class IncomeController {
                         description,
                         amount,
                         category,
-                        date: new Date(nextDate),
+                        date: nextDate,
                         month: nextDate.getMonth() + 1,
                         year: nextDate.getFullYear(),
                         isRecurring: true,
@@ -97,8 +108,8 @@ export class IncomeController {
                     });
 
                     // Advance to next month
-                    // TODO: Handle other frequencies if needed, currently assuming monthly
-                    nextDate.setMonth(nextDate.getMonth() + 1);
+                    currentMonthOffset++;
+                    nextDate = getNextDate(initialDate, currentMonthOffset);
                 }
             }
 
