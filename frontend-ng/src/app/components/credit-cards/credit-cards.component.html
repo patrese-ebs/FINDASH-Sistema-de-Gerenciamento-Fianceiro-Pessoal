@@ -4,7 +4,7 @@
     <div class="ml-64 p-8">
         <div class="flex items-center justify-between mb-8">
             <h2 class="text-3xl font-bold">Meus Cartões</h2>
-            <button
+            <button (click)="openModal()"
                 class="bg-gradient-to-r from-accent-purple to-accent-blue text-white px-4 py-2 rounded-lg font-bold hover:opacity-90 transition-opacity">
                 + Novo Cartão
             </button>
@@ -43,6 +43,76 @@
                 class="col-span-full text-center p-12 border border-dashed border-dark-border rounded-xl">
                 <p class="text-text-secondary">Nenhum cartão cadastrado.</p>
             </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div *ngIf="showModal"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm">
+        <div
+            class="bg-dark-card border border-dark-border rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in">
+            <div class="p-6 border-b border-dark-border flex justify-between items-center">
+                <h3 class="text-xl font-bold">Novo Cartão</h3>
+                <button (click)="closeModal()" class="text-text-secondary hover:text-white">&times;</button>
+            </div>
+
+            <form [formGroup]="cardForm" (ngSubmit)="onSubmit()" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-text-secondary mb-1">Nome/Apelido</label>
+                    <input type="text" formControlName="name"
+                        class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 focus:outline-none focus:border-accent-purple transition-colors text-white"
+                        placeholder="Ex: Nubank Principal">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-text-secondary mb-1">Limite (R$)</label>
+                        <input type="number" formControlName="limit"
+                            class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 focus:outline-none focus:border-accent-purple transition-colors text-white"
+                            placeholder="0.00">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-text-secondary mb-1">Últimos 4 dígitos</label>
+                        <input type="text" formControlName="lastFourDigits" maxlength="4"
+                            class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 focus:outline-none focus:border-accent-purple transition-colors text-white"
+                            placeholder="1234">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-text-secondary mb-1">Dia Vencimento</label>
+                        <input type="number" formControlName="dueDay" min="1" max="31"
+                            class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 focus:outline-none focus:border-accent-purple transition-colors text-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-text-secondary mb-1">Dia Fechamento</label>
+                        <input type="number" formControlName="closingDay" min="1" max="31"
+                            class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 focus:outline-none focus:border-accent-purple transition-colors text-white">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-text-secondary mb-1">Bandeira</label>
+                    <select formControlName="brand"
+                        class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 focus:outline-none focus:border-accent-purple transition-colors text-white">
+                        <option value="Visa">Visa</option>
+                        <option value="Mastercard">Mastercard</option>
+                        <option value="Elo">Elo</option>
+                        <option value="Amex">Amex</option>
+                        <option value="Outros">Outros</option>
+                    </select>
+                </div>
+
+                <div class="pt-4 flex justify-end gap-3">
+                    <button type="button" (click)="closeModal()"
+                        class="px-4 py-2 rounded-lg border border-dark-border hover:bg-dark-border transition-colors text-text-secondary">Cancelar</button>
+                    <button type="submit" [disabled]="submitting || cardForm.invalid"
+                        class="px-6 py-2 rounded-lg bg-gradient-to-r from-accent-purple to-accent-blue text-white font-bold hover:opacity-90 transition-opacity disabled:opacity-50">
+                        {{ submitting ? 'Salvando...' : 'Salvar' }}
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

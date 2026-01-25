@@ -4,7 +4,7 @@
     <div class="ml-64 p-8">
         <div class="flex items-center justify-between mb-8">
             <h2 class="text-3xl font-bold">Transações</h2>
-            <button
+            <button (click)="openModal()"
                 class="bg-gradient-to-r from-accent-purple to-accent-blue text-white px-4 py-2 rounded-lg font-bold hover:opacity-90 transition-opacity">
                 + Nova Transação
             </button>
@@ -49,6 +49,87 @@
                     </tbody>
                 </table>
             </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div *ngIf="showModal"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm">
+        <div
+            class="bg-dark-card border border-dark-border rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in">
+            <div class="p-6 border-b border-dark-border flex justify-between items-center">
+                <h3 class="text-xl font-bold">Nova Transação</h3>
+                <button (click)="closeModal()" class="text-text-secondary hover:text-white">&times;</button>
+            </div>
+
+            <form [formGroup]="transactionForm" (ngSubmit)="onSubmit()" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-text-secondary mb-1">Descrição</label>
+                    <input type="text" formControlName="description"
+                        class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 focus:outline-none focus:border-accent-purple transition-colors text-white"
+                        placeholder="Ex: Compras Supermercado">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-text-secondary mb-1">Valor (R$)</label>
+                        <input type="number" formControlName="amount" step="0.01"
+                            class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 focus:outline-none focus:border-accent-purple transition-colors text-white"
+                            placeholder="0.00">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-text-secondary mb-1">Data</label>
+                        <input type="date" formControlName="date"
+                            class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 focus:outline-none focus:border-accent-purple transition-colors text-white">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-text-secondary mb-1">Tipo</label>
+                        <select formControlName="type"
+                            class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 focus:outline-none focus:border-accent-purple transition-colors text-white">
+                            <option value="expense">Despesa</option>
+                            <option value="income">Receita</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-text-secondary mb-1">Categoria</label>
+                        <select formControlName="category"
+                            class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 focus:outline-none focus:border-accent-purple transition-colors text-white">
+                            <option value="Alimentação">Alimentação</option>
+                            <option value="Transporte">Transporte</option>
+                            <option value="Moradia">Moradia</option>
+                            <option value="Lazer">Lazer</option>
+                            <option value="Saúde">Saúde</option>
+                            <option value="Educação">Educação</option>
+                            <option value="Salário">Salário</option>
+                            <option value="Investimentos">Investimentos</option>
+                            <option value="Outros">Outros</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-text-secondary mb-1">Método</label>
+                    <select formControlName="paymentMethod"
+                        class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 focus:outline-none focus:border-accent-purple transition-colors text-white">
+                        <option value="pix">PIX</option>
+                        <option value="credit">Cartão de Crédito</option>
+                        <option value="debit">Cartão de Débito</option>
+                        <option value="cash">Dinheiro</option>
+                    </select>
+                </div>
+
+                <div class="pt-4 flex justify-end gap-3">
+                    <button type="button" (click)="closeModal()"
+                        class="px-4 py-2 rounded-lg border border-dark-border hover:bg-dark-border transition-colors text-text-secondary">Cancelar</button>
+                    <button type="submit" [disabled]="submitting || transactionForm.invalid"
+                        class="px-6 py-2 rounded-lg bg-gradient-to-r from-accent-purple to-accent-blue text-white font-bold hover:opacity-90 transition-opacity disabled:opacity-50">
+                        {{ submitting ? 'Salvando...' : 'Salvar' }}
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
