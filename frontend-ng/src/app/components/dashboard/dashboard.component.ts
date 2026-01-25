@@ -15,6 +15,7 @@ Chart.register(...registerables);
 })
 export class DashboardComponent implements OnInit, AfterViewInit {
     loading: boolean = true;
+    error: string = '';
     transactions: any[] = [];
 
     // Stats

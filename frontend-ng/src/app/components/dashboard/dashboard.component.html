@@ -6,8 +6,10 @@
     <!-- Main Content -->
     <div class="ml-64 p-8">
         <!-- Loading State -->
-        <div *ngIf="loading" class="flex justify-center items-center h-64">
-            <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent-purple"></div>
+        <div *ngIf="loading" class="flex flex-col justify-center items-center h-64">
+            <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent-purple mb-4"></div>
+            <p class="text-text-secondary">Carregando dados...</p>
+            <p *ngIf="error" class="text-red-400 mt-2">{{ error }}</p>
         </div>
 
         <div *ngIf="!loading">
