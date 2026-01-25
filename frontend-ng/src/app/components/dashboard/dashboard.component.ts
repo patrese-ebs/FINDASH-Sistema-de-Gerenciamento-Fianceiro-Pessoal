@@ -33,7 +33,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     ) { }
 
     ngOnInit() {
-        this.loading = true;
+        this.loading = false; // Non-blocking load
 
         // Safety timeout: Auto-fail if taking longer than 5s
         const timeoutId = setTimeout(() => {

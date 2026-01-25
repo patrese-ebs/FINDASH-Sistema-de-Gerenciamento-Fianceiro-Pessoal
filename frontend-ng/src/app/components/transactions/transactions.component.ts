@@ -21,7 +21,7 @@ export class TransactionsComponent implements OnInit {
     }
 
     loadTransactions() {
-        this.loading = true;
+        this.loading = false; // Non-blocking load
 
         // Safety timeout
         const timeoutId = setTimeout(() => {

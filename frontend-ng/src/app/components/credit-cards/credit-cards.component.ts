@@ -21,7 +21,7 @@ export class CreditCardsComponent implements OnInit {
     }
 
     loadCards() {
-        this.loading = true;
+        this.loading = false; // Non-blocking load
 
         // Safety timeout
         const timeoutId = setTimeout(() => {
