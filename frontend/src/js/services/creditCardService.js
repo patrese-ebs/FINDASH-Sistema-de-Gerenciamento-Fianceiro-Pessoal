@@ -62,6 +62,11 @@ class CreditCardService {
         return response.data;
     }
 
+    async planInvoices(cardId, plans) {
+        const response = await api.post(`/credit-cards/${cardId}/invoice/plan`, { plans });
+        return response.data;
+    }
+
     async getBalance(cardId) {
         const response = await api.get(`/credit-cards/${cardId}/balance`);
         return response.data;

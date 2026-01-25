@@ -256,6 +256,74 @@ export class CreditCardController {
         }
     }
 
+    async planInvoices(req: AuthRequest, res: Response): Promise<void> {
+        try {
+            const { id } = req.params;
+            const { plans } = req.body; // Array of { month, year, amount }
+            const userId = req.userId;
+
+            if (!userId) {
+                res.status(401).json({ error: 'Unauthorized' });
+                return;
+            }
+
+            const creditCard = await CreditCard.findOne({ where: { id, userId } });
+
+            if (!creditCard) {
+                res.status(404).json({ error: 'Credit card not found' });
+                return;
+            }
+
+            if (!Array.isArray(plans)) {
+                res.status(400).json({ error: 'Plans must be an array' });
+                return;
+            }
+
+            const transactionsToCreate = plans.map(plan => {
+                // Determine due date (using card's due day or default to 10th)
+                const dueDay = creditCard.dueDay || 10;
+                // We want the purchase date to fall into the billing cycle of that month.
+                // Simplified: Set purchase date to ~30 days before the due date of that month to ensure it hits the invoice.
+                // OR: Just set it to the 1st of that month if we trust the "Month" filter logic which looks at installmnets.
+
+                // Better approach based on current logic:
+                // If the user wants this for "March 2026", and it's a 1x installment, 
+                // the purchase date should be early enough in March (or late Feb) to appear in March Invoice.
+
+                // Let's use the 1st of the target month. 
+                // If closing day is early (e.g. 5th), purchase on 1st might fall in PREVIOUS month invoice if buying before closing?
+                // Actually typical logic: Purchase before closing day = Current Month Invoice. Purchase after closing = Next Month.
+                // To force it into "March" Invoice:
+                // If Closing Day > 1: Purchase on Month, (ClosingDay - 1). 
+                // Example: Closing Day 10. Purchase on March 9 -> March Invoice.
+
+                const closingDay = creditCard.closingDay || 10;
+                let purchaseDay = closingDay - 1;
+                if (purchaseDay < 1) purchaseDay = 1; // Safety
+
+                const purchaseDate = new Date(plan.year, plan.month - 1, purchaseDay);
+
+                return {
+                    creditCardId: id as string,
+                    description: 'Fatura Estimada (Planejamento)',
+                    totalAmount: parseFloat(plan.amount),
+                    installments: 1,
+                    currentInstallment: 1,
+                    installmentAmount: parseFloat(plan.amount),
+                    purchaseDate: purchaseDate,
+                    category: 'Outros'
+                };
+            });
+
+            await CreditCardTransaction.bulkCreate(transactionsToCreate);
+
+            res.status(201).json({ message: 'Invoices planned successfully', count: transactionsToCreate.length });
+        } catch (error) {
+            console.error('Failed to plan invoices:', error);
+            res.status(500).json({ error: 'Failed to plan invoices' });
+        }
+    }
+
     async addTransaction(req: AuthRequest, res: Response): Promise<void> {
         try {
             const { id } = req.params;
