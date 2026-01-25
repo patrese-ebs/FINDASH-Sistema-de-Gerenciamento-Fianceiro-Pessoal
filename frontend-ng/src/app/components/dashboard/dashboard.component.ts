@@ -14,7 +14,7 @@ Chart.register(...registerables);
     templateUrl: './dashboard.component.html',
 })
 export class DashboardComponent implements OnInit, AfterViewInit {
-    loading: boolean = true;
+    loading: boolean = false;
     error: string = '';
     transactions: any[] = [];
 
@@ -33,7 +33,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     ) { }
 
     ngOnInit() {
-        this.loading = true;
+        // this.loading = true; // DEBUG: Disabled loading
 
         // Safety timeout: Auto-fail if taking longer than 5s
         const timeoutId = setTimeout(() => {
