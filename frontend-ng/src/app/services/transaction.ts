@@ -29,7 +29,7 @@ export class TransactionService {
 
   // Add Income endpoint if separate
   getIncome(): Observable<any[]> {
-    return this.http.get<any[]>('http://localhost:3000/api/incomes', { headers: this.getHeaders() });
+    return this.http.get<any[]>('/api/incomes', { headers: this.getHeaders() });
   }
 
   getDashboardStats(): Observable<any> {
