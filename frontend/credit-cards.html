@@ -55,7 +55,30 @@
                 <h2 class="text-3xl font-bold">Meus Cartões</h2>
                 <p class="text-text-secondary mt-1">Gerencie limites, faturas e parcelamentos em um só lugar.</p>
             </div>
-            <div class="flex gap-3">
+            <div class="flex gap-3 items-center">
+                <div class="flex items-center gap-2 mr-4">
+                    <select id="headerMonthSelect"
+                        class="bg-dark-bg border border-dark-border rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-accent-purple transition-colors">
+                        <option value="1">Janeiro</option>
+                        <option value="2">Fevereiro</option>
+                        <option value="3">Março</option>
+                        <option value="4">Abril</option>
+                        <option value="5">Maio</option>
+                        <option value="6">Junho</option>
+                        <option value="7">Julho</option>
+                        <option value="8">Agosto</option>
+                        <option value="9">Setembro</option>
+                        <option value="10">Outubro</option>
+                        <option value="11">Novembro</option>
+                        <option value="12">Dezembro</option>
+                    </select>
+                    <select id="headerYearSelect"
+                        class="bg-dark-bg border border-dark-border rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-accent-purple transition-colors">
+                        <option value="2026">2026</option>
+                        <option value="2025">2025</option>
+                        <option value="2024">2024</option>
+                    </select>
+                </div>
                 <button id="addNewCardBtn" class="btn-secondary">+ Novo Cartão</button>
                 <button id="addCardBtn" class="btn-primary">+ Nova Despesa</button>
             </div>
@@ -575,11 +598,25 @@
             }
         });
 
+        // Initialize header filters with current date
+        const headerMonthSelect = document.getElementById('headerMonthSelect');
+        const headerYearSelect = document.getElementById('headerYearSelect');
+
+        const now = new Date();
+        headerMonthSelect.value = now.getMonth() + 1;
+        headerYearSelect.value = now.getFullYear();
+
+        headerMonthSelect.addEventListener('change', loadCreditCards);
+        headerYearSelect.addEventListener('change', loadCreditCards);
+
         // Load credit cards
         async function loadCreditCards() {
             try {
-                loadSummary(); // Load summary stats
-                const cards = await creditCardService.getAll();
+                const month = headerMonthSelect.value;
+                const year = headerYearSelect.value;
+
+                loadSummary(month, year); // Load summary stats
+                const cards = await creditCardService.getAll(month, year);
 
                 // Populate cards grid
                 const cardsGrid = document.getElementById('cardsGrid');
@@ -604,9 +641,9 @@
             }
         }
 
-        async function loadSummary() {
+        async function loadSummary(month, year) {
             try {
-                const summary = await creditCardService.getSummary();
+                const summary = await creditCardService.getSummary(month, year);
                 const safeValue = (val) => val !== undefined ? val : 0;
 
                 document.getElementById('summaryLimit').textContent = formatCurrency(safeValue(summary.totalLimit));

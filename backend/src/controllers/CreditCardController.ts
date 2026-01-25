@@ -7,8 +7,11 @@ export class CreditCardController {
         try {
             const userId = req.userId;
             const now = new Date();
-            const currentMonth = now.getMonth() + 1;
-            const currentYear = now.getFullYear();
+            const queryMonth = req.query.month ? parseInt(req.query.month as string) : undefined;
+            const queryYear = req.query.year ? parseInt(req.query.year as string) : undefined;
+
+            const currentMonth = queryMonth || now.getMonth() + 1;
+            const currentYear = queryYear || now.getFullYear();
 
             if (!userId) {
                 res.status(401).json({ error: 'Unauthorized' });
@@ -89,8 +92,11 @@ export class CreditCardController {
             // For now, duplication with shared logic is fine for speed.
 
             const now = new Date();
-            const currentMonth = now.getMonth() + 1;
-            const currentYear = now.getFullYear();
+            const queryMonth = req.query.month ? parseInt(req.query.month as string) : undefined;
+            const queryYear = req.query.year ? parseInt(req.query.year as string) : undefined;
+
+            const currentMonth = queryMonth || now.getMonth() + 1;
+            const currentYear = queryYear || now.getFullYear();
 
             const creditCards = await CreditCard.findAll({
                 where: { userId },

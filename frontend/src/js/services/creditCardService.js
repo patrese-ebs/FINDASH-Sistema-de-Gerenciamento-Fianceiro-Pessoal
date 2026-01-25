@@ -1,16 +1,21 @@
 import api from '../api.js';
 
 class CreditCardService {
-    async getSummary() {
-        const response = await fetch(`${API_URL}/credit-cards/summary`, {
-            headers: authService.getAuthHeaders()
-        });
-        if (!response.ok) throw new Error('Falha ao buscar resumo dos cartões');
-        return response.json();
+    async getSummary(month, year) {
+        let url = '/credit-cards/summary';
+        if (month && year) {
+            url += `?month=${month}&year=${year}`;
+        }
+        const response = await api.get(url);
+        return response.data;
     }
 
-    async getAll() {
-        const response = await api.get('/credit-cards');
+    async getAll(month, year) {
+        let url = '/credit-cards';
+        if (month && year) {
+            url += `?month=${month}&year=${year}`;
+        }
+        const response = await api.get(url);
         return response.data;
     }
 
