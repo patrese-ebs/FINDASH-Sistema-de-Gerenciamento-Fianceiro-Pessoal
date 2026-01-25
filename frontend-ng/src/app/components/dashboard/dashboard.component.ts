@@ -34,24 +34,27 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
     ngOnInit() {
         this.loading = true;
-        // Safety timeout in case of network hang
-        const timeout = setTimeout(() => {
+
+        // Safety timeout: Auto-fail if taking longer than 5s
+        const timeoutId = setTimeout(() => {
             if (this.loading) {
                 console.warn('Dashboard loading timed out');
+                this.error = 'O servidor demorou para responder (Timeout). Verifique sua conexão ou se o backend está rodando.';
                 this.loading = false;
             }
         }, 5000);
 
         this.transactionService.getAll().subscribe({
             next: (data) => {
-                clearTimeout(timeout);
+                clearTimeout(timeoutId);
                 this.transactions = data || [];
                 this.calculateStats();
                 this.loading = false;
             },
             error: (err) => {
-                clearTimeout(timeout);
+                clearTimeout(timeoutId);
                 console.error('Failed to load dashboard data', err);
+                this.error = 'Erro de conexão: ' + (err.error?.message || err.statusText || 'Falha ao contatar API');
                 this.loading = false;
             }
         });
