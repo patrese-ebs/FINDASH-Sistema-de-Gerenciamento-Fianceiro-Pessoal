@@ -148,7 +148,7 @@
                     <span id="invoiceStatus" class="text-sm text-text-secondary">Aberta</span>
                     <button class="text-sm text-accent-purple hover:underline" id="filterBtn"
                         style="display: none;">Filtrar</button>
-                    <button class="text-sm text-accent-purple hover:underline">“¤ Exportar</button>
+                    <button class="text-sm text-accent-purple hover:underline">📥 Exportar</button>
                 </div>
             </div>
 
@@ -158,11 +158,11 @@
                     <thead>
                         <tr class="border-b border-dark-border">
                             <th class="text-left py-3 px-4 text-sm font-medium text-text-secondary">DATA</th>
-                            <th class="text-left py-3 px-4 text-sm font-medium text-text-secondary">DESCRIá‡áƒO</th>
+                            <th class="text-left py-3 px-4 text-sm font-medium text-text-secondary">DESCRIÇÃO</th>
                             <th class="text-left py-3 px-4 text-sm font-medium text-text-secondary">CATEGORIA</th>
                             <th class="text-left py-3 px-4 text-sm font-medium text-text-secondary">PARC.</th>
                             <th class="text-right py-3 px-4 text-sm font-medium text-text-secondary">VALOR</th>
-                            <th class="text-right py-3 px-4 text-sm font-medium text-text-secondary">Aá‡á•ES</th>
+                            <th class="text-right py-3 px-4 text-sm font-medium text-text-secondary">AÇÕES</th>
                         </tr>
                     </thead>
                     <tbody id="invoiceTableBody">
@@ -187,8 +187,8 @@
     <div id="addNewCardModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
         <div class="card max-w-md w-full m-4 fade-in">
             <div class="flex items-center justify-between mb-6">
-                <h3 class="text-xl font-bold">Novo Cartão de Crá©dito</h3>
-                <button id="closeNewCardModalBtn" class="text-text-secondary hover:text-text-primary">âœ•</button>
+                <h3 class="text-xl font-bold">Novo Cartão de Crédito</h3>
+                <button id="closeNewCardModalBtn" class="text-text-secondary hover:text-text-primary">✕</button>
             </div>
 
             <form id="newCardForm" class="space-y-4">
@@ -200,7 +200,7 @@
 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-medium mb-2">ášltimos 4 Dá­gitos</label>
+                        <label class="block text-sm font-medium mb-2">Últimos 4 Dígitos</label>
                         <input type="text" id="lastFourDigits" class="input-field w-full" placeholder="1234"
                             maxlength="4" pattern="[0-9]{4}" required>
                     </div>
@@ -218,7 +218,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium mb-2">Limite de Crá©dito</label>
+                    <label class="block text-sm font-medium mb-2">Limite de Crédito</label>
                     <input type="number" id="creditLimit" class="input-field w-full" placeholder="5000.00" step="0.01"
                         required>
                 </div>
@@ -238,7 +238,7 @@
                 </div>
 
                 <div class="bg-dark-bg rounded-lg p-3 text-sm text-text-secondary">
-                    ’¡ <strong>Dica:</strong> O melhor dia para comprar á© um dia antes do fechamento da fatura.
+                    💡 <strong>Dica:</strong> O melhor dia para comprar é um dia antes do fechamento da fatura.
                 </div>
 
                 <div class="flex gap-3 pt-4">
@@ -254,7 +254,7 @@
         <div class="card max-w-md w-full m-4 fade-in">
             <div class="flex items-center justify-between mb-6">
                 <h3 class="text-xl font-bold">Editar Cartão</h3>
-                <button id="closeEditCardModalBtn" class="text-text-secondary hover:text-text-primary">âœ•</button>
+                <button id="closeEditCardModalBtn" class="text-text-secondary hover:text-text-primary">✕</button>
             </div>
 
             <form id="editCardForm" class="space-y-4">
@@ -266,7 +266,7 @@
 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-medium mb-2">ášltimos 4 Dá­gitos</label>
+                        <label class="block text-sm font-medium mb-2">Últimos 4 Dígitos</label>
                         <input type="text" id="editLastFourDigits" class="input-field w-full" maxlength="4"
                             pattern="[0-9]{4}" required>
                     </div>
@@ -284,7 +284,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium mb-2">Limite de Crá©dito</label>
+                    <label class="block text-sm font-medium mb-2">Limite de Crédito</label>
                     <input type="number" id="editCreditLimit" class="input-field w-full" step="0.01" required>
                 </div>
 
@@ -313,7 +313,7 @@
         <div class="card max-w-md w-full m-4 fade-in">
             <div class="flex items-center justify-between mb-6">
                 <h3 class="text-xl font-bold">Nova Despesa no Cartão</h3>
-                <button id="closeModalBtn" class="text-text-secondary hover:text-text-primary">âœ•</button>
+                <button id="closeModalBtn" class="text-text-secondary hover:text-text-primary">✕</button>
             </div>
 
             <form id="transactionForm" class="space-y-4">
@@ -404,7 +404,7 @@
         <div class="card max-w-sm w-full m-4 fade-in">
             <div class="flex items-center justify-between mb-6">
                 <h3 class="text-xl font-bold">Pagar Fatura</h3>
-                <button id="closePaymentModalBtn" class="text-text-secondary hover:text-text-primary">âœ•</button>
+                <button id="closePaymentModalBtn" class="text-text-secondary hover:text-text-primary">✕</button>
             </div>
 
             <div class="mb-4">
@@ -439,7 +439,7 @@
             <div class="flex items-center justify-between mb-6">
                 <h3 class="text-xl font-bold">Editar Despesa</h3>
                 <button id="closeEditTransactionModalBtn"
-                    class="text-text-secondary hover:text-text-primary">âœ•</button>
+                    class="text-text-secondary hover:text-text-primary">✕</button>
             </div>
 
             <form id="editTransactionForm" class="space-y-4">
@@ -507,7 +507,7 @@
                     <h3 class="text-xl font-bold">Planejar Faturas Futuras</h3>
                     <p class="text-text-secondary text-sm">Defina o valor total esperado para os prá³ximos meses.</p>
                 </div>
-                <button id="closePlanInvoicesModalBtn" class="text-text-secondary hover:text-text-primary">âœ•</button>
+                <button id="closePlanInvoicesModalBtn" class="text-text-secondary hover:text-text-primary">✕</button>
             </div>
 
             <div class="mb-6">
