@@ -1,0 +1,48 @@
+<div class="min-h-screen bg-dark-bg text-text-primary font-sans antialiased">
+    <app-sidebar></app-sidebar>
+
+    <div class="ml-64 p-8">
+        <div class="flex items-center justify-between mb-8">
+            <h2 class="text-3xl font-bold">Meus Cartões</h2>
+            <button
+                class="bg-gradient-to-r from-accent-purple to-accent-blue text-white px-4 py-2 rounded-lg font-bold hover:opacity-90 transition-opacity">
+                + Novo Cartão
+            </button>
+        </div>
+
+        <div *ngIf="loading" class="flex justify-center p-12">
+            <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-accent-purple"></div>
+        </div>
+
+        <div *ngIf="!loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div *ngFor="let card of cards"
+                class="bg-dark-card border border-dark-border rounded-xl p-6 shadow-lg hover:border-accent-purple transition-colors">
+                <div class="flex justify-between items-start mb-4">
+                    <h3 class="text-xl font-bold">{{ card.name }}</h3>
+                    <span class="text-xs px-2 py-1 bg-dark-bg rounded text-text-secondary">{{ card.brand }}</span>
+                </div>
+
+                <div class="mb-6">
+                    <p class="text-text-secondary text-sm">Limite Disponível</p>
+                    <p class="text-2xl font-bold text-green-400">{{ card.limit | currency:'BRL' }}</p>
+                    <!-- TODO: Calculate actual available based on debt -->
+                </div>
+
+                <div class="flex justify-between text-sm text-text-secondary border-t border-dark-border pt-4">
+                    <div>
+                        Final: <span class="text-white font-mono">•••• {{ card.lastFourDigits }}</span>
+                    </div>
+                    <div>
+                        Vence dia: <span class="text-white">{{ card.dueDay }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div *ngIf="cards.length === 0"
+                class="col-span-full text-center p-12 border border-dashed border-dark-border rounded-xl">
+                <p class="text-text-secondary">Nenhum cartão cadastrado.</p>
+            </div>
+        </div>
+    </div>
+</div>

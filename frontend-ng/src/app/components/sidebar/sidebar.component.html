@@ -1,0 +1,41 @@
+<div class="fixed left-0 top-0 h-full w-64 bg-dark-card border-r border-dark-border p-6 slide-in">
+    <div class="mb-8">
+        <h1 class="text-2xl font-bold gradient-purple-blue bg-clip-text text-transparent">FinDash</h1>
+    </div>
+
+    <nav class="space-y-2">
+        <a routerLink="/dashboard" routerLinkActive="bg-accent-purple bg-opacity-20 text-accent-purple font-medium"
+            class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-dark-bg transition-colors text-text-secondary hover:text-text-primary cursor-pointer">
+            <span>📊</span>
+            <span>Dashboard</span>
+        </a>
+        <a routerLink="/transactions" routerLinkActive="bg-accent-purple bg-opacity-20 text-accent-purple font-medium"
+            class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-dark-bg transition-colors text-text-secondary hover:text-text-primary cursor-pointer">
+            <span>💰</span>
+            <span>Transações</span>
+        </a>
+        <a routerLink="/credit-cards" routerLinkActive="bg-accent-purple bg-opacity-20 text-accent-purple font-medium"
+            class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-dark-bg transition-colors text-text-secondary hover:text-text-primary cursor-pointer">
+            <span>💳</span>
+            <span>Cartões</span>
+        </a>
+        <a routerLink="/investments" routerLinkActive="bg-accent-purple bg-opacity-20 text-accent-purple font-medium"
+            class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-dark-bg transition-colors text-text-secondary hover:text-text-primary cursor-pointer">
+            <span>📈</span>
+            <span>Investimentos</span>
+        </a>
+        <a routerLink="/goals" routerLinkActive="bg-accent-purple bg-opacity-20 text-accent-purple font-medium"
+            class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-dark-bg transition-colors text-text-secondary hover:text-text-primary cursor-pointer">
+            <span>🎯</span>
+            <span>Metas</span>
+        </a>
+    </nav>
+
+    <div class="absolute bottom-6 left-6 right-6">
+        <button (click)="logout()"
+            class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-dark-bg transition-colors text-text-secondary hover:text-red-400">
+            <span>🚪</span>
+            <span>Sair</span>
+        </button>
+    </div>
+</div>

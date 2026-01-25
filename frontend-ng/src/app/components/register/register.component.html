@@ -1,0 +1,67 @@
+<div class="min-h-screen bg-dark-bg text-text-primary font-sans antialiased flex items-center justify-center">
+    <div class="w-full max-w-md p-8">
+        <!-- Logo -->
+        <div class="text-center mb-8">
+            <h1
+                class="text-4xl font-bold bg-gradient-to-r from-accent-purple to-accent-blue bg-clip-text text-transparent">
+                FinDash</h1>
+            <p class="text-text-secondary mt-2">Crie sua conta</p>
+        </div>
+
+        <!-- Register Card -->
+        <div class="bg-dark-card border border-dark-border rounded-xl p-6 shadow-xl fade-in">
+            <h2 class="text-2xl font-bold mb-6">Registrar</h2>
+
+            <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Nome</label>
+                    <input type="text" formControlName="name"
+                        class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-3 text-white focus:outline-none focus:border-accent-purple transition-colors"
+                        placeholder="Seu nome completo">
+                    <div *ngIf="registerForm.get('name')?.touched && registerForm.get('name')?.invalid"
+                        class="text-red-400 text-xs mt-1">
+                        Nome é obrigatório (min 2 caracteres).
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2">Email</label>
+                    <input type="email" formControlName="email"
+                        class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-3 text-white focus:outline-none focus:border-accent-purple transition-colors"
+                        placeholder="seu@email.com">
+                    <div *ngIf="registerForm.get('email')?.touched && registerForm.get('email')?.invalid"
+                        class="text-red-400 text-xs mt-1">
+                        Email válido é obrigatório.
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2">Senha</label>
+                    <input type="password" formControlName="password"
+                        class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-3 text-white focus:outline-none focus:border-accent-purple transition-colors"
+                        placeholder="••••••••">
+                    <div *ngIf="registerForm.get('password')?.touched && registerForm.get('password')?.invalid"
+                        class="text-red-400 text-xs mt-1">
+                        Senha deve ter no mínimo 6 caracteres.
+                    </div>
+                </div>
+
+                <div *ngIf="errorMessage" class="text-red-400 text-sm bg-red-400/10 p-3 rounded">
+                    {{ errorMessage }}
+                </div>
+
+                <button type="submit" [disabled]="loading"
+                    class="w-full bg-gradient-to-r from-accent-purple to-accent-blue hover:from-indigo-400 hover:to-blue-400 text-white font-bold py-3 rounded-lg shadow-lg shadow-purple-500/20 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed">
+                    {{ loading ? 'Criando conta...' : 'Criar Conta' }}
+                </button>
+            </form>
+
+            <div class="mt-6 text-center">
+                <p class="text-text-secondary text-sm">
+                    Já tem uma conta?
+                    <a routerLink="/login" class="text-accent-purple hover:underline cursor-pointer">Entrar</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

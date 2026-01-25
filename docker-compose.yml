@@ -42,7 +42,7 @@ services:
 
   frontend:
     build:
-      context: ./frontend
+      context: ./frontend-ng
       # Pass API URL at build time for Vite
       args:
         # Note: In Portainer/Compose, build args are static. 

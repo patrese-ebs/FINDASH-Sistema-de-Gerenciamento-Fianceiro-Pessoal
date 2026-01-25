@@ -1,0 +1,54 @@
+<div class="min-h-screen bg-dark-bg text-text-primary font-sans antialiased">
+    <app-sidebar></app-sidebar>
+
+    <div class="ml-64 p-8">
+        <div class="flex items-center justify-between mb-8">
+            <h2 class="text-3xl font-bold">Transações</h2>
+            <button
+                class="bg-gradient-to-r from-accent-purple to-accent-blue text-white px-4 py-2 rounded-lg font-bold hover:opacity-90 transition-opacity">
+                + Nova Transação
+            </button>
+        </div>
+
+        <div class="bg-dark-card border border-dark-border rounded-xl p-6 shadow-lg overflow-hidden">
+            <div *ngIf="loading" class="flex justify-center p-8">
+                <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-accent-purple"></div>
+            </div>
+
+            <div *ngIf="!loading" class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="text-text-secondary border-b border-dark-border">
+                            <th class="p-4 font-medium">Data</th>
+                            <th class="p-4 font-medium">Descrição</th>
+                            <th class="p-4 font-medium">Categoria</th>
+                            <th class="p-4 font-medium">Método</th>
+                            <th class="p-4 font-medium text-right">Valor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let t of transactions"
+                            class="border-b border-dark-border hover:bg-dark-bg transition-colors">
+                            <td class="p-4">{{ t.date | date:'shortDate' }}</td>
+                            <td class="p-4 font-medium">{{ t.description }}</td>
+                            <td class="p-4">
+                                <span class="px-2 py-1 bg-dark-bg rounded text-xs border border-dark-border">{{
+                                    t.category }}</span>
+                            </td>
+                            <td class="p-4 text-sm text-text-secondary">{{ t.paymentMethod }}</td>
+                            <td class="p-4 text-right font-bold"
+                                [ngClass]="{'text-green-400': t.type === 'income', 'text-red-400': t.type === 'expense'}">
+                                {{ t.amount | currency:'BRL' }}
+                            </td>
+                        </tr>
+                        <tr *ngIf="transactions.length === 0">
+                            <td colspan="5" class="p-8 text-center text-text-secondary">
+                                Nenhuma transação encontrada.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
