@@ -8,7 +8,7 @@ import { AuthService } from './auth';
   providedIn: 'root'
 })
 export class CreditCardService {
-  private apiUrl = 'http://localhost:3000/api/credit-cards';
+  private apiUrl = '/api/credit-cards';
 
   constructor(private http: HttpClient, private authService: AuthService) { }
 

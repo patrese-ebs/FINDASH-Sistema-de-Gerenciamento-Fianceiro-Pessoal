@@ -8,7 +8,7 @@ import { AuthService } from './auth';
   providedIn: 'root'
 })
 export class TransactionService {
-  private apiUrl = 'http://localhost:3000/api/expenses'; // Assuming 'expenses' covers transactions based on expenseService in js
+  private apiUrl = '/api/expenses';
   // Also checking api.js showed it calls /expenses probably. 
   // Let's assume standard REST.
 
