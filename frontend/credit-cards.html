@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meus Cartões - FinDash</title>
+    <title>Meus CartÃµes - FinDash</title>
     <link rel="stylesheet" href="/src/css/style.css">
 </head>
 
@@ -18,22 +18,22 @@
         <nav class="space-y-2">
             <a href="/dashboard.html"
                 class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-dark-bg transition-colors text-text-secondary hover:text-text-primary">
-                <span>📊</span>
+                <span>ðŸ“Š</span>
                 <span>Dashboard</span>
             </a>
             <a href="/transactions.html"
                 class="flex items-center gap-3 px-4 py-3 rounded-lg bg-accent-purple bg-opacity-20 text-accent-purple font-medium">
-                <span>💰</span>
-                <span>Transações</span>
+                <span>ðŸ’°</span>
+                <span>TransaÃ§Ãµes</span>
             </a>
             <a href="/investments.html"
                 class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-dark-bg transition-colors text-text-secondary hover:text-text-primary">
-                <span>📈</span>
+                <span>ðŸ“ˆ</span>
                 <span>Investimentos</span>
             </a>
             <a href="/goals.html"
                 class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-dark-bg transition-colors text-text-secondary hover:text-text-primary">
-                <span>🎯</span>
+                <span>ðŸŽ¯</span>
                 <span>Metas</span>
             </a>
         </nav>
@@ -41,7 +41,7 @@
         <div class="absolute bottom-6 left-6 right-6">
             <button id="logoutBtn"
                 class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-dark-bg transition-colors text-text-secondary hover:text-red-400">
-                <span>🚪</span>
+                <span>ðŸšª</span>
                 <span>Sair</span>
             </button>
         </div>
@@ -52,8 +52,8 @@
         <!-- Header -->
         <div class="flex items-center justify-between mb-8">
             <div>
-                <h2 class="text-3xl font-bold">Meus Cartões</h2>
-                <p class="text-text-secondary mt-1">Gerencie limites, faturas e parcelamentos em um só lugar.</p>
+                <h2 class="text-3xl font-bold">Meus CartÃµes</h2>
+                <p class="text-text-secondary mt-1">Gerencie limites, faturas e parcelamentos em um sÃ³ lugar.</p>
             </div>
             <div class="flex gap-3 items-center">
                 <div class="flex items-center gap-2 mr-4">
@@ -61,7 +61,7 @@
                         class="bg-dark-bg border border-dark-border rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-accent-purple transition-colors">
                         <option value="1">Janeiro</option>
                         <option value="2">Fevereiro</option>
-                        <option value="3">Março</option>
+                        <option value="3">MarÃ§o</option>
                         <option value="4">Abril</option>
                         <option value="5">Maio</option>
                         <option value="6">Junho</option>
@@ -79,8 +79,8 @@
                         <option value="2024">2024</option>
                     </select>
                 </div>
-                <button id="planInvoicesBtn" class="btn-secondary">📅 Planejar Faturas</button>
-                <button id="addNewCardBtn" class="btn-secondary">+ Novo Cartão</button>
+                <button id="planInvoicesBtn" class="btn-secondary">ðŸ“… Planejar Faturas</button>
+                <button id="addNewCardBtn" class="btn-secondary">+ Novo CartÃ£o</button>
                 <button id="addCardBtn" class="btn-primary">+ Nova Despesa</button>
             </div>
         </div>
@@ -93,15 +93,15 @@
                 <div class="stat-value text-white" id="summaryLimit">R$ 0,00</div>
             </div>
             <div class="stat-card fade-in" style="animation-delay: 0.2s">
-                <div class="stat-label">Total Gasto (Dívida)</div>
+                <div class="stat-label">Total Gasto (DÃ­vida)</div>
                 <div class="stat-value text-red-400" id="summaryLiability">R$ 0,00</div>
             </div>
             <div class="stat-card fade-in" style="animation-delay: 0.3s">
-                <div class="stat-label">Disponível Total</div>
+                <div class="stat-label">DisponÃ­vel Total</div>
                 <div class="stat-value text-green-400" id="summaryAvailable">R$ 0,00</div>
             </div>
             <div class="stat-card fade-in" style="animation-delay: 0.4s">
-                <div class="stat-label">Faturas Abertas (Mês)</div>
+                <div class="stat-label">Faturas Abertas (MÃªs)</div>
                 <div class="stat-value text-accent-gold" id="summaryDue">R$ 0,00</div>
             </div>
         </div>
@@ -125,7 +125,7 @@
                             class="bg-dark-bg border border-dark-border rounded px-3 py-1 text-sm text-white focus:outline-none focus:border-accent-purple transition-colors">
                             <option value="1">Janeiro</option>
                             <option value="2">Fevereiro</option>
-                            <option value="3">Março</option>
+                            <option value="3">MarÃ§o</option>
                             <option value="4">Abril</option>
                             <option value="5">Maio</option>
                             <option value="6">Junho</option>
@@ -148,7 +148,7 @@
                     <span id="invoiceStatus" class="text-sm text-text-secondary">Aberta</span>
                     <button class="text-sm text-accent-purple hover:underline" id="filterBtn"
                         style="display: none;">Filtrar</button>
-                    <button class="text-sm text-accent-purple hover:underline">📤 Exportar</button>
+                    <button class="text-sm text-accent-purple hover:underline">ðŸ“¤ Exportar</button>
                 </div>
             </div>
 
@@ -158,11 +158,11 @@
                     <thead>
                         <tr class="border-b border-dark-border">
                             <th class="text-left py-3 px-4 text-sm font-medium text-text-secondary">DATA</th>
-                            <th class="text-left py-3 px-4 text-sm font-medium text-text-secondary">DESCRIÇÃO</th>
+                            <th class="text-left py-3 px-4 text-sm font-medium text-text-secondary">DESCRIÃ‡ÃƒO</th>
                             <th class="text-left py-3 px-4 text-sm font-medium text-text-secondary">CATEGORIA</th>
                             <th class="text-left py-3 px-4 text-sm font-medium text-text-secondary">PARC.</th>
                             <th class="text-right py-3 px-4 text-sm font-medium text-text-secondary">VALOR</th>
-                            <th class="text-right py-3 px-4 text-sm font-medium text-text-secondary">AÇÕES</th>
+                            <th class="text-right py-3 px-4 text-sm font-medium text-text-secondary">AÃ‡Ã•ES</th>
                         </tr>
                     </thead>
                     <tbody id="invoiceTableBody">
@@ -173,10 +173,10 @@
 
             <div class="mt-6 pt-6 border-t border-dark-border">
                 <div class="flex items-center justify-between text-sm mb-2">
-                    <span class="text-text-secondary">Mostrando 5 de 142 transações</span>
+                    <span class="text-text-secondary">Mostrando 5 de 142 transaÃ§Ãµes</span>
                     <div class="flex gap-2">
                         <button class="px-3 py-1 rounded hover:bg-dark-bg">Anterior</button>
-                        <button class="px-3 py-1 rounded hover:bg-dark-bg">Próximo</button>
+                        <button class="px-3 py-1 rounded hover:bg-dark-bg">PrÃ³ximo</button>
                     </div>
                 </div>
             </div>
@@ -187,20 +187,20 @@
     <div id="addNewCardModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
         <div class="card max-w-md w-full m-4 fade-in">
             <div class="flex items-center justify-between mb-6">
-                <h3 class="text-xl font-bold">Novo Cartão de Crédito</h3>
-                <button id="closeNewCardModalBtn" class="text-text-secondary hover:text-text-primary">✕</button>
+                <h3 class="text-xl font-bold">Novo CartÃ£o de CrÃ©dito</h3>
+                <button id="closeNewCardModalBtn" class="text-text-secondary hover:text-text-primary">âœ•</button>
             </div>
 
             <form id="newCardForm" class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium mb-2">Nome do Cartão</label>
+                    <label class="block text-sm font-medium mb-2">Nome do CartÃ£o</label>
                     <input type="text" id="cardName" class="input-field w-full" placeholder="Ex: Nubank Roxinho"
                         required>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-medium mb-2">Últimos 4 Dígitos</label>
+                        <label class="block text-sm font-medium mb-2">Ãšltimos 4 DÃ­gitos</label>
                         <input type="text" id="lastFourDigits" class="input-field w-full" placeholder="1234"
                             maxlength="4" pattern="[0-9]{4}" required>
                     </div>
@@ -218,7 +218,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium mb-2">Limite de Crédito</label>
+                    <label class="block text-sm font-medium mb-2">Limite de CrÃ©dito</label>
                     <input type="number" id="creditLimit" class="input-field w-full" placeholder="5000.00" step="0.01"
                         required>
                 </div>
@@ -238,12 +238,12 @@
                 </div>
 
                 <div class="bg-dark-bg rounded-lg p-3 text-sm text-text-secondary">
-                    💡 <strong>Dica:</strong> O melhor dia para comprar é um dia antes do fechamento da fatura.
+                    ðŸ’¡ <strong>Dica:</strong> O melhor dia para comprar Ã© um dia antes do fechamento da fatura.
                 </div>
 
                 <div class="flex gap-3 pt-4">
                     <button type="button" id="cancelNewCardBtn" class="btn-secondary flex-1">Cancelar</button>
-                    <button type="submit" class="btn-primary flex-1">Adicionar Cartão</button>
+                    <button type="submit" class="btn-primary flex-1">Adicionar CartÃ£o</button>
                 </div>
             </form>
         </div>
@@ -253,20 +253,20 @@
     <div id="editCardModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
         <div class="card max-w-md w-full m-4 fade-in">
             <div class="flex items-center justify-between mb-6">
-                <h3 class="text-xl font-bold">Editar Cartão</h3>
-                <button id="closeEditCardModalBtn" class="text-text-secondary hover:text-text-primary">✕</button>
+                <h3 class="text-xl font-bold">Editar CartÃ£o</h3>
+                <button id="closeEditCardModalBtn" class="text-text-secondary hover:text-text-primary">âœ•</button>
             </div>
 
             <form id="editCardForm" class="space-y-4">
                 <input type="hidden" id="editCardId">
                 <div>
-                    <label class="block text-sm font-medium mb-2">Nome do Cartão</label>
+                    <label class="block text-sm font-medium mb-2">Nome do CartÃ£o</label>
                     <input type="text" id="editCardName" class="input-field w-full" required>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-medium mb-2">Últimos 4 Dígitos</label>
+                        <label class="block text-sm font-medium mb-2">Ãšltimos 4 DÃ­gitos</label>
                         <input type="text" id="editLastFourDigits" class="input-field w-full" maxlength="4"
                             pattern="[0-9]{4}" required>
                     </div>
@@ -284,7 +284,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium mb-2">Limite de Crédito</label>
+                    <label class="block text-sm font-medium mb-2">Limite de CrÃ©dito</label>
                     <input type="number" id="editCreditLimit" class="input-field w-full" step="0.01" required>
                 </div>
 
@@ -302,7 +302,7 @@
 
                 <div class="flex gap-3 pt-4">
                     <button type="button" id="cancelEditCardBtn" class="btn-secondary flex-1">Cancelar</button>
-                    <button type="submit" class="btn-primary flex-1">Salvar Alterações</button>
+                    <button type="submit" class="btn-primary flex-1">Salvar AlteraÃ§Ãµes</button>
                 </div>
             </form>
         </div>
@@ -312,20 +312,20 @@
     <div id="addTransactionModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
         <div class="card max-w-md w-full m-4 fade-in">
             <div class="flex items-center justify-between mb-6">
-                <h3 class="text-xl font-bold">Nova Despesa no Cartão</h3>
-                <button id="closeModalBtn" class="text-text-secondary hover:text-text-primary">✕</button>
+                <h3 class="text-xl font-bold">Nova Despesa no CartÃ£o</h3>
+                <button id="closeModalBtn" class="text-text-secondary hover:text-text-primary">âœ•</button>
             </div>
 
             <form id="transactionForm" class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium mb-2">Cartão</label>
+                    <label class="block text-sm font-medium mb-2">CartÃ£o</label>
                     <select id="cardSelect" class="input-field w-full" required>
-                        <option value="">Selecione um cartão</option>
+                        <option value="">Selecione um cartÃ£o</option>
                     </select>
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium mb-2">Descrição</label>
+                    <label class="block text-sm font-medium mb-2">DescriÃ§Ã£o</label>
                     <input type="text" id="description" class="input-field w-full"
                         placeholder="Ex: TV Samsung 55 polegadas" required>
                 </div>
@@ -349,7 +349,7 @@
                 <div>
                     <label class="block text-sm font-medium mb-2">Parcelas</label>
                     <select id="installments" class="input-field w-full" required>
-                        <option value="1">1x (à vista)</option>
+                        <option value="1">1x (Ã  vista)</option>
                         <option value="2">2x</option>
                         <option value="3">3x</option>
                         <option value="4">4x</option>
@@ -377,12 +377,12 @@
                 <div>
                     <label class="block text-sm font-medium mb-2">Categoria</label>
                     <select id="category" class="input-field w-full" required>
-                        <option value="Eletrônicos">📱 Eletrônicos</option>
-                        <option value="Alimentação">🍔 Alimentação</option>
-                        <option value="Transporte">🚗 Transporte</option>
-                        <option value="Casa">🏠 Casa</option>
-                        <option value="Serviços">💼 Serviços</option>
-                        <option value="Outros">📦 Outros</option>
+                        <option value="EletrÃ´nicos">ðŸ“± EletrÃ´nicos</option>
+                        <option value="AlimentaÃ§Ã£o">ðŸ” AlimentaÃ§Ã£o</option>
+                        <option value="Transporte">ðŸš— Transporte</option>
+                        <option value="Casa">ðŸ  Casa</option>
+                        <option value="ServiÃ§os">ðŸ’¼ ServiÃ§os</option>
+                        <option value="Outros">ðŸ“¦ Outros</option>
                     </select>
                 </div>
 
@@ -404,7 +404,7 @@
         <div class="card max-w-sm w-full m-4 fade-in">
             <div class="flex items-center justify-between mb-6">
                 <h3 class="text-xl font-bold">Pagar Fatura</h3>
-                <button id="closePaymentModalBtn" class="text-text-secondary hover:text-text-primary">✕</button>
+                <button id="closePaymentModalBtn" class="text-text-secondary hover:text-text-primary">âœ•</button>
             </div>
 
             <div class="mb-4">
@@ -422,7 +422,7 @@
                     <label class="block text-sm font-medium mb-2">Valor a Pagar</label>
                     <input type="number" id="paymentAmount" class="input-field w-full" step="0.01" required>
                     <p class="text-xs text-text-secondary mt-1 hidden" id="partialPaymentHint">Pagamento parcial: O
-                        restante será jogado para o próximo mês.</p>
+                        restante serÃ¡ jogado para o prÃ³ximo mÃªs.</p>
                 </div>
 
                 <div class="flex gap-3 pt-4">
@@ -438,7 +438,7 @@
         <div class="card max-w-md w-full m-4 fade-in">
             <div class="flex items-center justify-between mb-6">
                 <h3 class="text-xl font-bold">Editar Despesa</h3>
-                <button id="closeEditTransactionModalBtn" class="text-text-secondary hover:text-text-primary">✕</button>
+                <button id="closeEditTransactionModalBtn" class="text-text-secondary hover:text-text-primary">âœ•</button>
             </div>
 
             <form id="editTransactionForm" class="space-y-4">
@@ -446,7 +446,7 @@
                 <input type="hidden" id="editTransactionCardId">
 
                 <div>
-                    <label class="block text-sm font-medium mb-2">Descrição</label>
+                    <label class="block text-sm font-medium mb-2">DescriÃ§Ã£o</label>
                     <input type="text" id="editDescription" class="input-field w-full" required>
                 </div>
 
@@ -458,7 +458,7 @@
                 <div>
                     <label class="block text-sm font-medium mb-2">Parcelas</label>
                     <select id="editInstallments" class="input-field w-full" required>
-                        <option value="1">1x (à vista)</option>
+                        <option value="1">1x (Ã  vista)</option>
                         <option value="2">2x</option>
                         <option value="3">3x</option>
                         <option value="4">4x</option>
@@ -476,12 +476,12 @@
                 <div>
                     <label class="block text-sm font-medium mb-2">Categoria</label>
                     <select id="editCategory" class="input-field w-full" required>
-                        <option value="Eletrônicos">📱 Eletrônicos</option>
-                        <option value="Alimentação">🍔 Alimentação</option>
-                        <option value="Transporte">🚗 Transporte</option>
-                        <option value="Casa">🏠 Casa</option>
-                        <option value="Serviços">💼 Serviços</option>
-                        <option value="Outros">📦 Outros</option>
+                        <option value="EletrÃ´nicos">ðŸ“± EletrÃ´nicos</option>
+                        <option value="AlimentaÃ§Ã£o">ðŸ” AlimentaÃ§Ã£o</option>
+                        <option value="Transporte">ðŸš— Transporte</option>
+                        <option value="Casa">ðŸ  Casa</option>
+                        <option value="ServiÃ§os">ðŸ’¼ ServiÃ§os</option>
+                        <option value="Outros">ðŸ“¦ Outros</option>
                     </select>
                 </div>
 
@@ -492,7 +492,7 @@
 
                 <div class="flex gap-3 pt-4">
                     <button type="button" id="cancelEditTransactionBtn" class="btn-secondary flex-1">Cancelar</button>
-                    <button type="submit" class="btn-primary flex-1">Salvar Alterações</button>
+                    <button type="submit" class="btn-primary flex-1">Salvar AlteraÃ§Ãµes</button>
                 </div>
             </form>
         </div>
@@ -504,13 +504,13 @@
             <div class="flex items-center justify-between mb-6">
                 <div>
                     <h3 class="text-xl font-bold">Planejar Faturas Futuras</h3>
-                    <p class="text-text-secondary text-sm">Defina o valor total esperado para os próximos meses.</p>
+                    <p class="text-text-secondary text-sm">Defina o valor total esperado para os prÃ³ximos meses.</p>
                 </div>
-                <button id="closePlanInvoicesModalBtn" class="text-text-secondary hover:text-text-primary">✕</button>
+                <button id="closePlanInvoicesModalBtn" class="text-text-secondary hover:text-text-primary">âœ•</button>
             </div>
 
             <div class="mb-6">
-                <label class="block text-sm font-medium mb-2">Cartão para Planejamento</label>
+                <label class="block text-sm font-medium mb-2">CartÃ£o para Planejamento</label>
                 <select id="planCardSelect" class="input-field w-full md:w-1/2">
                     <!-- Populated by JS -->
                 </select>
@@ -656,7 +656,7 @@
 
                 // Populate card select (Modal)
                 const cardSelect = document.getElementById('cardSelect');
-                cardSelect.innerHTML = '<option value="" class="bg-dark-card text-white">Selecione um cartão</option>' +
+                cardSelect.innerHTML = '<option value="" class="bg-dark-card text-white">Selecione um cartÃ£o</option>' +
                     cards.map(card => `<option value="${card.id}" class="bg-dark-card text-white">${card.name} - ${card.brand}</option>`).join('');
 
                 // Populate invoice card filter
@@ -713,25 +713,25 @@
               <div class="font-bold text-lg mb-1">${card.name}</div>
               <div class="text-sm text-text-secondary flex items-center gap-2">
                 <span>${card.brand}</span>
-                <span class="text-xs">•</span>
-                <span>•••• ${card.lastFourDigits}</span>
+                <span class="text-xs">â€¢</span>
+                <span>â€¢â€¢â€¢â€¢ ${card.lastFourDigits}</span>
               </div>
             </div>
             <div class="relative card-menu">
-                <button class="text-text-secondary hover:text-text-primary p-1 rounded hover:bg-dark-bg" onclick="toggleCardMenu(event, '${card.id}')">⋮</button>
+                <button class="text-text-secondary hover:text-text-primary p-1 rounded hover:bg-dark-bg" onclick="toggleCardMenu(event, '${card.id}')">â‹®</button>
                 <div id="cardMenu-${card.id}" class="hidden absolute right-0 top-8 bg-dark-card border border-dark-border rounded-lg shadow-xl z-10 w-32 py-1">
-                    <button onclick="openEditCardModal('${card.id}')" class="w-full text-left px-4 py-2 text-sm text-text-secondary hover:text-text-primary hover:bg-dark-bg">✏️ Editar</button>
-                    <button onclick="if(confirm('Tem certeza que deseja excluir?')) deleteCard('${card.id}')" class="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-dark-bg">🗑️ Excluir</button>
+                    <button onclick="openEditCardModal('${card.id}')" class="w-full text-left px-4 py-2 text-sm text-text-secondary hover:text-text-primary hover:bg-dark-bg">âœï¸ Editar</button>
+                    <button onclick="if(confirm('Tem certeza que deseja excluir?')) deleteCard('${card.id}')" class="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-dark-bg">ðŸ—‘ï¸ Excluir</button>
                 </div>
             </div>
           </div>
 
           <div class="mb-4">
-            <div class="text-sm text-text-secondary">Fatura Atual (Mês Atual)</div>
+            <div class="text-sm text-text-secondary">Fatura Atual (MÃªs Atual)</div>
             <div class="text-2xl font-bold text-white">${formatCurrency(currentInvoiceAmount)}</div>
             
             <div class="text-xs text-text-secondary mt-1 flex justify-between">
-                <span>Total Comprado (Dívida Total):</span>
+                <span>Total Comprado (DÃ­vida Total):</span>
                 <span>${formatCurrency(totalLiability)}</span>
             </div>
           </div>
@@ -745,8 +745,8 @@
 
           <div class="mt-4 pt-4 border-t border-dark-border">
             <div class="flex items-center justify-between text-sm mb-2">
-              <span class="text-text-secondary">Limite Disponível</span>
-              <span class="${isHealthy ? 'text-green-400' : 'text-red-400'} font-medium">${isHealthy ? 'Saudável' : 'Crítico'}</span>
+              <span class="text-text-secondary">Limite DisponÃ­vel</span>
+              <span class="${isHealthy ? 'text-green-400' : 'text-red-400'} font-medium">${isHealthy ? 'SaudÃ¡vel' : 'CrÃ­tico'}</span>
             </div>
             
             <div class="mb-2">
@@ -755,7 +755,7 @@
                 <span>${formatCurrency(totalLiability)}</span>
               </div>
               <div class="flex items-center justify-between text-sm">
-                <span class="text-text-secondary">Disponível</span>
+                <span class="text-text-secondary">DisponÃ­vel</span>
                 <span class="${isHealthy ? 'text-green-400' : 'text-red-400'}">${formatCurrency(availableCredit)}</span>
               </div>
             </div>
@@ -857,7 +857,7 @@
                 await creditCardService.delete(cardId);
                 loadCreditCards();
             } catch (error) {
-                alert('Erro ao excluir cartão');
+                alert('Erro ao excluir cartÃ£o');
             }
         };
 
@@ -910,7 +910,7 @@
             let currentMonth = today.getMonth() + 1; // 0-based -> 1-based logic
             let currentYear = today.getFullYear();
 
-            const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+            const monthNames = ["Janeiro", "Fevereiro", "MarÃ§o", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
 
             for (let i = 0; i < 12; i++) {
                 // Calculate next months
@@ -928,7 +928,7 @@
                 div.innerHTML = `
                     <div class="flex justify-between items-center mb-2">
                         <span class="font-bold text-white">${monthName} ${y}</span>
-                        <span class="text-xs text-text-secondary">Mês ${m}</span>
+                        <span class="text-xs text-text-secondary">MÃªs ${m}</span>
                     </div>
                     <div class="relative">
                         <span class="absolute left-3 top-2.5 text-text-secondary">R$</span>
@@ -956,7 +956,7 @@
                 e.preventDefault();
                 const cardId = planCardSelect.value;
                 if (!cardId) {
-                    alert('Selecione um cartão');
+                    alert('Selecione um cartÃ£o');
                     return;
                 }
 
@@ -987,86 +987,6 @@
                 }
             });
         }
-
-
-
-
-        function generatePlanGrid() {
-            planInvoicesGrid.innerHTML = '';
-            const today = new Date();
-            let currentMonth = today.getMonth() + 1; // 0-based -> 1-based logic
-            let currentYear = today.getFullYear();
-
-            const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
-
-            for (let i = 0; i < 12; i++) {
-                // Calculate next months
-                let m = currentMonth + i;
-                let y = currentYear;
-                if (m > 12) {
-                    y += Math.floor((m - 1) / 12);
-                    m = ((m - 1) % 12) + 1;
-                }
-
-                const monthName = monthNames[m - 1];
-
-                const div = document.createElement('div');
-                div.className = 'bg-dark-bg p-4 rounded-lg border border-dark-border';
-                div.innerHTML = `
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="font-bold text-white">${monthName} ${y}</span>
-                        <span class="text-xs text-text-secondary">Mês ${m}</span>
-                    </div>
-                    <div class="relative">
-                        <span class="absolute left-3 top-2.5 text-text-secondary">R$</span>
-                        <input type="number" step="0.01" name="plan_amount_${m}_${y}" 
-                            class="w-full bg-dark-card border border-dark-border rounded px-3 py-2 pl-10 text-white focus:outline-none focus:border-accent-purple"
-                            placeholder="0,00">
-                    </div>
-                `;
-                planInvoicesGrid.appendChild(div);
-            }
-        }
-
-        planInvoicesBtn.addEventListener('click', openPlanInvoicesModal);
-        closePlanInvoicesModalBtn.addEventListener('click', closePlanInvoicesModal);
-        cancelPlanInvoicesBtn.addEventListener('click', closePlanInvoicesModal);
-
-        planInvoicesForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const cardId = planCardSelect.value;
-            if (!cardId) {
-                alert('Selecione um cartão');
-                return;
-            }
-
-            const plans = [];
-            const inputs = planInvoicesGrid.querySelectorAll('input');
-            inputs.forEach(input => {
-                const val = parseFloat(input.value);
-                if (val > 0) {
-                    // Extract month and year from name "plan_amount_M_Y"
-                    const parts = input.name.split('_');
-                    const m = parseInt(parts[2]);
-                    const y = parseInt(parts[3]);
-                    plans.push({ month: m, year: y, amount: val });
-                }
-            });
-
-            if (plans.length === 0) {
-                alert('Preencha pelo menos um valor maior que zero.');
-                return;
-            }
-
-            try {
-                await creditCardService.planInvoices(cardId, plans);
-                alert('Planejamento salvo com sucesso!');
-                closePlanInvoicesModal();
-                loadCreditCards(); // Reload to show new totals
-            } catch (error) {
-                alert('Erro ao salvar planejamento: ' + error.message);
-            }
-        });
 
 
         // Open Edit Transaction Modal (Made global)
@@ -1144,9 +1064,9 @@
                 editCardModal.classList.add('hidden');
                 editCardModal.classList.remove('flex');
                 loadCreditCards();
-                alert('Cartão atualizado com sucesso!');
+                alert('CartÃ£o atualizado com sucesso!');
             } catch (error) {
-                alert('Erro ao atualizar cartão: ' + error.message);
+                alert('Erro ao atualizar cartÃ£o: ' + error.message);
             }
         });
 
@@ -1206,7 +1126,7 @@
                 if (payBtn) {
                     // Update UI based on status
                     if (invoice.isPaid) {
-                        statusSpan.textContent = 'Paga ✅';
+                        statusSpan.textContent = 'Paga âœ…';
                         statusSpan.className = 'text-sm text-green-400 font-bold';
                         payBtn.textContent = 'Reabrir Fatura';
                         payBtn.className = 'text-sm text-red-400 hover:underline ml-2 font-bold';
@@ -1233,7 +1153,7 @@
           <tr class="border-b border-dark-border hover:bg-dark-bg transition-colors">
             <td class="py-3 px-4">
               <div class="flex items-center gap-2">
-                <span class="text-sm">📅</span>
+                <span class="text-sm">ðŸ“…</span>
                 <span class="text-sm">${new Date(item.purchaseDate).toLocaleDateString('pt-BR')}</span>
               </div>
             </td>
@@ -1255,11 +1175,11 @@
             <td class="py-3 px-4 text-right">
                 <div class="flex items-center justify-end gap-2">
                     <button onclick="deleteCardTransaction('${idToLoad}', '${item.id || item.transactionId}')" class="text-red-400 hover:text-red-300 p-1 rounded hover:bg-red-400 hover:bg-opacity-10" title="Excluir">
-                        🗑️
+                        ðŸ—‘ï¸
                     </button>
                     <!-- Edit button wired to openEditTransactionModal -->
                     <button onclick="openEditTransactionModal('${idToLoad}', '${encodeURIComponent(JSON.stringify(item))}')" class="text-text-secondary hover:text-text-primary p-1 rounded hover:bg-dark-bg" title="Editar">
-                        ✏️
+                        âœï¸
                     </button>
                 </div>
             </td>
@@ -1376,9 +1296,9 @@
                 newCardModal.classList.remove('flex');
                 document.getElementById('newCardForm').reset();
                 loadCreditCards();
-                alert('Cartão adicionado com sucesso!');
+                alert('CartÃ£o adicionado com sucesso!');
             } catch (error) {
-                alert('Erro ao adicionar cartão: ' + error.message);
+                alert('Erro ao adicionar cartÃ£o: ' + error.message);
             }
         });
 
