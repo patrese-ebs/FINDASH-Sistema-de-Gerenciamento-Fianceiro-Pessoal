@@ -22,12 +22,23 @@ export class CreditCardsComponent implements OnInit {
 
     loadCards() {
         this.loading = true;
+
+        // Safety timeout
+        const timeoutId = setTimeout(() => {
+            if (this.loading) {
+                console.warn('Cards loading timed out');
+                this.loading = false;
+            }
+        }, 5000);
+
         this.cardService.getAll().subscribe({
             next: (data) => {
+                clearTimeout(timeoutId);
                 this.cards = data;
                 this.loading = false;
             },
             error: (err) => {
+                clearTimeout(timeoutId);
                 console.error('Failed to load cards', err);
                 this.loading = false;
             }
