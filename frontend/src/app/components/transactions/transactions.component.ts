@@ -68,31 +68,39 @@ export class TransactionsComponent implements OnInit {
         });
     }
 
-    // Computed Values
+    // Helper to filter transactions by selected month/year
+    private getMonthTransactions() {
+        return this.transactions.filter(t => {
+            const [year, month] = t.date.toString().split('-').map(Number);
+            return month === this.selectedMonth && year === this.selectedYear;
+        });
+    }
+
+    // Computed Values - Now filtered by selected month
     get totalIncome() {
-        return this.transactions
+        return this.getMonthTransactions()
             .filter(t => t.type === 'income')
             .reduce((sum, t) => sum + Number(t.amount), 0);
     }
 
     get receivedIncome() {
-        return this.transactions
+        return this.getMonthTransactions()
             .filter(t => t.type === 'income' && t.isPaid)
             .reduce((sum, t) => sum + Number(t.amount), 0);
     }
 
     get predictedIncome() {
-        return this.totalIncome; // "Previsto" is usually total including pending
+        return this.totalIncome; // "Previsto" is total for the month
     }
 
     get totalExpense() {
-        return this.transactions
+        return this.getMonthTransactions()
             .filter(t => t.type === 'expense')
             .reduce((sum, t) => sum + Number(t.amount), 0);
     }
 
     get paidExpense() {
-        return this.transactions
+        return this.getMonthTransactions()
             .filter(t => t.type === 'expense' && t.isPaid)
             .reduce((sum, t) => sum + Number(t.amount), 0);
     }
@@ -102,26 +110,24 @@ export class TransactionsComponent implements OnInit {
     }
 
     get balance() {
-        // Balance = Realized Income - Realized Expense? Or Predicted?
-        // Usually Balance is "What I have left".
-        // Let's use Realized Income - Realized Expense for "Current Balance"
-        // But user might want "Predicted Balance".
-        // Let's keep simple: Total Income - Total Expense for now, or match user request?
-        // User asked for specific breakdown cards. The Balance card wasn't explicitly detailed to change.
-        // I will keep balance as Total - Total for now, or maybe Realized Income - Paid Expense.
+        // Balance for the selected month: Total Income - Total Expense
         return this.totalIncome - this.totalExpense;
     }
 
     toggleStatus(t: Transaction) {
         const newStatus = !t.isPaid;
-        // Optimistic
+        // Optimistic update
         t.isPaid = newStatus;
 
-        this.transactionService.update(t.id!, { isPaid: newStatus }).subscribe({
+        // Include type so service knows which endpoint to use
+        this.transactionService.update(t.id!, { isPaid: newStatus, type: t.type }).subscribe({
+            next: () => {
+                // Success - status was updated
+            },
             error: (err) => {
                 console.error('Failed to update status', err);
-                t.isPaid = !newStatus; // Revert
-                // Use a toast or alert service ideally
+                t.isPaid = !newStatus; // Revert on error
+                alert('Erro ao atualizar status');
             }
         });
     }

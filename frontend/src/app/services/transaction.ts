@@ -29,7 +29,7 @@ export class TransactionService {
         const exp: Transaction[] = expenses.map(e => ({
           id: e.id,
           description: e.description,
-          amount: Number(e.amount), // Expenses usually positive in DB but treated as expense
+          amount: Number(e.amount),
           type: 'expense',
           category: e.category,
           date: e.date,
@@ -44,10 +44,10 @@ export class TransactionService {
           description: i.description,
           amount: Number(i.amount),
           type: 'income',
-          category: i.category || 'Salário', // Default category if missing
+          category: i.category || 'Salário',
           date: i.date,
-          paymentMethod: 'pix', // Incomes might not have method, default?
-          isPaid: i.isReceived, // Incomes use isReceived usually? Checking logic needed
+          paymentMethod: 'pix',
+          isPaid: i.isPaid, // Backend Income model uses isPaid directly
           userId: i.userId
         }));
 
@@ -58,35 +58,15 @@ export class TransactionService {
 
   create(transaction: Transaction): Observable<Transaction> {
     const url = transaction.type === 'income' ? this.incomesUrl : this.expensesUrl;
-    // Backend expects specific payloads probably, but let's try sending common fields
-    // IncomeController usually expects: description, amount, date, category?
-    // ExpenseController: description, amount, date, category, paymentMethod, isPaid?
-
-    // Map 'isPaid' to 'isReceived' for income if necessary
-    const payload = { ...transaction };
-    if (transaction.type === 'income') {
-      (payload as any).isReceived = transaction.isPaid;
-    }
-
-    return this.http.post<Transaction>(url, payload, { headers: this.getHeaders() });
+    // Backend uses isPaid for both incomes and expenses
+    return this.http.post<Transaction>(url, transaction, { headers: this.getHeaders() });
   }
 
   update(id: string, data: Partial<Transaction>): Observable<Transaction> {
-    // This is tricky because we don't know if ID refers to Income or Expense just by ID.
-    // But `data` usually comes from a fetched object which we tagged with 'type'.
     const type = data.type;
-    // If type is missing in partial update, we have a problem. 
-    // Component usually passes the object or we need to know type.
-    // For now, assume component passes type or we try one? 
-    // Actually, let's assume the component knows.
-
     const url = (type === 'income') ? `${this.incomesUrl}/${id}` : `${this.expensesUrl}/${id}`;
 
-    const payload = { ...data };
-    if (type === 'income' && data.isPaid !== undefined) {
-      (payload as any).isReceived = data.isPaid;
-    }
-
-    return this.http.patch<Transaction>(url, payload, { headers: this.getHeaders() });
+    // Backend uses isPaid for both incomes and expenses
+    return this.http.patch<Transaction>(url, data, { headers: this.getHeaders() });
   }
 }
