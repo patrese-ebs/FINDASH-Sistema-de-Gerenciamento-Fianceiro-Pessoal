@@ -17,6 +17,7 @@ export class TransactionsComponent implements OnInit {
     showModal: boolean = false;
     transactionForm: FormGroup;
     submitting: boolean = false;
+    editingTransactionId: string | null = null; // Track editing state
 
     constructor(
         private transactionService: TransactionService,
@@ -216,11 +217,31 @@ export class TransactionsComponent implements OnInit {
 
     openModal() {
         this.showModal = true;
+        this.editingTransactionId = null; // access check
         this.transactionForm.reset({
             type: 'expense',
             category: 'Outros',
             paymentMethod: 'pix',
-            date: new Date().toISOString().split('T')[0]
+            date: new Date().toISOString().split('T')[0],
+            description: '',
+            amount: 0
+        });
+    }
+
+    editTransaction(t: Transaction) {
+        this.showModal = true;
+        this.editingTransactionId = t.id!;
+
+        // Format date to YYYY-MM-DD
+        const dateStr = t.date.toString().split('T')[0];
+
+        this.transactionForm.patchValue({
+            description: t.description,
+            amount: Math.abs(t.amount), // Show positive
+            type: t.type,
+            category: t.category,
+            paymentMethod: t.paymentMethod,
+            date: dateStr
         });
     }
 
@@ -243,17 +264,43 @@ export class TransactionsComponent implements OnInit {
             formValue.amount = -formValue.amount;
         }
 
-        this.transactionService.create(formValue).subscribe({
-            next: (newTx) => {
-                this.transactions.unshift(newTx); // Add to top
-                this.submitting = false;
-                this.closeModal();
-            },
-            error: (err) => {
-                console.error('Failed to create transaction', err);
-                this.submitting = false;
-                alert('Erro ao criar transação.');
-            }
-        });
+        if (this.editingTransactionId) {
+            this.transactionService.update(this.editingTransactionId, formValue).subscribe({
+                next: (updatedTx) => {
+                    // Update list locally
+                    const index = this.transactions.findIndex(t => t.id === this.editingTransactionId);
+                    if (index !== -1) {
+                        this.transactions[index] = { ...this.transactions[index], ...updatedTx, isPaid: this.transactions[index].isPaid };
+                        // Note: Backend might return isReceived for income, assume service normalized it or we keep existing isPaid if not in response
+                        // Actually service getAll normalizes, but update response might be raw.
+                        // Let's reload or safe merge.
+
+                        // Better: Reload to be safe with normalization or re-normalize locally
+                        this.loadTransactions();
+                    }
+                    this.submitting = false;
+                    this.closeModal();
+                },
+                error: (err) => {
+                    console.error('Failed to update', err);
+                    this.submitting = false;
+                    alert('Erro ao atualizar.');
+                }
+            });
+        } else {
+            this.transactionService.create(formValue).subscribe({
+                next: (newTx) => {
+                    // this.transactions.unshift(newTx); // Reload is safer for order/normalization
+                    this.loadTransactions();
+                    this.submitting = false;
+                    this.closeModal();
+                },
+                error: (err) => {
+                    console.error('Failed to create transaction', err);
+                    this.submitting = false;
+                    alert('Erro ao criar transação.');
+                }
+            });
+        }
     }
 }

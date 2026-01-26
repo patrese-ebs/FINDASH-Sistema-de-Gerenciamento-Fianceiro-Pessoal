@@ -36,6 +36,20 @@ export class CreditCardsComponent implements OnInit {
     planningForm: FormGroup;
     planningMonths = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
+    // Invoice View Modal
+    showInvoiceModal: boolean = false;
+    invoiceMonth: number = new Date().getMonth() + 1;
+    invoiceYear: number = new Date().getFullYear();
+    invoiceTotal: number = 0;
+    invoiceStatus: 'paid' | 'open' | 'closed' = 'open';
+    viewingCard: CreditCard | null = null;
+    months = [
+        { val: 1, label: 'Janeiro' }, { val: 2, label: 'Fevereiro' }, { val: 3, label: 'Março' },
+        { val: 4, label: 'Abril' }, { val: 5, label: 'Maio' }, { val: 6, label: 'Junho' },
+        { val: 7, label: 'Julho' }, { val: 8, label: 'Agosto' }, { val: 9, label: 'Setembro' },
+        { val: 10, label: 'Outubro' }, { val: 11, label: 'Novembro' }, { val: 12, label: 'Dezembro' }
+    ];
+
     constructor(
         private cardService: CreditCardService,
         private transactionService: TransactionService,
@@ -54,6 +68,7 @@ export class CreditCardsComponent implements OnInit {
 
         // Transaction Form
         this.transactionForm = this.fb.group({
+            cardId: ['', Validators.required], // Add card selection
             month: [new Date().getMonth() + 1, Validators.required],
             year: [new Date().getFullYear(), Validators.required],
             installments: [1, [Validators.required, Validators.min(1)]],
@@ -131,6 +146,7 @@ export class CreditCardsComponent implements OnInit {
         this.showModal = false;
         this.showTransactionModal = false;
         this.showPlanningModal = false;
+        this.showInvoiceModal = false;
         this.selectedCard = null;
     }
 
@@ -171,10 +187,11 @@ export class CreditCardsComponent implements OnInit {
 
     // --- Transaction (Single Expense) ---
 
-    openTransactionModal(card: CreditCard) {
-        this.selectedCard = card;
+    openTransactionModal(card?: CreditCard) {
+        this.selectedCard = card || (this.cards.length > 0 ? this.cards[0] : null);
         this.showTransactionModal = true;
         this.transactionForm.reset({
+            cardId: this.selectedCard ? this.selectedCard.id : '',
             month: new Date().getMonth() + 1,
             year: new Date().getFullYear(),
             installments: 1,
@@ -184,20 +201,20 @@ export class CreditCardsComponent implements OnInit {
     }
 
     onTransactionSubmit() {
-        if (this.transactionForm.invalid || !this.selectedCard) return;
+        if (this.transactionForm.invalid) return;
         this.submitting = true;
 
         const val = this.transactionForm.value;
         const tx: Transaction = {
             description: val.description,
-            amount: val.totalValue, // Assuming total value logic for simplicity here, or use installments logic
+            amount: val.totalValue,
             type: 'expense',
             category: val.category,
             date: val.date,
             paymentMethod: 'credit',
-            creditCardId: this.selectedCard.id!,
+            creditCardId: val.cardId, // Use selected card from form
             isPaid: false,
-            installments: val.installments // If backend supports it on Transaction model, else handle logic
+            installments: val.installments
         };
 
         // Note: The backend logic for installments might be specific. 
@@ -263,5 +280,49 @@ export class CreditCardsComponent implements OnInit {
                 alert('Erro ao salvar planejamento');
             }
         });
+    }
+
+
+    // --- Invoice Viewer ---
+
+    openInvoiceModal(card: CreditCard) {
+        this.viewingCard = card;
+        this.showInvoiceModal = true;
+        this.loadInvoice(card.id!, this.invoiceMonth, this.invoiceYear);
+    }
+
+    loadInvoice(cardId: string, month: number, year: number) {
+        this.cardService.getInvoice(cardId, month, year).subscribe({
+            next: (data) => {
+                this.invoiceItems = data.items;
+                this.invoiceTotal = data.totalAmount;
+                this.invoiceStatus = data.isPaid ? 'paid' : 'open'; // Simplified status
+            },
+            error: (err) => {
+                console.error('Failed to load invoice', err);
+                this.invoiceItems = [];
+                this.invoiceTotal = 0;
+            }
+        });
+    }
+
+    prevInvoiceMonth() {
+        if (this.invoiceMonth === 1) {
+            this.invoiceMonth = 12;
+            this.invoiceYear--;
+        } else {
+            this.invoiceMonth--;
+        }
+        if (this.viewingCard) this.loadInvoice(this.viewingCard.id!, this.invoiceMonth, this.invoiceYear);
+    }
+
+    nextInvoiceMonth() {
+        if (this.invoiceMonth === 12) {
+            this.invoiceMonth = 1;
+            this.invoiceYear++;
+        } else {
+            this.invoiceMonth++;
+        }
+        if (this.viewingCard) this.loadInvoice(this.viewingCard.id!, this.invoiceMonth, this.invoiceYear);
     }
 }

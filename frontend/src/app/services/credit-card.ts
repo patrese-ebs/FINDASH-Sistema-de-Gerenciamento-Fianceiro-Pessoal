@@ -40,4 +40,8 @@ export class CreditCardService {
   getSummary(month: number, year: number): Observable<any> {
     return this.http.get(`${this.apiUrl}/summary?month=${month}&year=${year}`, { headers: this.getHeaders() });
   }
+
+  getInvoice(cardId: string, month: number, year: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/${cardId}/invoice/${month}/${year}`, { headers: this.getHeaders() });
+  }
 }

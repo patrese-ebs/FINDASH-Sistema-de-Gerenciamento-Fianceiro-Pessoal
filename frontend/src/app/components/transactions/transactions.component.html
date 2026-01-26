@@ -148,7 +148,8 @@
                     </thead>
                     <tbody>
                         <tr *ngFor="let t of filteredTransactions"
-                            class="border-b border-dark-border hover:bg-dark-bg transition-colors group">
+                            class="border-b border-dark-border hover:bg-dark-bg transition-colors group cursor-pointer"
+                            (click)="editTransaction(t)">
                             <td class="p-4 text-sm">{{ t.date | date:'shortDate' }}</td>
                             <td class="p-4 font-medium">{{ t.description }}</td>
                             <td class="p-4">
@@ -166,7 +167,7 @@
                                         [ngClass]="{'text-emerald-400': t.type === 'income', 'text-red-400': t.type === 'expense'}">
                                         {{ t.amount | currency:'BRL' }}
                                     </span>
-                                    <button (click)="toggleStatus(t)"
+                                    <button (click)="$event.stopPropagation(); toggleStatus(t)"
                                         class="text-xs px-2 py-0.5 rounded-full border transition-all hover:scale-105"
                                         [ngClass]="{
                                             'bg-emerald-500/20 text-emerald-400 border-emerald-500/30': t.isPaid,
@@ -195,7 +196,7 @@
         <div
             class="bg-dark-card border border-dark-border rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in">
             <div class="p-6 border-b border-dark-border flex justify-between items-center">
-                <h3 class="text-xl font-bold">Nova Transação</h3>
+                <h3 class="text-xl font-bold">{{ editingTransactionId ? 'Editar Transação' : 'Nova Transação' }}</h3>
                 <button (click)="closeModal()" class="text-text-secondary hover:text-white">&times;</button>
             </div>
 
