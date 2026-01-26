@@ -30,6 +30,7 @@ export class CreditCardsComponent implements OnInit {
     selectedCard: CreditCard | null = null;
     isDetailedMode: boolean = true; // Default to detailed for "Nova Despesa"
     invoiceItems: any[] = [];
+    editingTransactionId: string | null = null;
 
     // Planning Modal (12 Months)
     showPlanningModal: boolean = false;
@@ -190,6 +191,7 @@ export class CreditCardsComponent implements OnInit {
     // --- Transaction (Single Expense) ---
 
     openTransactionModal(card?: CreditCard) {
+        this.editingTransactionId = null; // Reset edit mode
         this.selectedCard = card || (this.cards.length > 0 ? this.cards[0] : null);
         this.showTransactionModal = true;
         this.transactionForm.reset({
@@ -197,6 +199,7 @@ export class CreditCardsComponent implements OnInit {
             month: new Date().getMonth() + 1,
             year: new Date().getFullYear(),
             installments: 1,
+            totalValue: 0,
             category: 'Outros',
             date: new Date().toISOString().split('T')[0]
         });
@@ -214,27 +217,45 @@ export class CreditCardsComponent implements OnInit {
             category: val.category,
             date: val.date,
             paymentMethod: 'credit',
-            creditCardId: val.cardId, // Use selected card from form
+            creditCardId: val.cardId,
             isPaid: false,
             installments: val.installments
         };
 
-        // Note: The backend logic for installments might be specific. 
-        // For now, using the basic transaction creation. 
-        // If we want the complex installment logic from the old HTML version, we'd replicate it here.
-        // Assuming backend handles plain transactions linked to card.
-
-        this.transactionService.create(tx).subscribe({
-            next: () => {
-                this.submitting = false;
-                this.closeModal();
-                alert('Despesa adicionada!');
-            },
-            error: (err) => {
-                this.submitting = false;
-                alert('Erro ao adicionar despesa');
-            }
-        });
+        if (this.editingTransactionId) {
+            // Update Existing
+            this.transactionService.update(this.editingTransactionId, tx).subscribe({
+                next: () => {
+                    this.submitting = false;
+                    this.closeModal();
+                    alert('Despesa atualizada!');
+                    // Reload overview if applicable
+                    if (this.viewingCard && this.showInvoiceModal) {
+                        this.loadYearlyOverview(this.viewingCard.id!, this.invoiceYear);
+                    }
+                },
+                error: (err) => {
+                    this.submitting = false;
+                    alert('Erro ao atualizar despesa');
+                }
+            });
+        } else {
+            // Create New
+            this.transactionService.create(tx).subscribe({
+                next: () => {
+                    this.submitting = false;
+                    this.closeModal();
+                    alert('Despesa adicionada!');
+                    if (this.viewingCard && this.showInvoiceModal) {
+                        this.loadYearlyOverview(this.viewingCard.id!, this.invoiceYear);
+                    }
+                },
+                error: (err) => {
+                    this.submitting = false;
+                    alert('Erro ao adicionar despesa');
+                }
+            });
+        }
     }
 
     // --- Planning (12 Months) ---
@@ -287,32 +308,111 @@ export class CreditCardsComponent implements OnInit {
 
     // --- Invoice Viewer ---
 
+    // --- Invoice Viewer (Yearly Overview) ---
+
     openInvoiceModal(card: CreditCard) {
         this.viewingCard = card;
         this.showInvoiceModal = true;
-        this.loadInvoice(card.id!, this.invoiceMonth, this.invoiceYear);
+        this.invoiceYear = new Date().getFullYear();
+        this.loadYearlyOverview(card.id!, this.invoiceYear);
+        this.selectedMonthIndex = new Date().getMonth(); // Expand current month
     }
 
-    // Legacy loadInvoice removed in favor of yearly overview
-
-    prevInvoiceMonth() {
-        if (this.invoiceMonth === 1) {
-            this.invoiceMonth = 12;
-            this.invoiceYear--;
-        } else {
-            this.invoiceMonth--;
-        }
-        if (this.viewingCard) this.loadInvoice(this.viewingCard.id!, this.invoiceMonth, this.invoiceYear);
+    loadYearlyOverview(cardId: string, year: number) {
+        this.cardService.getYearlyOverview(cardId, year).subscribe({
+            next: (data) => {
+                this.yearlyOverview = data;
+            },
+            error: (err) => {
+                console.error('Failed to load yearly overview', err);
+                this.yearlyOverview = [];
+            }
+        });
     }
 
-    nextInvoiceMonth() {
-        if (this.invoiceMonth === 12) {
-            this.invoiceMonth = 1;
-            this.invoiceYear++;
+    toggleMonth(index: number) {
+        if (this.selectedMonthIndex === index) {
+            this.selectedMonthIndex = null;
         } else {
-            this.invoiceMonth++;
+            this.selectedMonthIndex = index;
+            // Pre-fill payment amount if open
+            const monthData = this.yearlyOverview[index];
+            if (monthData) {
+                this.paymentAmount = monthData.total;
+            }
         }
-        if (this.viewingCard) this.loadInvoice(this.viewingCard.id!, this.invoiceMonth, this.invoiceYear);
+    }
+
+    prevYear() {
+        this.invoiceYear--;
+        if (this.viewingCard) this.loadYearlyOverview(this.viewingCard.id!, this.invoiceYear);
+    }
+
+    nextYear() {
+        this.invoiceYear++;
+        if (this.viewingCard) this.loadYearlyOverview(this.viewingCard.id!, this.invoiceYear);
+    }
+
+    payInvoice(monthIndex: number) {
+        if (!this.viewingCard) return;
+
+        const monthData = this.yearlyOverview[monthIndex];
+        if (!monthData) return;
+
+        if (confirm(`Confirmar pagamento de ${this.paymentAmount} referente a ${monthData.month}/${monthData.year}?`)) {
+            this.cardService.payInvoice(this.viewingCard.id!, monthData.month, monthData.year, this.paymentAmount)
+                .subscribe({
+                    next: () => {
+                        alert('Pagamento registrado!');
+                        this.loadYearlyOverview(this.viewingCard!.id!, this.invoiceYear);
+                        this.loadCards();
+                        this.loadSummary();
+                    },
+                    error: (err) => {
+                        console.error('Payment failed', err);
+                        alert('Erro ao processar pagamento');
+                    }
+                });
+        }
+    }
+
+    editInvoiceItem(item: any) {
+        const tx: Transaction = {
+            id: item.id,
+            description: item.description,
+            amount: item.totalAmount,
+            type: item.category === 'Pagamentos' ? 'income' : 'expense',
+            category: item.category,
+            date: item.purchaseDate,
+            paymentMethod: 'credit',
+            creditCardId: item.creditCardId,
+            isPaid: false,
+            installments: item.installments
+        };
+        this.openEditTransactionModal(tx);
+    }
+
+    openEditTransactionModal(t: Transaction) {
+        this.selectedCard = this.cards.find(c => c.id === t.creditCardId) || null;
+        this.showTransactionModal = true;
+        // Check if editingTransactionId exists on component or add it
+        this.editingCardId = null; // Reuse this or add new propery? 
+        // Better to handle "editingTransactionId" properly but for now let's just populate form
+        // and handle submit.
+        // Wait, "onTransactionSubmit" creates a NEW transaction. We need update logic.
+        // For now, let's minimally enable "Edit" by just populating. 
+        // User asked for "Edit". I should have update logic.
+        // Let's add editingTransactionId to the class properties first if missing.
+        this.editingTransactionId = t.id!;
+
+        this.transactionForm.patchValue({
+            cardId: t.creditCardId,
+            description: t.description,
+            totalValue: t.amount,
+            installments: t.installments,
+            category: t.category,
+            date: t.date.toString().split('T')[0]
+        });
     }
 
     // Helper for class binding
@@ -332,24 +432,5 @@ export class CreditCardsComponent implements OnInit {
             'Hipercard': 'from-[#BE0000] to-[#820000]'
         };
         return gradients[brand] || 'from-slate-800 to-black';
-    }
-
-    payInvoice() {
-        if (!this.viewingCard) return;
-
-        if (confirm(`Confirmar pagamento de ${this.paymentAmount}?`)) {
-            this.cardService.payInvoice(this.viewingCard.id!, this.invoiceMonth, this.invoiceYear, this.paymentAmount)
-                .subscribe({
-                    next: () => {
-                        alert('Pagamento registrado!');
-                        this.loadInvoice(this.viewingCard!.id!, this.invoiceMonth, this.invoiceYear);
-                        this.loadCards(); // Update dashboard
-                    },
-                    error: (err) => {
-                        console.error('Payment failed', err);
-                        alert('Erro ao processar pagamento');
-                    }
-                });
-        }
     }
 }
