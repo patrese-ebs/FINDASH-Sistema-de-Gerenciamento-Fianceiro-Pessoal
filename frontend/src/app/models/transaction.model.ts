@@ -10,4 +10,12 @@ export interface Transaction {
     creditCardId?: string;
     userId?: string;
     installments?: number;
+    // Virtual fields for Invoices
+    isInvoice?: boolean;
+    cardName?: string;
+    invoiceMonth?: number;
+    invoiceYear?: number;
+    paidAmount?: number;
+    remainingAmount?: number;
+    isPartiallyPaid?: boolean;
 }

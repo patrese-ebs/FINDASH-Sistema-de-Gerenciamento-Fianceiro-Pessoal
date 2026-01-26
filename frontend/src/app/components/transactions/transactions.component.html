@@ -148,10 +148,16 @@
                     </thead>
                     <tbody>
                         <tr *ngFor="let t of filteredTransactions"
-                            class="border-b border-dark-border hover:bg-dark-bg transition-colors group cursor-pointer"
-                            (click)="editTransaction(t)">
+                            class="border-b border-dark-border hover:bg-dark-bg transition-colors group"
+                            [class.cursor-pointer]="!t.isInvoice" (click)="!t.isInvoice && editTransaction(t)">
                             <td class="p-4 text-sm">{{ t.date | date:'shortDate' }}</td>
-                            <td class="p-4 font-medium">{{ t.description }}</td>
+                            <td class="p-4 font-medium">
+                                <div class="flex items-center gap-2">
+                                    <span *ngIf="t.isInvoice" class="text-purple-400">💳</span>
+                                    {{ t.description }}
+                                    <span *ngIf="t.isPartiallyPaid" class="text-xs text-blue-400">(Parcial)</span>
+                                </div>
+                            </td>
                             <td class="p-4">
                                 <span class="px-3 py-1 text-xs font-medium rounded-full border"
                                     [ngClass]="getCategoryBg(t.category)">
@@ -167,7 +173,8 @@
                                         [ngClass]="{'text-emerald-400': t.type === 'income', 'text-red-400': t.type === 'expense'}">
                                         {{ t.amount | currency:'BRL' }}
                                     </span>
-                                    <button (click)="$event.stopPropagation(); toggleStatus(t)"
+                                    <!-- Regular transaction status button -->
+                                    <button *ngIf="!t.isInvoice" (click)="$event.stopPropagation(); toggleStatus(t)"
                                         class="text-xs px-2 py-0.5 rounded-full border transition-all hover:scale-105"
                                         [ngClass]="{
                                             'bg-emerald-500/20 text-emerald-400 border-emerald-500/30': t.isPaid,
@@ -176,6 +183,16 @@
                                         {{ t.isPaid ? (t.type === 'income' ? 'Recebido' : 'Pago') : (t.type === 'income'
                                         ? 'Pendente' : 'Não Pago') }}
                                     </button>
+                                    <!-- Invoice status (read-only link to cards page) -->
+                                    <a *ngIf="t.isInvoice" routerLink="/credit-cards"
+                                        class="text-xs px-2 py-0.5 rounded-full border transition-all hover:scale-105"
+                                        [ngClass]="{
+                                            'bg-emerald-500/20 text-emerald-400 border-emerald-500/30': t.isPaid,
+                                            'bg-blue-500/20 text-blue-400 border-blue-500/30': t.isPartiallyPaid,
+                                            'bg-yellow-500/20 text-yellow-500 border-yellow-500/30': !t.isPaid && !t.isPartiallyPaid
+                                        }">
+                                        {{ t.isPaid ? 'Paga' : (t.isPartiallyPaid ? 'Parcial' : 'A Pagar') }}
+                                    </a>
                                 </div>
                             </td>
                         </tr>
