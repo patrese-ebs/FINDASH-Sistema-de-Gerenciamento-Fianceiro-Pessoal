@@ -8,6 +8,7 @@ interface CreditCardAttributes {
     name: string;
     lastFourDigits: string;
     brand: string;
+    imageUrl?: string;
     creditLimit: number;
     closingDay: number;
     dueDay: number;
@@ -23,6 +24,7 @@ class CreditCard extends Model<CreditCardAttributes, CreditCardCreationAttribute
     public name!: string;
     public lastFourDigits!: string;
     public brand!: string;
+    public imageUrl!: string;
     public creditLimit!: number;
     public closingDay!: number;
     public dueDay!: number;
@@ -58,6 +60,11 @@ CreditCard.init(
             type: DataTypes.STRING,
             allowNull: false,
         },
+        imageUrl: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+
         creditLimit: {
             type: DataTypes.DECIMAL(10, 2),
             allowNull: false,

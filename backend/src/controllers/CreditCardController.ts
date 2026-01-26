@@ -147,7 +147,7 @@ export class CreditCardController {
 
     async create(req: AuthRequest, res: Response): Promise<void> {
         try {
-            const { name, lastFourDigits, brand, creditLimit, closingDay, dueDay } = req.body;
+            const { name, lastFourDigits, brand, imageUrl, creditLimit, closingDay, dueDay } = req.body;
             const userId = req.userId;
 
             if (!userId) {
@@ -160,6 +160,7 @@ export class CreditCardController {
                 name,
                 lastFourDigits,
                 brand,
+                imageUrl,
                 creditLimit,
                 closingDay,
                 dueDay,
@@ -174,7 +175,7 @@ export class CreditCardController {
     async update(req: AuthRequest, res: Response): Promise<void> {
         try {
             const { id } = req.params;
-            const { name, lastFourDigits, brand, creditLimit, closingDay, dueDay } = req.body;
+            const { name, lastFourDigits, brand, imageUrl, creditLimit, closingDay, dueDay } = req.body;
             const userId = req.userId;
 
             if (!userId) {
@@ -193,6 +194,7 @@ export class CreditCardController {
                 name: name || creditCard.name,
                 lastFourDigits: lastFourDigits || creditCard.lastFourDigits,
                 brand: brand || creditCard.brand,
+                imageUrl: imageUrl !== undefined ? imageUrl : creditCard.imageUrl,
                 creditLimit: creditLimit || creditCard.creditLimit,
                 closingDay: closingDay || creditCard.closingDay,
                 dueDay: dueDay || creditCard.dueDay,

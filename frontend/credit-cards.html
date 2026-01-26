@@ -6,6 +6,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meus Cartões - FinDash</title>
     <link rel="stylesheet" href="/src/css/style.css">
+    <style>
+        .card-image-bg {
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .card-chip {
+            background: linear-gradient(135deg, #FFD700 0%, #FDB931 100%);
+            border-radius: 4px;
+            width: 40px;
+            height: 30px;
+        }
+
+        .text-shadow {
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+    </style>
 </head>
 
 <body class="min-h-screen bg-dark-bg text-text-primary font-sans antialiased">
@@ -18,30 +36,35 @@
         <nav class="space-y-2">
             <a href="/dashboard.html"
                 class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-dark-bg transition-colors text-text-secondary hover:text-text-primary">
-                <span>“Š</span>
+                <span>📊</span>
                 <span>Dashboard</span>
             </a>
             <a href="/transactions.html"
-                class="flex items-center gap-3 px-4 py-3 rounded-lg bg-accent-purple bg-opacity-20 text-accent-purple font-medium">
-                <span>’°</span>
+                class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-dark-bg transition-colors text-text-secondary hover:text-text-primary">
+                <span>💳</span>
                 <span>Transações</span>
             </a>
             <a href="/investments.html"
                 class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-dark-bg transition-colors text-text-secondary hover:text-text-primary">
-                <span>“ˆ</span>
+                <span>📈</span>
                 <span>Investimentos</span>
             </a>
             <a href="/goals.html"
                 class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-dark-bg transition-colors text-text-secondary hover:text-text-primary">
-                <span>Ž¯</span>
+                <span>🎯</span>
                 <span>Metas</span>
+            </a>
+            <a href="/credit-cards.html"
+                class="flex items-center gap-3 px-4 py-3 rounded-lg bg-accent-purple bg-opacity-20 text-accent-purple font-medium">
+                <span>💳</span>
+                <span>Cartões</span>
             </a>
         </nav>
 
         <div class="absolute bottom-6 left-6 right-6">
             <button id="logoutBtn"
                 class="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-dark-bg transition-colors text-text-secondary hover:text-red-400">
-                <span>šª</span>
+                <span>🚪</span>
                 <span>Sair</span>
             </button>
         </div>
@@ -53,7 +76,7 @@
         <div class="flex items-center justify-between mb-8">
             <div>
                 <h2 class="text-3xl font-bold">Meus Cartões</h2>
-                <p class="text-text-secondary mt-1">Gerencie limites, faturas e parcelamentos em um só lugar.</p>
+                <p class="text-text-secondary mt-1">Gerencie limites, faturas e planejamentos.</p>
             </div>
             <div class="flex gap-3 items-center">
                 <div class="flex items-center gap-2 mr-4">
@@ -79,29 +102,29 @@
                         <option value="2024">2024</option>
                     </select>
                 </div>
-                <button id="planInvoicesBtn" class="btn-secondary">“… Planejar Faturas</button>
+                <!-- Renamed button -->
+                <button id="planInvoicesBtn" class="btn-secondary">📅 Planejar Ano</button>
                 <button id="addNewCardBtn" class="btn-secondary">+ Novo Cartão</button>
-                <button id="addCardBtn" class="btn-primary">+ Nova Despesa</button>
+                <button id="addCardTransactionBtn" class="btn-primary">+ Nova Despesa</button>
             </div>
         </div>
 
-        <!-- Summary Cards -->
+        <!-- Summary Cards (Updated Order & Labels) -->
         <div id="cardsSummary" class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <!-- Populated by JS -->
             <div class="stat-card fade-in" style="animation-delay: 0.1s">
-                <div class="stat-label">Limite Total</div>
+                <div class="stat-label">Limite Total (Todos)</div>
                 <div class="stat-value text-white" id="summaryLimit">R$ 0,00</div>
             </div>
             <div class="stat-card fade-in" style="animation-delay: 0.2s">
-                <div class="stat-label">Total Gasto (Dá­vida)</div>
+                <div class="stat-label">Em Uso (Total)</div>
                 <div class="stat-value text-red-400" id="summaryLiability">R$ 0,00</div>
             </div>
             <div class="stat-card fade-in" style="animation-delay: 0.3s">
-                <div class="stat-label">Disponá­vel Total</div>
+                <div class="stat-label">Disponível Total</div>
                 <div class="stat-value text-green-400" id="summaryAvailable">R$ 0,00</div>
             </div>
             <div class="stat-card fade-in" style="animation-delay: 0.4s">
-                <div class="stat-label">Faturas Abertas (Mês)</div>
+                <div class="stat-label">Faturas do Mês</div>
                 <div class="stat-value text-accent-gold" id="summaryDue">R$ 0,00</div>
             </div>
         </div>
@@ -115,7 +138,7 @@
         <div class="card mb-8">
             <div class="flex items-center justify-between mb-6 flex-wrap gap-4">
                 <div class="flex items-center gap-4">
-                    <h3 class="text-xl font-bold">Fatura</h3>
+                    <h3 class="text-xl font-bold">Fatura Detalhada</h3>
                     <div class="flex items-center gap-2">
                         <select id="invoiceCardFilter"
                             class="bg-dark-bg border border-dark-border rounded px-3 py-1 text-sm text-white focus:outline-none focus:border-accent-purple transition-colors">
@@ -145,9 +168,8 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <span id="invoiceStatus" class="text-sm text-text-secondary">Aberta</span>
-                    <button class="text-sm text-accent-purple hover:underline" id="filterBtn"
-                        style="display: none;">Filtrar</button>
+                    <span id="invoiceStatus"
+                        class="text-sm px-2 py-1 rounded bg-dark-bg text-text-secondary border border-dark-border">Aberta</span>
                     <button class="text-sm text-accent-purple hover:underline">📥 Exportar</button>
                 </div>
             </div>
@@ -171,21 +193,18 @@
                 </table>
             </div>
 
-            <div class="mt-6 pt-6 border-t border-dark-border">
-                <div class="flex items-center justify-between text-sm mb-2">
-                    <span class="text-text-secondary">Mostrando 5 de 142 transações</span>
-                    <div class="flex gap-2">
-                        <button class="px-3 py-1 rounded hover:bg-dark-bg">Anterior</button>
-                        <button class="px-3 py-1 rounded hover:bg-dark-bg">Próximo</button>
-                    </div>
+            <div class="mt-4 pt-4 border-t border-dark-border flex justify-end">
+                <div class="text-xl font-bold">
+                    Total Fatura: <span id="invoiceTotalDisplay" class="text-white">R$ 0,00</span>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Add New Card Modal -->
-    <div id="addNewCardModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="card max-w-md w-full m-4 fade-in">
+    <div id="addNewCardModal"
+        class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center z-50 backdrop-blur-sm">
+        <div class="card max-w-md w-full m-4 fade-in shadow-2xl border border-dark-border">
             <div class="flex items-center justify-between mb-6">
                 <h3 class="text-xl font-bold">Novo Cartão de Crédito</h3>
                 <button id="closeNewCardModalBtn" class="text-text-secondary hover:text-text-primary">✕</button>
@@ -211,10 +230,18 @@
                             <option value="Visa">Visa</option>
                             <option value="Mastercard">Mastercard</option>
                             <option value="Elo">Elo</option>
-                            <option value="American Express">American Express</option>
+                            <option value="American Express">Amex</option>
                             <option value="Hipercard">Hipercard</option>
                         </select>
                     </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2">URL da Imagem (Opcional)</label>
+                    <input type="text" id="cardImageUrl" class="input-field w-full"
+                        placeholder="https://exemplo.com/imagem-cartao.png">
+                    <p class="text-xs text-text-secondary mt-1">Cole o link de uma imagem para personalizar o cartão.
+                    </p>
                 </div>
 
                 <div>
@@ -237,10 +264,6 @@
                     </div>
                 </div>
 
-                <div class="bg-dark-bg rounded-lg p-3 text-sm text-text-secondary">
-                    💡 <strong>Dica:</strong> O melhor dia para comprar é um dia antes do fechamento da fatura.
-                </div>
-
                 <div class="flex gap-3 pt-4">
                     <button type="button" id="cancelNewCardBtn" class="btn-secondary flex-1">Cancelar</button>
                     <button type="submit" class="btn-primary flex-1">Adicionar Cartão</button>
@@ -250,8 +273,9 @@
     </div>
 
     <!-- Edit Card Modal -->
-    <div id="editCardModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="card max-w-md w-full m-4 fade-in">
+    <div id="editCardModal"
+        class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center z-50 backdrop-blur-sm">
+        <div class="card max-w-md w-full m-4 fade-in shadow-2xl border border-dark-border">
             <div class="flex items-center justify-between mb-6">
                 <h3 class="text-xl font-bold">Editar Cartão</h3>
                 <button id="closeEditCardModalBtn" class="text-text-secondary hover:text-text-primary">✕</button>
@@ -277,10 +301,16 @@
                             <option value="Visa">Visa</option>
                             <option value="Mastercard">Mastercard</option>
                             <option value="Elo">Elo</option>
-                            <option value="American Express">American Express</option>
+                            <option value="American Express">Amex</option>
                             <option value="Hipercard">Hipercard</option>
                         </select>
                     </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2">URL da Imagem (Opcional)</label>
+                    <input type="text" id="editCardImageUrl" class="input-field w-full"
+                        placeholder="https://exemplo.com/imagem-cartao.png">
                 </div>
 
                 <div>
@@ -309,8 +339,9 @@
     </div>
 
     <!-- Add Transaction Modal -->
-    <div id="addTransactionModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="card max-w-md w-full m-4 fade-in">
+    <div id="addTransactionModal"
+        class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center z-50 backdrop-blur-sm">
+        <div class="card max-w-md w-full m-4 fade-in shadow-2xl border border-dark-border">
             <div class="flex items-center justify-between mb-6">
                 <h3 class="text-xl font-bold">Nova Despesa no Cartão</h3>
                 <button id="closeModalBtn" class="text-text-secondary hover:text-text-primary">✕</button>
@@ -349,7 +380,7 @@
                 <div>
                     <label class="block text-sm font-medium mb-2">Parcelas</label>
                     <select id="installments" class="input-field w-full" required>
-                        <option value="1">1x (á  vista)</option>
+                        <option value="1">1x (à vista)</option>
                         <option value="2">2x</option>
                         <option value="3">3x</option>
                         <option value="4">4x</option>
@@ -377,12 +408,12 @@
                 <div>
                     <label class="block text-sm font-medium mb-2">Categoria</label>
                     <select id="category" class="input-field w-full" required>
-                        <option value="Eletrá´nicos">“± Eletrá´nicos</option>
-                        <option value="Alimentação">” Alimentação</option>
-                        <option value="Transporte">š— Transporte</option>
-                        <option value="Casa">  Casa</option>
-                        <option value="Serviços">’¼ Serviços</option>
-                        <option value="Outros">“¦ Outros</option>
+                        <option value="Eletrônicos">📱 Eletrônicos</option>
+                        <option value="Alimentação">🍽️ Alimentação</option>
+                        <option value="Transporte">🚗 Transporte</option>
+                        <option value="Casa">🏠 Casa</option>
+                        <option value="Serviços">🛠️ Serviços</option>
+                        <option value="Outros">📦 Outros</option>
                     </select>
                 </div>
 
@@ -399,47 +430,13 @@
         </div>
     </div>
 
-    <!-- Payment Modal -->
-    <div id="paymentModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="card max-w-sm w-full m-4 fade-in">
-            <div class="flex items-center justify-between mb-6">
-                <h3 class="text-xl font-bold">Pagar Fatura</h3>
-                <button id="closePaymentModalBtn" class="text-text-secondary hover:text-text-primary">✕</button>
-            </div>
-
-            <div class="mb-4">
-                <label class="block text-sm font-medium mb-1 text-text-secondary">Valor Total da Fatura</label>
-                <div class="text-2xl font-bold text-white" id="paymentTotalDisplay">R$ 0,00</div>
-            </div>
-
-            <form id="paymentForm" class="space-y-4">
-                <input type="hidden" id="paymentCardId">
-                <input type="hidden" id="paymentMonth">
-                <input type="hidden" id="paymentYear">
-                <input type="hidden" id="paymentTotalRaw">
-
-                <div>
-                    <label class="block text-sm font-medium mb-2">Valor a Pagar</label>
-                    <input type="number" id="paymentAmount" class="input-field w-full" step="0.01" required>
-                    <p class="text-xs text-text-secondary mt-1 hidden" id="partialPaymentHint">Pagamento parcial: O
-                        restante será¡ jogado para o prá³ximo mês.</p>
-                </div>
-
-                <div class="flex gap-3 pt-4">
-                    <button type="button" id="cancelPaymentBtn" class="btn-secondary flex-1">Cancelar</button>
-                    <button type="submit" class="btn-primary flex-1">Confirmar</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <!-- Edit Transaction Modal -->
-    <div id="editTransactionModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="card max-w-md w-full m-4 fade-in">
+    <div id="editTransactionModal"
+        class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center z-50 backdrop-blur-sm">
+        <div class="card max-w-md w-full m-4 fade-in shadow-2xl border border-dark-border">
             <div class="flex items-center justify-between mb-6">
                 <h3 class="text-xl font-bold">Editar Despesa</h3>
-                <button id="closeEditTransactionModalBtn"
-                    class="text-text-secondary hover:text-text-primary">✕</button>
+                <button id="closeEditTransactionModalBtn" class="text-text-secondary hover:text-text-primary">✕</button>
             </div>
 
             <form id="editTransactionForm" class="space-y-4">
@@ -459,7 +456,7 @@
                 <div>
                     <label class="block text-sm font-medium mb-2">Parcelas</label>
                     <select id="editInstallments" class="input-field w-full" required>
-                        <option value="1">1x (á  vista)</option>
+                        <option value="1">1x (à vista)</option>
                         <option value="2">2x</option>
                         <option value="3">3x</option>
                         <option value="4">4x</option>
@@ -477,12 +474,12 @@
                 <div>
                     <label class="block text-sm font-medium mb-2">Categoria</label>
                     <select id="editCategory" class="input-field w-full" required>
-                        <option value="Eletrá´nicos">“± Eletrá´nicos</option>
-                        <option value="Alimentação">” Alimentação</option>
-                        <option value="Transporte">š— Transporte</option>
-                        <option value="Casa">  Casa</option>
-                        <option value="Serviços">’¼ Serviços</option>
-                        <option value="Outros">“¦ Outros</option>
+                        <option value="Eletrônicos">📱 Eletrônicos</option>
+                        <option value="Alimentação">🍽️ Alimentação</option>
+                        <option value="Transporte">🚗 Transporte</option>
+                        <option value="Casa">🏠 Casa</option>
+                        <option value="Serviços">🛠️ Serviços</option>
+                        <option value="Outros">📦 Outros</option>
                     </select>
                 </div>
 
@@ -499,27 +496,42 @@
         </div>
     </div>
 
-    <!-- Plan Invoices Modal -->
-    <div id="planInvoicesModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="card max-w-4xl w-full m-4 fade-in max-h-[90vh] overflow-y-auto">
-            <div class="flex items-center justify-between mb-6">
-                <div>
-                    <h3 class="text-xl font-bold">Planejar Faturas Futuras</h3>
-                    <p class="text-text-secondary text-sm">Defina o valor total esperado para os prá³ximos meses.</p>
+    <!-- Plan Invoices Modal (Major Refactor) -->
+    <div id="planInvoicesModal"
+        class="fixed inset-0 bg-black bg-opacity-70 hidden items-center justify-center z-50 backdrop-blur-sm">
+        <div
+            class="card max-w-5xl w-full m-4 fade-in max-h-[90vh] overflow-y-auto shadow-2xl border border-dark-border">
+            <div class="sticky top-0 bg-dark-card z-10 pb-4 border-b border-dark-border mb-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-xl font-bold">Planejamento Anual</h3>
+                        <p class="text-text-secondary text-sm">Defina os valores esperados das faturas para os próximos
+                            meses.</p>
+                    </div>
+                    <button id="closePlanInvoicesModalBtn"
+                        class="text-text-secondary hover:text-text-primary text-xl">✕</button>
                 </div>
-                <button id="closePlanInvoicesModalBtn" class="text-text-secondary hover:text-text-primary">✕</button>
             </div>
 
-            <div class="mb-6">
-                <label class="block text-sm font-medium mb-2">Cartão para Planejamento</label>
-                <select id="planCardSelect" class="input-field w-full md:w-1/2">
-                    <!-- Populated by JS -->
-                </select>
+            <div class="mb-6 flex gap-4 items-center">
+                <div class="w-1/2">
+                    <label class="block text-sm font-medium mb-2">Cartão para Planejamento</label>
+                    <select id="planCardSelect" class="input-field w-full">
+                        <!-- Populated by JS -->
+                    </select>
+                </div>
+                <div class="w-1/2">
+                    <label class="block text-sm font-medium mb-2">Ano Base</label>
+                    <input type="number" id="planYearInput" class="input-field w-full" value="2026">
+                </div>
             </div>
 
             <form id="planInvoicesForm">
-                <div id="planInvoicesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                    <!-- Grid items generated by JS -->
+                <!-- Grid of 12 Months -->
+                <div id="planInvoicesGrid"
+                    class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
+                    <!-- Generating inputs for Jan-Dec -->
+                    <!-- Injected by JS -->
                 </div>
 
                 <div class="flex gap-3 justify-end pt-4 border-t border-dark-border">
@@ -552,19 +564,96 @@
             }).format(value);
         };
 
-        // Set today's date
-        document.getElementById('purchaseDate').valueAsDate = new Date();
-
-        // Calculate installment amount
+        // DOM Elements
         const totalAmountInput = document.getElementById('totalAmount');
         const installmentsSelect = document.getElementById('installments');
         const installmentPreview = document.getElementById('installmentPreview');
         const installmentAmountDisplay = document.getElementById('installmentAmount');
+        const amountLabel = document.getElementById('amountLabel');
+        const valueTypeRadios = document.getElementsByName('valueType');
+
+        // Set today's date
+        document.getElementById('purchaseDate').valueAsDate = new Date();
+
+        // --- Event Listeners ---
+
+        // Add Transaction Modal
+        const addCardTransactionBtn = document.getElementById('addCardTransactionBtn');
+        const addTransactionModal = document.getElementById('addTransactionModal');
+        const closeTransactionModalBtn = document.getElementById('closeModalBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+
+        addCardTransactionBtn.addEventListener('click', () => {
+            addTransactionModal.classList.remove('hidden');
+            addTransactionModal.classList.add('flex');
+        });
+
+        const closeTransactionModal = () => {
+            addTransactionModal.classList.add('hidden');
+            addTransactionModal.classList.remove('flex');
+        };
+        closeTransactionModalBtn.addEventListener('click', closeTransactionModal);
+        cancelBtn.addEventListener('click', closeTransactionModal);
+
+        // Add Card Modal
+        const addNewCardBtn = document.getElementById('addNewCardBtn');
+        const addNewCardModal = document.getElementById('addNewCardModal');
+        const closeNewCardModalBtn = document.getElementById('closeNewCardModalBtn');
+        const cancelNewCardBtn = document.getElementById('cancelNewCardBtn');
+
+        addNewCardBtn.addEventListener('click', () => {
+            addNewCardModal.classList.remove('hidden');
+            addNewCardModal.classList.add('flex');
+        });
+
+        const closeNewCardModal = () => {
+            addNewCardModal.classList.add('hidden');
+            addNewCardModal.classList.remove('flex');
+        };
+        closeNewCardModalBtn.addEventListener('click', closeNewCardModal);
+        cancelNewCardBtn.addEventListener('click', closeNewCardModal);
+
+        // Edit Card Modal
+        const editCardModal = document.getElementById('editCardModal');
+        const closeEditCardModalBtn = document.getElementById('closeEditCardModalBtn');
+        const cancelEditCardBtn = document.getElementById('cancelEditCardBtn');
+        const closeEditCardModal = () => {
+            editCardModal.classList.add('hidden');
+            editCardModal.classList.remove('flex');
+        };
+        closeEditCardModalBtn.addEventListener('click', closeEditCardModal);
+        cancelEditCardBtn.addEventListener('click', closeEditCardModal);
+
+        // Header Filters
+        const headerMonthSelect = document.getElementById('headerMonthSelect');
+        const headerYearSelect = document.getElementById('headerYearSelect');
+        const now = new Date();
+        headerMonthSelect.value = now.getMonth() + 1;
+        headerYearSelect.value = now.getFullYear();
+        headerMonthSelect.addEventListener('change', loadCreditCards);
+        headerYearSelect.addEventListener('change', loadCreditCards);
+
+        // Invoice Filters
+        const invoiceMonthFilter = document.getElementById('invoiceMonthFilter');
+        const invoiceYearFilter = document.getElementById('invoiceYearFilter');
+        const invoiceCardFilter = document.getElementById('invoiceCardFilter');
+
+        invoiceMonthFilter.addEventListener('change', () => {
+            const cardId = invoiceCardFilter.value || window.currentCardId;
+            if (cardId) loadInvoice(cardId);
+        });
+        invoiceYearFilter.addEventListener('change', () => {
+            const cardId = invoiceCardFilter.value || window.currentCardId;
+            if (cardId) loadInvoice(cardId);
+        });
+        invoiceCardFilter.addEventListener('change', () => {
+            const cardId = invoiceCardFilter.value;
+            if (cardId) loadInvoice(cardId);
+        });
+
+        // --- Logic ---
 
         // Value Type Toggle Logic
-        const valueTypeRadios = document.getElementsByName('valueType');
-        const amountLabel = document.getElementById('amountLabel');
-
         valueTypeRadios.forEach(radio => {
             radio.addEventListener('change', () => {
                 amountLabel.textContent = radio.value === 'total' ? 'Valor Total' : 'Valor da Parcela';
@@ -602,72 +691,45 @@
         totalAmountInput.addEventListener('input', updateInstallmentPreview);
         installmentsSelect.addEventListener('change', updateInstallmentPreview);
 
-        // Initialize Filters
-        const invoiceMonthFilter = document.getElementById('invoiceMonthFilter');
-        const invoiceYearFilter = document.getElementById('invoiceYearFilter');
-        const invoiceCardFilter = document.getElementById('invoiceCardFilter'); // New
-
-        // Apply dark mode to options
-        [invoiceMonthFilter, invoiceYearFilter, invoiceCardFilter].forEach(select => {
-            // Browser support for styling options is limited, but this helps in some
-            // We can also re-render options with classes in JS, which we do for card filter below
-        });
-
-        // Listen for filter changes
-        invoiceMonthFilter.addEventListener('change', () => {
-            const cardId = invoiceCardFilter.value || window.currentCardId;
-            if (cardId) loadInvoice(cardId);
-        });
-
-        invoiceYearFilter.addEventListener('change', () => {
-            const cardId = invoiceCardFilter.value || window.currentCardId;
-            if (cardId) loadInvoice(cardId);
-        });
-
-        invoiceCardFilter.addEventListener('change', () => {
-            const cardId = invoiceCardFilter.value;
-            if (cardId) {
-                loadInvoice(cardId);
-            }
-        });
-
-        // Initialize header filters with current date
-        const headerMonthSelect = document.getElementById('headerMonthSelect');
-        const headerYearSelect = document.getElementById('headerYearSelect');
-
-        const now = new Date();
-        headerMonthSelect.value = now.getMonth() + 1;
-        headerYearSelect.value = now.getFullYear();
-
-        headerMonthSelect.addEventListener('change', loadCreditCards);
-        headerYearSelect.addEventListener('change', loadCreditCards);
-
-        // Load credit cards
+        // Load Data
         async function loadCreditCards() {
             try {
                 const month = headerMonthSelect.value;
                 const year = headerYearSelect.value;
 
-                loadSummary(month, year); // Load summary stats
+                // Sync invoice filters
+                invoiceMonthFilter.value = month;
+                invoiceYearFilter.value = year;
+
+                loadSummary(month, year);
                 const cards = await creditCardService.getAll(month, year);
 
                 // Populate cards grid
                 const cardsGrid = document.getElementById('cardsGrid');
                 cardsGrid.innerHTML = cards.map(card => createCardHTML(card)).join('');
 
-                // Populate card select (Modal)
+                // Populate selects
                 const cardSelect = document.getElementById('cardSelect');
                 cardSelect.innerHTML = '<option value="" class="bg-dark-card text-white">Selecione um cartão</option>' +
                     cards.map(card => `<option value="${card.id}" class="bg-dark-card text-white">${card.name} - ${card.brand}</option>`).join('');
 
-                // Populate invoice card filter
+                const planCardSelect = document.getElementById('planCardSelect');
+                planCardSelect.innerHTML = cards.map(card => `<option value="${card.id}" class="bg-dark-card text-white">${card.name}</option>`).join('');
+
                 invoiceCardFilter.innerHTML = cards.map(card => `<option value="${card.id}" class="bg-dark-card text-white">${card.name}</option>`).join('');
 
-                // Load transactions for first card or currently selected
                 if (cards.length > 0) {
-                    const idToLoad = window.currentCardId || cards[0].id;
-                    invoiceCardFilter.value = idToLoad; // Sync select
+                    // Prefer keeping current selection if valid
+                    let idToLoad = window.currentCardId;
+                    if (!cards.find(c => c.id === idToLoad)) {
+                        idToLoad = cards[0].id;
+                    }
+
+                    invoiceCardFilter.value = idToLoad;
                     loadInvoice(idToLoad);
+                } else {
+                    document.getElementById('invoiceTableBody').innerHTML = '<tr><td colspan="6" class="text-center py-4 text-text-secondary">Nenhum cartão encontrado.</td></tr>';
+                    document.getElementById('invoiceTotalDisplay').textContent = formatCurrency(0);
                 }
             } catch (error) {
                 console.error('Failed to load cards:', error);
@@ -678,165 +740,176 @@
             try {
                 const summary = await creditCardService.getSummary(month, year);
                 const safeValue = (val) => val !== undefined ? val : 0;
-
                 document.getElementById('summaryLimit').textContent = formatCurrency(safeValue(summary.totalLimit));
                 document.getElementById('summaryLiability').textContent = formatCurrency(safeValue(summary.totalLiability));
                 document.getElementById('summaryAvailable').textContent = formatCurrency(safeValue(summary.totalAvailable));
                 document.getElementById('summaryDue').textContent = formatCurrency(safeValue(summary.totalDueThisMonth));
             } catch (error) {
                 console.error('Failed to load summary', error);
-                // Fallback to 0
-                document.getElementById('summaryLimit').textContent = formatCurrency(0);
-                document.getElementById('summaryLiability').textContent = formatCurrency(0);
-                document.getElementById('summaryAvailable').textContent = formatCurrency(0);
-                document.getElementById('summaryDue').textContent = formatCurrency(0);
             }
         }
 
-        // Create card HTML
+        // New Card HTML
         function createCardHTML(card) {
             const usagePercent = card.usagePercentage || 0;
             const totalLiability = card.totalLiability || 0;
             const currentInvoiceAmount = card.currentInvoiceAmount || 0;
             const availableCredit = card.availableCredit || 0;
-            const creditLimit = card.creditLimit || 0;
-
+            const creditLimit = parseFloat(card.creditLimit);
             const isHealthy = availableCredit > 0;
 
-            // Save card data to window object for easy access during edit
+            // Save for edit access
             if (!window.cardsData) window.cardsData = {};
             window.cardsData[card.id] = card;
 
+            // Image vs Icon
+            let cardVisual;
+            if (card.imageUrl) {
+                cardVisual = `
+                  <div class="h-40 w-full rounded-xl card-image-bg relative shadow-lg mb-4 transform transition-transform hover:scale-[1.02]" 
+                       style="background-image: url('${card.imageUrl}'); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);">
+                       <div class="absolute inset-0 bg-black bg-opacity-30 rounded-xl hover:bg-opacity-20 transition-all"></div>
+                       <div class="absolute bottom-4 left-4 text-white z-10 text-shadow">
+                          <div class="font-bold text-lg drop-shadow-md">${card.name}</div>
+                          <div class="text-sm opacity-90 drop-shadow-md">•••• ${card.lastFourDigits}</div>
+                       </div>
+                       <div class="absolute top-4 right-4 z-10">
+                          <span class="bg-black bg-opacity-50 px-2 py-1 rounded text-xs text-white font-bold backdrop-blur-sm">${card.brand}</span>
+                       </div>
+                  </div>
+                `;
+            } else {
+                cardVisual = `
+                   <div class="h-40 w-full rounded-xl bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700 relative shadow-lg mb-4 flex flex-col justify-between p-5 transform transition-transform hover:scale-[1.02]">
+                        <div class="flex justify-between items-start">
+                             <div class="card-chip"></div>
+                             <span class="text-lg font-bold italic text-gray-400">${card.brand}</span>
+                        </div>
+                        <div class="text-white">
+                             <div class="font-mono text-xl tracking-widest mb-1">•••• •••• •••• ${card.lastFourDigits}</div>
+                             <div class="text-sm font-medium text-gray-300">${card.name}</div>
+                        </div>
+                   </div>
+                 `;
+            }
+
             return `
-        <div id="card-${card.id}" class="card cursor-pointer hover:border-accent-purple transition-colors relative border border-transparent" onclick="handleCardClick(event, '${card.id}')">
-          <div class="flex items-center justify-between mb-4">
-            <div>
-              <div class="font-bold text-lg mb-1">${card.name}</div>
-              <div class="text-sm text-text-secondary flex items-center gap-2">
-                <span>${card.brand}</span>
-                <span class="text-xs">â€¢</span>
-                <span>â€¢â€¢â€¢â€¢ ${card.lastFourDigits}</span>
-              </div>
-            </div>
-            <div class="relative card-menu">
-                <button class="text-text-secondary hover:text-text-primary p-1 rounded hover:bg-dark-bg" onclick="toggleCardMenu(event, '${card.id}')">â‹®</button>
-                <div id="cardMenu-${card.id}" class="hidden absolute right-0 top-8 bg-dark-card border border-dark-border rounded-lg shadow-xl z-10 w-32 py-1">
-                    <button onclick="openEditCardModal('${card.id}')" class="w-full text-left px-4 py-2 text-sm text-text-secondary hover:text-text-primary hover:bg-dark-bg">âœï¸ Editar</button>
-                    <button onclick="if(confirm('Tem certeza que deseja excluir?')) deleteCard('${card.id}')" class="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-dark-bg">—‘ï¸ Excluir</button>
-                </div>
-            </div>
-          </div>
+            <div id="card-${card.id}" class="card relative group">
+                <div onclick="openEditCardModal('${card.id}')" class="cursor-pointer">
+                    ${cardVisual}
+                    
+                    <div class="flex items-center justify-between mb-2 mt-2">
+                        <div class="text-sm font-medium text-text-secondary">Limite do Cartão</div>
+                        <div class="text-lg font-bold text-white">${formatCurrency(creditLimit)}</div>
+                    </div>
 
-          <div class="mb-4">
-            <div class="text-sm text-text-secondary">Fatura Atual (Mês Atual)</div>
-            <div class="text-2xl font-bold text-white">${formatCurrency(currentInvoiceAmount)}</div>
-            
-            <div class="text-xs text-text-secondary mt-1 flex justify-between">
-                <span>Total Comprado (Dá­vida Total):</span>
-                <span>${formatCurrency(totalLiability)}</span>
+                    <div class="flex items-center gap-2 mb-2">
+                         <div class="flex-1 bg-dark-bg rounded-full h-2 overflow-hidden">
+                             <div class="${isHealthy ? 'gradient-purple-blue' : 'bg-red-500'} h-2 rounded-full transition-all duration-500" style="width: ${Math.min(100, Math.max(0, usagePercent))}%"></div>
+                         </div>
+                         <span class="text-xs font-bold ${isHealthy ? 'text-accent-purple' : 'text-red-400'}">${Math.round(usagePercent)}%</span>
+                    </div>
+                
+                    <div class="grid grid-cols-2 gap-4 text-sm mt-3">
+                         <div class="bg-dark-bg p-2 rounded">
+                             <div class="text-xs text-text-secondary mb-1">Disponível</div>
+                             <div class="${isHealthy ? 'text-green-400' : 'text-red-400'} font-bold">${formatCurrency(availableCredit)}</div>
+                         </div>
+                         <div class="bg-dark-bg p-2 rounded">
+                             <div class="text-xs text-text-secondary mb-1">Fatura Atual</div>
+                             <div class="text-white font-bold">${formatCurrency(currentInvoiceAmount)}</div>
+                         </div>
+                    </div>
+                 </div>
+                 
+                 <div class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button onclick="event.stopPropagation(); window.openEditCardModal('${card.id}')" class="p-2 bg-dark-card rounded-full hover:bg-white hover:text-black transition-colors shadow-lg" title="Editar">✏️</button>
+                 </div>
             </div>
-          </div>
-
-          <div class="mb-2">
-            <div class="flex items-center justify-between text-sm mb-1">
-              <span class="text-text-secondary">Vence em</span>
-              <span class="text-accent-gold">Dia ${card.dueDay}</span>
-            </div>
-          </div>
-
-          <div class="mt-4 pt-4 border-t border-dark-border">
-            <div class="flex items-center justify-between text-sm mb-2">
-              <span class="text-text-secondary">Limite Disponá­vel</span>
-              <span class="${isHealthy ? 'text-green-400' : 'text-red-400'} font-medium">${isHealthy ? 'Saudável' : 'Crá­tico'}</span>
-            </div>
-            
-            <div class="mb-2">
-              <div class="flex items-center justify-between text-sm mb-1">
-                <span class="text-text-secondary">Utilizado</span>
-                <span>${formatCurrency(totalLiability)}</span>
-              </div>
-              <div class="flex items-center justify-between text-sm">
-                <span class="text-text-secondary">Disponá­vel</span>
-                <span class="${isHealthy ? 'text-green-400' : 'text-red-400'}">${formatCurrency(availableCredit)}</span>
-              </div>
-            </div>
-
-            <div class="flex items-center gap-2 mb-3">
-              <div class="flex-1 bg-dark-bg rounded-full h-2">
-                <div class="gradient-purple-blue h-2 rounded-full" style="width: ${Math.min(100, Math.max(0, usagePercent))}%"></div>
-              </div>
-              <span class="text-sm font-medium">${Math.round(usagePercent)}%</span>
-            </div>
-
-            <div class="text-sm text-text-secondary flex justify-between items-center">
-              <span>Melhor dia: <span class="text-accent-purple font-medium">Dia ${card.closingDay}</span></span>
-              ${currentInvoiceAmount > 0 ? `<button onclick="window.scrollToInvoice()" class="text-xs bg-accent-purple bg-opacity-20 text-accent-purple px-2 py-1 rounded hover:bg-opacity-30">Pagar</button>` : ''}
-            </div>
-          </div>
-        </div>
-      `;
+          `;
         }
 
-        // Scroll helper
-        window.scrollToInvoice = () => {
-            const invoiceSection = document.querySelector('.card.mb-8'); // Main invoice card
-            if (invoiceSection) {
-                invoiceSection.scrollIntoView({ behavior: 'smooth' });
-            }
-        };
+        // --- Invoice Functions ---
+        async function loadInvoice(cardId) {
+            window.currentCardId = cardId;
+            const month = invoiceMonthFilter.value;
+            const year = invoiceYearFilter.value;
 
-        // Delete transaction helper
-        window.deleteCardTransaction = async (cardId, transactionId) => {
-            if (!confirm('Tem certeza que deseja excluir esta despesa?')) return;
             try {
-                await creditCardService.deleteTransaction(cardId, transactionId);
-                loadInvoice(cardId);
-                loadCreditCards(); // Update balances
-            } catch (error) {
-                alert('Erro ao excluir despesa');
+                const data = await creditCardService.getInvoice(cardId, month, year);
+                renderInvoice(data);
+            } catch (e) {
+                console.error("Error loading invoice", e);
             }
-        };
+        }
 
-        // Window helper functions (Restored)
-        window.handleCardClick = (event, cardId) => {
-            // Prevent if click came from menu or buttons
-            if (event.target.closest('button') || event.target.closest('.card-menu')) return;
-            loadInvoice(cardId);
-        };
+        function renderInvoice(invoiceData) {
+            const tbody = document.getElementById('invoiceTableBody');
+            const statusEl = document.getElementById('invoiceStatus');
+            const totalEl = document.getElementById('invoiceTotalDisplay');
 
-        window.toggleCardMenu = (event, cardId) => {
-            event.stopPropagation();
-            // Close all other menus
-            document.querySelectorAll('[id^="cardMenu-"]').forEach(el => {
-                if (el.id !== `cardMenu-${cardId}`) el.classList.add('hidden');
-            });
-            const menu = document.getElementById(`cardMenu-${cardId}`);
-            menu.classList.toggle('hidden');
-        };
+            tbody.innerHTML = '';
 
-        // Close menus when clicking outside
-        document.addEventListener('click', () => {
-            document.querySelectorAll('[id^="cardMenu-"]').forEach(el => el.classList.add('hidden'));
+            if (invoiceData.items.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-6 text-text-secondary">Nenhuma despesa para este mês.</td></tr>';
+            } else {
+                invoiceData.items.forEach(item => {
+                    const tr = document.createElement('tr');
+                    tr.className = 'border-b border-dark-border hover:bg-dark-bg transition-colors';
+                    const date = new Date(item.purchaseDate).toLocaleDateString();
+
+                    tr.innerHTML = `
+                        <td class="py-3 px-4 text-sm text-white">${date}</td>
+                        <td class="py-3 px-4 text-sm text-white">${item.description}</td>
+                        <td class="py-3 px-4 text-sm text-text-secondary">${item.category}</td>
+                        <td class="py-3 px-4 text-sm text-text-secondary text-center">${item.installmentNumber}/${item.installments}</td>
+                        <td class="py-3 px-4 text-sm font-bold text-right text-white">${formatCurrency(item.installmentAmount)}</td>
+                        <td class="py-3 px-4 text-sm text-right">
+                             <button onclick="window.editTransaction('${item.creditCardId}', '${item.id}')" class="text-text-secondary hover:text-accent-purple mr-2">✎</button>
+                             <button onclick="window.deleteCardTransaction('${item.creditCardId}', '${item.id}')" class="text-text-secondary hover:text-red-400">🗑</button>
+                        </td>
+                      `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            // Update Status
+            if (invoiceData.isPaid) {
+                statusEl.textContent = 'PAGA';
+                statusEl.className = 'text-sm px-2 py-1 rounded bg-green-500 bg-opacity-20 text-green-400 border border-green-500 font-bold';
+            } else {
+                statusEl.textContent = 'ABERTA';
+                statusEl.className = 'text-sm px-2 py-1 rounded bg-accent-purple bg-opacity-20 text-accent-purple border border-accent-purple font-bold';
+            }
+
+            totalEl.textContent = formatCurrency(invoiceData.totalAmount);
+        }
+
+        // --- Create (New Card) ---
+        const newCardForm = document.getElementById('newCardForm');
+        newCardForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = {
+                name: document.getElementById('cardName').value,
+                lastFourDigits: document.getElementById('lastFourDigits').value,
+                brand: document.getElementById('cardBrand').value,
+                imageUrl: document.getElementById('cardImageUrl').value,
+                creditLimit: parseFloat(document.getElementById('creditLimit').value),
+                closingDay: parseInt(document.getElementById('closingDay').value),
+                dueDay: parseInt(document.getElementById('dueDay').value)
+            };
+
+            try {
+                await creditCardService.create(formData);
+                closeNewCardModal();
+                newCardForm.reset();
+                loadCreditCards();
+            } catch (error) {
+                alert('Erro ao criar cartão');
+            }
         });
 
-        function updateCardSelection(selectedCardId) {
-            // Remove highlighting from all cards
-            document.querySelectorAll('.card[id^="card-"]').forEach(el => {
-                el.classList.remove('border-accent-purple');
-                el.classList.remove('ring-2');
-                el.classList.remove('ring-accent-purple');
-                el.classList.add('border-transparent');
-            });
-
-            // Add highlighting to selected card
-            const selectedCard = document.getElementById(`card-${selectedCardId}`);
-            if (selectedCard) {
-                selectedCard.classList.remove('border-transparent');
-                selectedCard.classList.add('border-accent-purple');
-                selectedCard.classList.add('ring-2', 'ring-accent-purple');
-            }
-        }
-
+        // --- Edit Card ---
         window.openEditCardModal = (cardId) => {
             const card = window.cardsData[cardId];
             if (!card) return;
@@ -845,525 +918,166 @@
             document.getElementById('editCardName').value = card.name;
             document.getElementById('editLastFourDigits').value = card.lastFourDigits;
             document.getElementById('editCardBrand').value = card.brand;
+            document.getElementById('editCardImageUrl').value = card.imageUrl || '';
             document.getElementById('editCreditLimit').value = card.creditLimit;
             document.getElementById('editClosingDay').value = card.closingDay;
             document.getElementById('editDueDay').value = card.dueDay;
 
-            document.getElementById('editCardModal').classList.remove('hidden');
-            document.getElementById('editCardModal').classList.add('flex');
+            const editModal = document.getElementById('editCardModal');
+            editModal.classList.remove('hidden');
+            editModal.classList.add('flex');
         };
 
-        window.deleteCard = async (cardId) => {
-            try {
-                await creditCardService.delete(cardId);
-                loadCreditCards();
-            } catch (error) {
-                alert('Erro ao excluir cartão');
-            }
-        };
-
-        // Edit Transaction Modal Controls
-        const editTransactionModal = document.getElementById('editTransactionModal');
-        const closeEditTransactionModalBtn = document.getElementById('closeEditTransactionModalBtn');
-        const cancelEditTransactionBtn = document.getElementById('cancelEditTransactionBtn');
-
-        [closeEditTransactionModalBtn, cancelEditTransactionBtn].forEach(btn => {
-            btn.addEventListener('click', () => {
-                editTransactionModal.classList.add('hidden');
-                editTransactionModal.classList.remove('flex');
-            });
-        });
-
-        // PLAN INVOICES LOGIC
-        const planInvoicesBtn = document.getElementById('planInvoicesBtn');
-        const planInvoicesModal = document.getElementById('planInvoicesModal');
-        const closePlanInvoicesModalBtn = document.getElementById('closePlanInvoicesModalBtn');
-        const cancelPlanInvoicesBtn = document.getElementById('cancelPlanInvoicesBtn');
-        const planInvoicesForm = document.getElementById('planInvoicesForm');
-        const planCardSelect = document.getElementById('planCardSelect');
-        const planInvoicesGrid = document.getElementById('planInvoicesGrid');
-
-        function openPlanInvoicesModal() {
-            // Populate card select
-            // Re-using options from 'cardSelect'
-            const existingOptions = document.getElementById('cardSelect').innerHTML;
-            planCardSelect.innerHTML = existingOptions;
-
-            // Set default card
-            if (window.currentCardId) {
-                planCardSelect.value = window.currentCardId;
-            }
-
-            generatePlanGrid();
-
-            planInvoicesModal.classList.remove('hidden');
-            planInvoicesModal.classList.add('flex');
-        }
-
-        function closePlanInvoicesModal() {
-            planInvoicesModal.classList.add('hidden');
-            planInvoicesModal.classList.remove('flex');
-        }
-
-        function generatePlanGrid() {
-            planInvoicesGrid.innerHTML = '';
-            const today = new Date();
-            let currentMonth = today.getMonth() + 1; // 0-based -> 1-based logic
-            let currentYear = today.getFullYear();
-
-            const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
-
-            for (let i = 0; i < 12; i++) {
-                // Calculate next months
-                let m = currentMonth + i;
-                let y = currentYear;
-                if (m > 12) {
-                    y += Math.floor((m - 1) / 12);
-                    m = ((m - 1) % 12) + 1;
-                }
-
-                const monthName = monthNames[m - 1];
-
-                const div = document.createElement('div');
-                div.className = 'bg-dark-bg p-4 rounded-lg border border-dark-border';
-                div.innerHTML = `
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="font-bold text-white">${monthName} ${y}</span>
-                        <span class="text-xs text-text-secondary">Mês ${m}</span>
-                    </div>
-                    <div class="relative">
-                        <span class="absolute left-3 top-2.5 text-text-secondary">R$</span>
-                        <input type="number" step="0.01" name="plan_amount_${m}_${y}" 
-                            class="w-full bg-dark-card border border-dark-border rounded px-3 py-2 pl-10 text-white focus:outline-none focus:border-accent-purple"
-                            placeholder="0,00">
-                    </div>
-                `;
-                planInvoicesGrid.appendChild(div);
-            }
-        }
-
-        if (planInvoicesBtn) {
-            planInvoicesBtn.addEventListener('click', openPlanInvoicesModal);
-        }
-        if (closePlanInvoicesModalBtn) {
-            closePlanInvoicesModalBtn.addEventListener('click', closePlanInvoicesModal);
-        }
-        if (cancelPlanInvoicesBtn) {
-            cancelPlanInvoicesBtn.addEventListener('click', closePlanInvoicesModal);
-        }
-
-        if (planInvoicesForm) {
-            planInvoicesForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const cardId = planCardSelect.value;
-                if (!cardId) {
-                    alert('Selecione um cartão');
-                    return;
-                }
-
-                const plans = [];
-                const inputs = planInvoicesGrid.querySelectorAll('input');
-                inputs.forEach(input => {
-                    const val = parseFloat(input.value);
-                    if (val > 0) {
-                        const parts = input.name.split('_');
-                        const m = parseInt(parts[2]);
-                        const y = parseInt(parts[3]);
-                        plans.push({ month: m, year: y, amount: val });
-                    }
-                });
-
-                if (plans.length === 0) {
-                    alert('Preencha pelo menos um valor maior que zero.');
-                    return;
-                }
-
-                try {
-                    await creditCardService.planInvoices(cardId, plans);
-                    alert('Planejamento salvo com sucesso!');
-                    closePlanInvoicesModal();
-                    loadCreditCards();
-                } catch (error) {
-                    alert('Erro ao salvar planejamento: ' + error.message);
-                }
-            });
-        }
-
-
-        // Open Edit Transaction Modal (Made global)
-        window.openEditTransactionModal = (cardId, transactionJson) => {
-            const transaction = JSON.parse(decodeURIComponent(transactionJson));
-
-            document.getElementById('editTransactionId').value = transaction.id || transaction.transactionId;
-            document.getElementById('editTransactionCardId').value = cardId;
-            document.getElementById('editDescription').value = transaction.description;
-            document.getElementById('editTotalAmount').value = transaction.totalAmount;
-            document.getElementById('editInstallments').value = transaction.installments;
-            document.getElementById('editCategory').value = transaction.category;
-
-            // Format date for input type="date"
-            const date = new Date(transaction.purchaseDate);
-            document.getElementById('editPurchaseDate').value = date.toISOString().split('T')[0];
-
-            editTransactionModal.classList.remove('hidden');
-            editTransactionModal.classList.add('flex');
-        }
-
-        // Submit Edit Transaction Form
-        document.getElementById('editTransactionForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const cardId = document.getElementById('editTransactionCardId').value;
-            const transactionId = document.getElementById('editTransactionId').value;
-
-            const transactionData = {
-                description: document.getElementById('editDescription').value,
-                totalAmount: parseFloat(document.getElementById('editTotalAmount').value),
-                installments: parseInt(document.getElementById('editInstallments').value),
-                category: document.getElementById('editCategory').value,
-                purchaseDate: document.getElementById('editPurchaseDate').value
-            };
-
-            try {
-                await creditCardService.updateTransaction(cardId, transactionId, transactionData);
-                editTransactionModal.classList.add('hidden');
-                editTransactionModal.classList.remove('flex');
-                loadInvoice(cardId);
-                loadCreditCards();
-                alert('Despesa atualizada com sucesso!');
-            } catch (error) {
-                alert('Erro ao atualizar despesa: ' + error.message);
-            }
-        });
-
-        // Edit Card Modal controls (Restored)
-        const editCardModal = document.getElementById('editCardModal');
-        const closeEditCardModalBtn = document.getElementById('closeEditCardModalBtn');
-        const cancelEditCardBtn = document.getElementById('cancelEditCardBtn');
-
-        [closeEditCardModalBtn, cancelEditCardBtn].forEach(btn => {
-            btn.addEventListener('click', () => {
-                editCardModal.classList.add('hidden');
-                editCardModal.classList.remove('flex');
-            });
-        });
-
-        // Submit Edit Form
-        document.getElementById('editCardForm').addEventListener('submit', async (e) => {
+        const editCardForm = document.getElementById('editCardForm');
+        editCardForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = document.getElementById('editCardId').value;
-            const cardData = {
+            const formData = {
                 name: document.getElementById('editCardName').value,
                 lastFourDigits: document.getElementById('editLastFourDigits').value,
                 brand: document.getElementById('editCardBrand').value,
+                imageUrl: document.getElementById('editCardImageUrl').value,
                 creditLimit: parseFloat(document.getElementById('editCreditLimit').value),
                 closingDay: parseInt(document.getElementById('editClosingDay').value),
                 dueDay: parseInt(document.getElementById('editDueDay').value)
             };
 
             try {
-                await creditCardService.update(id, cardData);
-                editCardModal.classList.add('hidden');
-                editCardModal.classList.remove('flex');
+                await creditCardService.update(id, formData);
+                closeEditCardModal();
                 loadCreditCards();
-                alert('Cartão atualizado com sucesso!');
             } catch (error) {
-                alert('Erro ao atualizar cartão: ' + error.message);
+                alert('Erro ao atualizar cartão');
             }
         });
 
-        // Load invoice
-        async function loadInvoice(cardId = null) {
-            try {
-                // If no cardId provided, try to use stored one, or default to first card
-                const idToLoad = cardId || window.currentCardId;
-                if (!idToLoad) return;
-
-                updateCardSelection(idToLoad);
-
-                // Set default date if filters are empty (first run)
-                const now = new Date();
-                if (!window.filtersInitialized) {
-                    invoiceMonthFilter.value = now.getMonth() + 1;
-                    invoiceYearFilter.value = now.getFullYear();
-                    window.filtersInitialized = true;
-                }
-
-                // FORCE DARK MODE COLORS ON OPTIONS (Workaround for select elements)
-                // We iterate over options and ensure they have classes
-                Array.from(invoiceMonthFilter.options).forEach(opt => opt.classList.add('bg-dark-card', 'text-white'));
-                Array.from(invoiceYearFilter.options).forEach(opt => opt.classList.add('bg-dark-card', 'text-white'));
-                Array.from(invoiceCardFilter.options).forEach(opt => opt.classList.add('bg-dark-card', 'text-white'));
-
-                // Get values from filters
-                const selectedMonth = parseInt(invoiceMonthFilter.value);
-                const selectedYear = parseInt(invoiceYearFilter.value);
-
-                // Store current view params
-                window.currentCardId = idToLoad;
-                window.currentMonth = selectedMonth;
-                window.currentYear = selectedYear;
-
-                const invoice = await creditCardService.getInvoice(idToLoad, selectedMonth, selectedYear);
-
-                // Update Header Status
-                const statusSpan = document.getElementById('invoiceStatus');
-                // Removed invoiceTitle updates since we have inputs now
-                // Optionally we could update the selected option text if needed, but value binding is enough
-
-                // Add Pay Button if not exists
-                let payBtn = document.getElementById('payInvoiceBtn');
-                if (!payBtn) {
-                    // Find the actions div
-                    const statusParent = statusSpan.parentElement; // div.flex.items-center.gap-2
-                    if (statusParent) {
-                        payBtn = document.createElement('button');
-                        payBtn.id = 'payInvoiceBtn';
-                        payBtn.className = 'text-sm text-green-400 hover:underline ml-2 font-bold';
-                        statusParent.insertBefore(payBtn, statusParent.firstChild);
-                    }
-                }
-
-                // Safety check if payBtn was created
-                if (payBtn) {
-                    // Update UI based on status
-                    if (invoice.isPaid) {
-                        statusSpan.textContent = 'Paga âœ…';
-                        statusSpan.className = 'text-sm text-green-400 font-bold';
-                        payBtn.textContent = 'Reabrir Fatura';
-                        payBtn.className = 'text-sm text-red-400 hover:underline ml-2 font-bold';
-                    } else {
-                        statusSpan.textContent = 'Aberta';
-                        statusSpan.className = 'text-sm text-text-secondary';
-                        payBtn.textContent = 'Pagar Fatura';
-                        payBtn.className = 'text-sm text-green-400 hover:underline ml-2 font-bold';
-                    }
-
-                    // Attach click handler
-                    // Re-create clone to remove old listeners
-                    const newPayBtn = payBtn.cloneNode(true);
-                    payBtn.parentNode.replaceChild(newPayBtn, payBtn);
-
-                    newPayBtn.addEventListener('click', () => {
-                        openPaymentModal(invoice);
-                    });
-                }
-
-                // Existing Table Logic
-                const tbody = document.getElementById('invoiceTableBody');
-                tbody.innerHTML = invoice.items.map(item => `
-          <tr class="border-b border-dark-border hover:bg-dark-bg transition-colors">
-            <td class="py-3 px-4">
-              <div class="flex items-center gap-2">
-                <span class="text-sm">“…</span>
-                <span class="text-sm">${new Date(item.purchaseDate).toLocaleDateString('pt-BR')}</span>
-              </div>
-            </td>
-            <td class="py-3 px-4">
-              <div class="font-medium">${item.description}</div>
-              <div class="text-sm text-text-secondary">${item.displayText}</div>
-            </td>
-            <td class="py-3 px-4">
-              <span class="px-2 py-1 bg-accent-blue bg-opacity-20 text-accent-blue text-xs rounded-full">
-                ${item.category}
-              </span>
-            </td>
-            <td class="py-3 px-4 text-sm text-text-secondary">
-              ${item.installmentNumber}/${item.installments}
-            </td>
-            <td class="py-3 px-4 text-right font-medium">
-              ${formatCurrency(item.installmentAmount)}
-            </td>
-            <td class="py-3 px-4 text-right">
-                <div class="flex items-center justify-end gap-2">
-                    <button onclick="deleteCardTransaction('${idToLoad}', '${item.id || item.transactionId}')" class="text-red-400 hover:text-red-300 p-1 rounded hover:bg-red-400 hover:bg-opacity-10" title="Excluir">
-                        —‘ï¸
-                    </button>
-                    <!-- Edit button wired to openEditTransactionModal -->
-                    <button onclick="openEditTransactionModal('${idToLoad}', '${encodeURIComponent(JSON.stringify(item))}')" class="text-text-secondary hover:text-text-primary p-1 rounded hover:bg-dark-bg" title="Editar">
-                        âœï¸
-                    </button>
-                </div>
-            </td>
-          </tr>
-        `).join('');
-            } catch (error) {
-                console.error('Failed to load invoice:', error);
-            }
-        }
-
-        // Payment Modal Logic
-        const paymentModal = document.getElementById('paymentModal');
-        const closePaymentModalBtn = document.getElementById('closePaymentModalBtn');
-        const cancelPaymentBtn = document.getElementById('cancelPaymentBtn');
-        const paymentAmountInput = document.getElementById('paymentAmount');
-        const partialPaymentHint = document.getElementById('partialPaymentHint');
-
-        function openPaymentModal(invoice) {
-            document.getElementById('paymentCardId').value = window.currentCardId;
-            document.getElementById('paymentMonth').value = window.currentMonth;
-            document.getElementById('paymentYear').value = window.currentYear;
-
-            const total = invoice.totalAmount;
-            document.getElementById('paymentTotalRaw').value = total;
-            document.getElementById('paymentTotalDisplay').textContent = formatCurrency(total);
-
-            // If already paid, maybe prepopulate with paid amount? 
-            // Simplified: Always default to Total, user changes if needed.
-            paymentAmountInput.value = total.toFixed(2);
-            partialPaymentHint.classList.add('hidden');
-
-            paymentModal.classList.remove('hidden');
-            paymentModal.classList.add('flex');
-        }
-
-        [closePaymentModalBtn, cancelPaymentBtn].forEach(btn => {
-            btn.addEventListener('click', () => {
-                paymentModal.classList.add('hidden');
-                paymentModal.classList.remove('flex');
-            });
-        });
-
-        paymentAmountInput.addEventListener('input', () => {
-            const total = parseFloat(document.getElementById('paymentTotalRaw').value);
-            const current = parseFloat(paymentAmountInput.value) || 0;
-
-            if (current < total && current > 0) {
-                partialPaymentHint.classList.remove('hidden');
-            } else {
-                partialPaymentHint.classList.add('hidden');
-            }
-        });
-
-        document.getElementById('paymentForm').addEventListener('submit', async (e) => {
+        // --- Transaction (Create) ---
+        const transactionForm = document.getElementById('transactionForm');
+        transactionForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const cardId = document.getElementById('paymentCardId').value;
-            const month = parseInt(document.getElementById('paymentMonth').value);
-            const year = parseInt(document.getElementById('paymentYear').value);
-            const amount = parseFloat(paymentAmountInput.value);
-
-            try {
-                // If it's a reopening (already paid), maybe confirm logic? 
-                // Backend payInvoice toggles 'isPaid'. Now we are sending 'amount'.
-                // If backend sees 'amount', it should process standard payment logic.
-                // Reopening logic (if total == paid) might need handling, but basic flow handles Pay.
-
-                await creditCardService.payInvoice(cardId, month, year, amount);
-
-                paymentModal.classList.add('hidden');
-                paymentModal.classList.remove('flex');
-
-                loadInvoice(cardId);
-                loadCreditCards();
-                alert('Fatura atualizada com sucesso!');
-            } catch (error) {
-                alert('Erro ao processar pagamento: ' + error.message);
+            const cardId = document.getElementById('cardSelect').value;
+            if (!cardId) {
+                alert("Selecione um cartão");
+                return;
             }
-        });
 
-        // New Card Modal controls
-        const newCardModal = document.getElementById('addNewCardModal');
-        const addNewCardBtn = document.getElementById('addNewCardBtn');
-        const closeNewCardModalBtn = document.getElementById('closeNewCardModalBtn');
-        const cancelNewCardBtn = document.getElementById('cancelNewCardBtn');
-
-        addNewCardBtn.addEventListener('click', () => {
-            newCardModal.classList.remove('hidden');
-            newCardModal.classList.add('flex');
-        });
-
-        [closeNewCardModalBtn, cancelNewCardBtn].forEach(btn => {
-            btn.addEventListener('click', () => {
-                newCardModal.classList.add('hidden');
-                newCardModal.classList.remove('flex');
-            });
-        });
-
-        // Submit new card form
-        document.getElementById('newCardForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const cardData = {
-                name: document.getElementById('cardName').value,
-                lastFourDigits: document.getElementById('lastFourDigits').value,
-                brand: document.getElementById('cardBrand').value,
-                creditLimit: parseFloat(document.getElementById('creditLimit').value),
-                closingDay: parseInt(document.getElementById('closingDay').value),
-                dueDay: parseInt(document.getElementById('dueDay').value)
+            const formData = {
+                description: document.getElementById('description').value,
+                totalAmount: parseFloat(document.getElementById('totalAmount').value),
+                installments: parseInt(document.getElementById('installments').value),
+                category: document.getElementById('category').value,
+                purchaseDate: document.getElementById('purchaseDate').value
             };
 
-            try {
-                await creditCardService.create(cardData);
-                newCardModal.classList.add('hidden');
-                newCardModal.classList.remove('flex');
-                document.getElementById('newCardForm').reset();
-                loadCreditCards();
-                alert('Cartão adicionado com sucesso!');
-            } catch (error) {
-                alert('Erro ao adicionar cartão: ' + error.message);
-            }
-        });
-
-        // Transaction Modal controls
-        const modal = document.getElementById('addTransactionModal');
-        const addCardBtn = document.getElementById('addCardBtn');
-        const closeModalBtn = document.getElementById('closeModalBtn');
-        const cancelBtn = document.getElementById('cancelBtn');
-
-        addCardBtn.addEventListener('click', () => {
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        });
-
-        [closeModalBtn, cancelBtn].forEach(btn => {
-            btn.addEventListener('click', () => {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-            });
-        });
-
-        // Submit transaction
-        document.getElementById('transactionForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const cardId = document.getElementById('cardSelect').value;
-            const description = document.getElementById('description').value;
-            const inputAmount = parseFloat(document.getElementById('totalAmount').value);
-            const installments = parseInt(document.getElementById('installments').value);
+            // Handle "Valor da Parcela" mode
             const isTotalMode = document.querySelector('input[name="valueType"]:checked').value === 'total';
-
-            const totalAmount = isTotalMode ? inputAmount : (inputAmount * installments);
-
-            const category = document.getElementById('category').value;
-            const purchaseDate = document.getElementById('purchaseDate').value;
+            if (!isTotalMode) {
+                formData.totalAmount = formData.totalAmount * formData.installments;
+            }
 
             try {
-                await creditCardService.addTransaction(cardId, {
-                    description,
-                    totalAmount,
-                    installments,
-                    category,
-                    purchaseDate
-                });
-
-                // Close modal and reload
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-                loadCreditCards();
-
-                // Show success message
-                alert(`Despesa adicionada com sucesso! ${installments}x de ${formatCurrency(totalAmount / installments)}`);
+                await creditCardService.addTransaction(cardId, formData);
+                closeTransactionModal();
+                transactionForm.reset();
+                loadCreditCards(); // Refresh
             } catch (error) {
-                alert('Erro ao adicionar despesa: ' + error.message);
+                alert('Erro ao adicionar despesa');
             }
         });
 
-        // Load cards on page load
+        // --- Planning Modal (Refactored) ---
+        const planInvoicesBtn = document.getElementById('planInvoicesBtn');
+        const planInvoicesModal = document.getElementById('planInvoicesModal');
+        const closePlanInvoicesModalBtn = document.getElementById('closePlanInvoicesModalBtn');
+        const cancelPlanInvoicesBtn = document.getElementById('cancelPlanInvoicesBtn');
+
+        planInvoicesBtn.addEventListener('click', () => {
+            buildPlanningGrid(); // Build inputs
+            planInvoicesModal.classList.remove('hidden');
+            planInvoicesModal.classList.add('flex');
+        });
+
+        const closePlanInvoicesModal = () => {
+            planInvoicesModal.classList.add('hidden');
+            planInvoicesModal.classList.remove('flex');
+        };
+        closePlanInvoicesModalBtn.addEventListener('click', closePlanInvoicesModal);
+        cancelPlanInvoicesBtn.addEventListener('click', closePlanInvoicesModal);
+
+        function buildPlanningGrid() {
+            const grid = document.getElementById('planInvoicesGrid');
+            grid.innerHTML = '';
+            const months = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+                "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+
+            months.forEach((m, index) => {
+                const div = document.createElement('div');
+                div.className = 'bg-dark-bg p-3 rounded border border-dark-border';
+                div.innerHTML = `
+                      <label class="block text-sm text-text-secondary mb-1">${m}</label>
+                      <input type="number" step="0.01" name="plan_month_${index + 1}" class="input-field w-full text-sm" placeholder="R$ 0,00">
+                  `;
+                grid.appendChild(div);
+            });
+        }
+
+        const planInvoicesForm = document.getElementById('planInvoicesForm');
+        planInvoicesForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const cardId = document.getElementById('planCardSelect').value;
+            const year = parseInt(document.getElementById('planYearInput').value);
+
+            if (!cardId) { alert("Selecione um cartão"); return; }
+
+            const plans = [];
+            for (let i = 1; i <= 12; i++) {
+                const input = document.querySelector(`input[name="plan_month_${i}"]`);
+                const val = parseFloat(input.value);
+                if (val > 0) {
+                    plans.push({
+                        month: i,
+                        year: year,
+                        amount: val
+                    });
+                }
+            }
+
+            if (plans.length === 0) {
+                alert("Preencha pelo menos um valor.");
+                return;
+            }
+
+            try {
+                await creditCardService.planInvoices(cardId, plans);
+                alert("Planejamento salvo com sucesso!");
+                closePlanInvoicesModal();
+                loadCreditCards();
+            } catch (error) {
+                alert('Erro ao salvar planejamento');
+            }
+        });
+
+        // Initialize
         loadCreditCards();
 
-        // Make selectCard global
-        window.selectCard = loadInvoice;
+        // Helpers
+        window.deleteCardTransaction = async (cardId, transactionId) => {
+            if (!confirm('Excluir esta despesa?')) return;
+            try {
+                await creditCardService.deleteTransaction(cardId, transactionId);
+                loadInvoice(cardId);
+                loadCreditCards();
+            } catch (error) {
+                alert('Erro ao excluir');
+            }
+        };
+
+        // Expose edit for transaction (simplification)
+        window.editTransaction = (cardId, transactionId) => {
+            alert("Funcionalidade de edição rápida em desenvolvimento. Por favor, use o menu de transações.");
+        };
+
     </script>
 </body>
 
 </html>
-
