@@ -26,6 +26,14 @@ export class CreditCardController {
                 }],
             });
 
+            // Fetch all invoices for current month/year in one query
+            const allInvoices = await CreditCardInvoice.findAll({
+                where: {
+                    month: currentMonth,
+                    year: currentYear
+                }
+            });
+
             // Calculate balance info for each card
             const cardsWithBalance = creditCards.map(card => {
                 const transactions = (card as any).transactions || [];
@@ -37,7 +45,6 @@ export class CreditCardController {
                 }, 0);
 
                 // 2. Current Invoice Amount (Estimate for current calendar month)
-                // Reusing invoice filter logic roughly
                 const currentInvoiceAmount = transactions.reduce((sum: number, transaction: any) => {
                     const dateStr = transaction.purchaseDate.toString();
                     const [pYear, pMonth] = dateStr.includes('T')
@@ -60,13 +67,24 @@ export class CreditCardController {
                 const availableCredit = creditLimit - totalLiability;
                 const usagePercentage = creditLimit > 0 ? (totalLiability / creditLimit) * 100 : 0;
 
+                // 3. Check invoice status for current month
+                const currentInvoice = allInvoices.find(inv => inv.creditCardId === card.id);
+                const currentInvoiceIsPaid = currentInvoice ? currentInvoice.isPaid : false;
+
+                // 4. Check if overdue (past due day and not paid)
+                const dueDay = card.dueDay || 10;
+                const today = now.getDate();
+                const isOverdue = !currentInvoiceIsPaid && currentInvoiceAmount > 0 && today > dueDay;
+
                 return {
                     ...card.toJSON(),
-                    currentInvoiceAmount, // Due this month
-                    totalLiability,       // Total debt
-                    currentBalance: totalLiability, // Keeping for backward compat, but UI should prefer totalLiability
+                    currentInvoiceAmount,
+                    totalLiability,
+                    currentBalance: totalLiability,
                     availableCredit,
-                    usagePercentage: usagePercentage.toFixed(2)
+                    usagePercentage: usagePercentage.toFixed(2),
+                    currentInvoiceIsPaid,
+                    isOverdue
                 };
             });
 

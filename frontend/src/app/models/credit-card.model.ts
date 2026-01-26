@@ -6,11 +6,14 @@ export interface CreditCard {
     userId?: string;
     imageUrl?: string;
     // Backend computed fields
-    creditLimit?: number; // Renamed from limit
-    limit?: number; // Keeping optional for mapped access check
+    creditLimit?: number;
+    limit?: number;
     closingDay: number;
     dueDay: number;
     totalLiability?: number;
     availableCredit?: number;
     usagePercentage?: number;
+    currentInvoiceAmount?: number;
+    currentInvoiceIsPaid?: boolean;
+    isOverdue?: boolean;
 }
