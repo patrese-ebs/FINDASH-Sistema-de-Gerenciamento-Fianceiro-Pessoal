@@ -21,7 +21,7 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 # Angular build output is usually in dist/frontend-ng/browser (for v17+) or dist/frontend-ng
 # We need to verify the output path in angular.json, but standard is dist/<project-name>/browser for SSG/SSR compatible builds
 # or just dist/<project-name>
-COPY --from=builder /app/dist/frontend-ng/browser /usr/share/nginx/html
+COPY --from=builder /app/dist/frontend/browser /usr/share/nginx/html
 
 EXPOSE 80
 
