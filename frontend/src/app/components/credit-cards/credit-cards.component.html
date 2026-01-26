@@ -379,15 +379,25 @@
                             <span class="font-bold text-lg w-32">{{ months[monthData.month - 1]?.label }}</span>
                             <div class="flex flex-col">
                                 <span class="text-sm text-text-secondary">Total</span>
-                                <span class="font-bold" [ngClass]="monthData.isPaid ? 'text-green-500' : 'text-white'">
+                                <span class="font-bold"
+                                    [ngClass]="monthData.isPaid ? 'text-green-500' : (monthData.isPartiallyPaid ? 'text-blue-400' : 'text-white')">
                                     {{ monthData.total | currency:'BRL' }}
+                                </span>
+                            </div>
+                            <!-- Show remaining if partially paid -->
+                            <div *ngIf="monthData.isPartiallyPaid" class="flex flex-col">
+                                <span class="text-sm text-text-secondary">Restante</span>
+                                <span class="font-bold text-yellow-400">
+                                    {{ monthData.remainingAmount | currency:'BRL' }}
                                 </span>
                             </div>
                         </div>
                         <div class="flex items-center gap-3">
                             <span *ngIf="monthData.isPaid"
                                 class="bg-green-500/10 text-green-500 px-2 py-1 rounded text-xs font-bold border border-green-500/20">Paga</span>
-                            <span *ngIf="!monthData.isPaid && monthData.total > 0"
+                            <span *ngIf="monthData.isPartiallyPaid"
+                                class="bg-blue-500/10 text-blue-400 px-2 py-1 rounded text-xs font-bold border border-blue-500/20">Parcial</span>
+                            <span *ngIf="!monthData.isPaid && !monthData.isPartiallyPaid && monthData.total > 0"
                                 class="bg-yellow-500/10 text-yellow-500 px-2 py-1 rounded text-xs font-bold border border-yellow-500/20">Aberta</span>
                             <span class="text-text-secondary transition-transform duration-300"
                                 [ngClass]="{'rotate-180': selectedMonthIndex === i}">▼</span>
@@ -396,10 +406,18 @@
 
                     <!-- Month Details (Expanded) -->
                     <div *ngIf="selectedMonthIndex === i" class="border-t border-dark-border bg-dark-bg/30">
-                        <!-- Payment Section (Only if open and has value) -->
+                        <!-- Payment Section (Only if open/partial and has value) -->
                         <div *ngIf="!monthData.isPaid && monthData.total > 0"
-                            class="p-4 bg-yellow-500/5 border-b border-dark-border/50 flex items-center justify-between">
-                            <span class="text-sm text-yellow-200">Esta fatura está aberta.</span>
+                            class="p-4 border-b border-dark-border/50 flex items-center justify-between"
+                            [ngClass]="monthData.isPartiallyPaid ? 'bg-blue-500/5' : 'bg-yellow-500/5'">
+                            <div>
+                                <span *ngIf="monthData.isPartiallyPaid" class="text-sm text-blue-200">
+                                    Já pago: {{ monthData.paidAmount | currency:'BRL' }} — Falta: {{
+                                    monthData.remainingAmount | currency:'BRL' }}
+                                </span>
+                                <span *ngIf="!monthData.isPartiallyPaid" class="text-sm text-yellow-200">Esta fatura
+                                    está aberta.</span>
+                            </div>
                             <div class="flex items-center gap-2">
                                 <span class="text-sm text-text-secondary">Pagar:</span>
                                 <input type="number" [(ngModel)]="paymentAmount" (click)="$event.stopPropagation()"

@@ -335,10 +335,10 @@ export class CreditCardsComponent implements OnInit {
             this.selectedMonthIndex = null;
         } else {
             this.selectedMonthIndex = index;
-            // Pre-fill payment amount if open
+            // Pre-fill payment amount - use remaining if partially paid, else total
             const monthData = this.yearlyOverview[index];
             if (monthData) {
-                this.paymentAmount = monthData.total;
+                this.paymentAmount = monthData.remainingAmount ?? monthData.total;
             }
         }
     }

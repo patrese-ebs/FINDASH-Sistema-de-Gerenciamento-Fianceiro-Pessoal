@@ -143,18 +143,19 @@ export class CreditCardController {
                     }
                 });
 
-                // Check if this card's invoice for this month is paid
+                // Check if this card's invoice for this month exists and get paid amount
                 const invoice = await CreditCardInvoice.findOne({
                     where: {
                         creditCardId: card.id,
                         month: currentMonth,
-                        year: currentYear,
-                        isPaid: true
+                        year: currentYear
                     }
                 });
 
+                // Use the actual paid amount from invoice, not just if isPaid
                 if (invoice) {
-                    totalPaidThisMonth += cardDueThisMonth;
+                    const paidAmount = parseFloat(invoice.amount.toString());
+                    totalPaidThisMonth += paidAmount;
                 }
 
                 // Add to total due anyway (it's the monthly bill size)
@@ -162,7 +163,7 @@ export class CreditCardController {
             }
 
             const totalAvailable = totalLimit - totalLiability;
-            const totalPendingThisMonth = totalDueThisMonth - totalPaidThisMonth;
+            const totalPendingThisMonth = Math.max(0, totalDueThisMonth - totalPaidThisMonth);
 
             res.status(200).json({
                 totalLimit,
@@ -224,11 +225,20 @@ export class CreditCardController {
                 const total = items.reduce((sum, i) => sum + i.installmentAmount, 0);
                 const inv = invoices.find(i => i.month === m);
 
+                // Calculate paid amount and remaining
+                const paidAmount = inv ? parseFloat(inv.amount.toString()) : 0;
+                const remainingAmount = Math.max(0, total - paidAmount);
+                const isPartiallyPaid = paidAmount > 0 && paidAmount < total;
+                const isFullyPaid = inv ? inv.isPaid && remainingAmount <= 0 : false;
+
                 overview.push({
                     month: m,
                     year: targetYear,
                     total,
-                    isPaid: inv ? inv.isPaid : false,
+                    paidAmount,
+                    remainingAmount,
+                    isPaid: isFullyPaid,
+                    isPartiallyPaid,
                     items // Include items for accordion View
                 });
             }
@@ -711,74 +721,52 @@ export class CreditCardController {
             });
 
             const paymentAmount = parseFloat(amount);
-            const isPartial = paymentAmount < currentTotal && paymentAmount > 0;
 
-            if (isPartial) {
-                const remainder = currentTotal - paymentAmount;
+            // Get previous paid amount if exists
+            const previousPaidAmount = invoice ? parseFloat(invoice.amount.toString()) : 0;
+            const newTotalPaid = previousPaidAmount + paymentAmount;
 
-                // 1. Create Negative Transaction in CURRENT month to reduce balance
-                // "Pagamento Parcial - Abatimento"
-                // Date: 1st of current month (or today)
-                await CreditCardTransaction.create({
-                    creditCardId: id as string,
-                    description: 'Pagamento Parcial (Abatimento)',
-                    totalAmount: -paymentAmount,
-                    installments: 1,
-                    currentInstallment: 1,
-                    installmentAmount: -paymentAmount,
-                    purchaseDate: new Date(year, month - 1, 10), // mid-month
-                    category: 'Pagamentos'
+            // Check if this makes it fully paid
+            const isFullyPaid = newTotalPaid >= currentTotal;
+
+            if (invoice) {
+                // Update existing invoice with accumulated payment
+                await invoice.update({
+                    isPaid: isFullyPaid,
+                    amount: newTotalPaid,
+                    paymentDate: new Date()
                 });
-
-                // 2. Create Positive Transaction in NEXT month for Rollover
-                // "Restante Fatura Anterior"
-                // Date: 1 month later
-                // Handle year rollover
-                let nextMonth = month + 1;
-                let nextYear = year;
-                if (nextMonth > 12) { nextMonth = 1; nextYear++; }
-
-                await CreditCardTransaction.create({
-                    creditCardId: id as string,
-                    description: 'Restante Fatura Anterior',
-                    totalAmount: remainder,
-                    installments: 1,
-                    currentInstallment: 1,
-                    installmentAmount: remainder,
-                    purchaseDate: new Date(nextYear, nextMonth - 1, 10),
-                    category: 'Dívidas'
-                });
-
-                // 3. Mark invoice as Paid (Settled)
-                if (invoice) {
-                    await invoice.update({ isPaid: true, amount: paymentAmount, paymentDate: new Date() });
-                } else {
-                    invoice = await CreditCardInvoice.create({
-                        creditCardId: id as string,
-                        month,
-                        year,
-                        amount: paymentAmount,
-                        isPaid: true,
-                        paymentDate: new Date()
-                    });
-                }
             } else {
-                // Full Payment (Standard Behavior)
-                if (invoice) {
-                    await invoice.update({ isPaid: !invoice.isPaid }); // Toggle
-                } else {
-                    invoice = await CreditCardInvoice.create({
-                        creditCardId: id as string,
-                        month,
-                        year,
-                        amount: paymentAmount, // Store full amount
-                        isPaid: true,
-                        paymentDate: new Date()
-                    });
-                }
+                // Create new invoice record
+                invoice = await CreditCardInvoice.create({
+                    creditCardId: id as string,
+                    month,
+                    year,
+                    amount: paymentAmount,
+                    isPaid: isFullyPaid,
+                    paymentDate: new Date()
+                });
             }
 
-            res.status(200).json(invoice);
+            // Create negative transaction as record of payment (optional for tracking)
+            await CreditCardTransaction.create({
+                creditCardId: id as string,
+                description: isFullyPaid ? 'Pagamento Fatura' : 'Pagamento Parcial',
+                totalAmount: -paymentAmount,
+                installments: 1,
+                currentInstallment: 1,
+                installmentAmount: -paymentAmount,
+                purchaseDate: new Date(year, month - 1, 15),
+                category: 'Pagamentos'
+            });
+
+            res.status(200).json({
+                ...invoice.toJSON(),
+                currentTotal,
+                newTotalPaid,
+                remainingAmount: Math.max(0, currentTotal - newTotalPaid),
+                isFullyPaid
+            });
         } catch (error) {
             console.error(error);
             res.status(500).json({ error: 'Failed to update invoice status' });
