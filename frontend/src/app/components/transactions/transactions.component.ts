@@ -37,12 +37,34 @@ export class TransactionsComponent implements OnInit {
     }
 
     // Filter state
-    filterType: 'all' | 'income' | 'expense' = 'all';
+    selectedMonth: number = new Date().getMonth() + 1;
+    selectedYear: number = new Date().getFullYear();
+    filterType: 'income' | 'expense' = 'expense'; // Default to expense
+    statusFilter: 'all' | 'paid' | 'pending' = 'all';
+
+    months = [
+        { val: 1, label: 'Janeiro' }, { val: 2, label: 'Fevereiro' }, { val: 3, label: 'Março' },
+        { val: 4, label: 'Abril' }, { val: 5, label: 'Maio' }, { val: 6, label: 'Junho' },
+        { val: 7, label: 'Julho' }, { val: 8, label: 'Agosto' }, { val: 9, label: 'Setembro' },
+        { val: 10, label: 'Outubro' }, { val: 11, label: 'Novembro' }, { val: 12, label: 'Dezembro' }
+    ];
 
     // Getters for computed values
     get filteredTransactions() {
-        if (this.filterType === 'all') return this.transactions;
-        return this.transactions.filter(t => t.type === this.filterType);
+        return this.transactions.filter(t => {
+            const date = new Date(t.date);
+            // Fix: parse date correctly if string
+            const [year, month] = t.date.toString().split('-').map(Number);
+
+            const matchesType = t.type === this.filterType;
+            const matchesDate = month === this.selectedMonth && year === this.selectedYear;
+
+            let matchesStatus = true;
+            if (this.statusFilter === 'paid') matchesStatus = t.isPaid;
+            if (this.statusFilter === 'pending') matchesStatus = !t.isPaid;
+
+            return matchesType && matchesDate && matchesStatus;
+        });
     }
 
     // Computed Values
@@ -104,8 +126,33 @@ export class TransactionsComponent implements OnInit {
     }
 
     // UI Helpers
-    setFilter(type: 'all' | 'income' | 'expense') {
+    setFilter(type: 'income' | 'expense') {
         this.filterType = type;
+        this.statusFilter = 'all'; // Reset status when switching type
+    }
+
+    setStatusFilter(status: 'all' | 'paid' | 'pending') {
+        this.statusFilter = status;
+    }
+
+    prevMonth() {
+        if (this.selectedMonth === 1) {
+            this.selectedMonth = 12;
+            this.selectedYear--;
+        } else {
+            this.selectedMonth--;
+        }
+        this.loadTransactions(); // If we move to backend filtering later
+    }
+
+    nextMonth() {
+        if (this.selectedMonth === 12) {
+            this.selectedMonth = 1;
+            this.selectedYear++;
+        } else {
+            this.selectedMonth++;
+        }
+        this.loadTransactions();
     }
 
     getCategoryColor(category: string): string {

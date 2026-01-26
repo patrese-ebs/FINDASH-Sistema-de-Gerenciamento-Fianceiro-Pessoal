@@ -4,6 +4,22 @@
     <div class="ml-64 p-8">
         <div class="flex items-center justify-between mb-8">
             <h2 class="text-3xl font-bold">Transações</h2>
+
+            <!-- Month Selector -->
+            <div class="flex items-center gap-4 bg-dark-card border border-dark-border rounded-lg px-2 py-1">
+                <button (click)="prevMonth()"
+                    class="p-2 hover:bg-dark-bg rounded-lg text-text-secondary hover:text-white transition-colors">
+                    ◀
+                </button>
+                <div class="text-lg font-bold min-w-[150px] text-center">
+                    {{ months[selectedMonth-1].label }} {{ selectedYear }}
+                </div>
+                <button (click)="nextMonth()"
+                    class="p-2 hover:bg-dark-bg rounded-lg text-text-secondary hover:text-white transition-colors">
+                    ▶
+                </button>
+            </div>
+
             <button (click)="openModal()"
                 class="bg-gradient-to-r from-accent-purple to-accent-blue text-white px-4 py-2 rounded-lg font-bold hover:opacity-90 transition-opacity">
                 + Nova Transação
@@ -80,23 +96,38 @@
             </div>
         </div>
 
-        <!-- Tabs -->
-        <div class="flex gap-4 mb-6 border-b border-dark-border overflow-x-auto pb-1">
-            <button (click)="setFilter('all')"
-                class="px-6 py-3 font-medium border-b-2 transition-colors whitespace-nowrap"
-                [ngClass]="{'border-accent-purple text-accent-purple': filterType === 'all', 'border-transparent text-text-secondary hover:text-text-primary': filterType !== 'all'}">
-                📋 Todas
-            </button>
-            <button (click)="setFilter('income')"
-                class="px-6 py-3 font-medium border-b-2 transition-colors whitespace-nowrap"
-                [ngClass]="{'border-emerald-500 text-emerald-500': filterType === 'income', 'border-transparent text-text-secondary hover:text-text-primary': filterType !== 'income'}">
-                💰 Receitas
-            </button>
-            <button (click)="setFilter('expense')"
-                class="px-6 py-3 font-medium border-b-2 transition-colors whitespace-nowrap"
-                [ngClass]="{'border-red-500 text-red-500': filterType === 'expense', 'border-transparent text-text-secondary hover:text-text-primary': filterType !== 'expense'}">
-                💸 Despesas
-            </button>
+        <!-- Tabs & Filters -->
+        <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+            <!-- Main Type Tabs -->
+            <div class="flex gap-2 bg-dark-card p-1 rounded-xl border border-dark-border">
+                <button (click)="setFilter('expense')" class="px-6 py-2 rounded-lg font-medium transition-all"
+                    [ngClass]="filterType === 'expense' ? 'bg-red-500 text-white shadow-lg' : 'text-text-secondary hover:text-white hover:bg-dark-bg'">
+                    💸 Despesas
+                </button>
+                <button (click)="setFilter('income')" class="px-6 py-2 rounded-lg font-medium transition-all"
+                    [ngClass]="filterType === 'income' ? 'bg-emerald-500 text-white shadow-lg' : 'text-text-secondary hover:text-white hover:bg-dark-bg'">
+                    💰 Receitas
+                </button>
+            </div>
+
+            <!-- Status Filters -->
+            <div class="flex gap-2">
+                <button (click)="setStatusFilter('all')"
+                    class="px-4 py-1.5 rounded-lg text-sm font-medium border transition-colors"
+                    [ngClass]="statusFilter === 'all' ? 'bg-accent-purple/20 border-accent-purple text-accent-purple' : 'border-dark-border text-text-secondary hover:border-text-secondary'">
+                    Todas
+                </button>
+                <button (click)="setStatusFilter('paid')"
+                    class="px-4 py-1.5 rounded-lg text-sm font-medium border transition-colors"
+                    [ngClass]="statusFilter === 'paid' ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400' : 'border-dark-border text-text-secondary hover:border-text-secondary'">
+                    {{ filterType === 'income' ? 'Recebidas' : 'Pagas' }}
+                </button>
+                <button (click)="setStatusFilter('pending')"
+                    class="px-4 py-1.5 rounded-lg text-sm font-medium border transition-colors"
+                    [ngClass]="statusFilter === 'pending' ? 'bg-yellow-500/20 border-yellow-500 text-yellow-500' : 'border-dark-border text-text-secondary hover:border-text-secondary'">
+                    {{ filterType === 'income' ? 'A Receber' : 'A Pagar' }}
+                </button>
+            </div>
         </div>
 
         <div class="bg-dark-card border border-dark-border rounded-xl p-6 shadow-lg overflow-hidden">
