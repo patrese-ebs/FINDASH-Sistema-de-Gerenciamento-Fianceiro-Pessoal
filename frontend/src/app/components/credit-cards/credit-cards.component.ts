@@ -42,6 +42,7 @@ export class CreditCardsComponent implements OnInit {
     invoiceYear: number = new Date().getFullYear();
     invoiceTotal: number = 0;
     invoiceStatus: 'paid' | 'open' | 'closed' = 'open';
+    paymentAmount: number = 0; // For partial payment input
     viewingCard: CreditCard | null = null;
     months = [
         { val: 1, label: 'Janeiro' }, { val: 2, label: 'Fevereiro' }, { val: 3, label: 'Março' },
@@ -296,6 +297,7 @@ export class CreditCardsComponent implements OnInit {
             next: (data) => {
                 this.invoiceItems = data.items;
                 this.invoiceTotal = data.totalAmount;
+                this.paymentAmount = data.totalAmount; // Default to full amount
                 this.invoiceStatus = data.isPaid ? 'paid' : 'open'; // Simplified status
             },
             error: (err) => {
@@ -324,5 +326,43 @@ export class CreditCardsComponent implements OnInit {
             this.invoiceMonth++;
         }
         if (this.viewingCard) this.loadInvoice(this.viewingCard.id!, this.invoiceMonth, this.invoiceYear);
+    }
+
+    // Helper for class binding
+    getBrandClass(brand: string): string {
+        const gradients: { [key: string]: string } = {
+            'Nubank': 'from-[#820AD1] to-[#400078]',
+            'Inter': 'from-[#FF7A00] to-[#FF5200]',
+            'Itaú': 'from-[#EC7000] to-[#E74E0E]',
+            'Santander': 'from-[#EC0000] to-[#990000]',
+            'Bradesco': 'from-[#CC092F] to-[#990020]',
+            'C6': 'from-[#2C2C2C] to-[#000000]',
+            'Banco do Brasil': 'from-[#0038A8] to-[#001D5E]',
+            'Visa': 'from-[#1A1F71] to-[#0057B8]',
+            'Mastercard': 'from-[#EB001B] to-[#F79E1B]',
+            'Elo': 'from-[#00A4E0] to-[#F9B233]',
+            'Amex': 'from-[#006FCF] to-[#002663]',
+            'Hipercard': 'from-[#BE0000] to-[#820000]'
+        };
+        return gradients[brand] || 'from-slate-800 to-black';
+    }
+
+    payInvoice() {
+        if (!this.viewingCard) return;
+
+        if (confirm(`Confirmar pagamento de ${this.paymentAmount}?`)) {
+            this.cardService.payInvoice(this.viewingCard.id!, this.invoiceMonth, this.invoiceYear, this.paymentAmount)
+                .subscribe({
+                    next: () => {
+                        alert('Pagamento registrado!');
+                        this.loadInvoice(this.viewingCard!.id!, this.invoiceMonth, this.invoiceYear);
+                        this.loadCards(); // Update dashboard
+                    },
+                    error: (err) => {
+                        console.error('Payment failed', err);
+                        alert('Erro ao processar pagamento');
+                    }
+                });
+        }
     }
 }

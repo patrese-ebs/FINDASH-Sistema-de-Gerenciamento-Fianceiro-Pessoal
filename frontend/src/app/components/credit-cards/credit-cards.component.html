@@ -56,9 +56,9 @@
                 (click)="openInvoiceModal(card)">
 
                 <!-- Card Visual -->
-                <div class="h-48 w-full rounded-xl bg-cover bg-center relative overflow-hidden"
+                <div class="h-48 w-full rounded-xl bg-cover bg-center relative overflow-hidden bg-gradient-to-br"
                     [ngStyle]="{'background-image': card.imageUrl ? 'url(' + card.imageUrl + ')' : 'none'}"
-                    [ngClass]="{'bg-gradient-to-br from-slate-800 to-black': !card.imageUrl}">
+                    [class]="!card.imageUrl ? 'bg-gradient-to-br ' + getBrandClass(card.brand) : ''">
 
                     <div class="absolute inset-0 bg-black/30 group-hover:bg-black/20 transition-all"></div>
 
@@ -366,13 +366,25 @@
                 </table>
             </div>
 
-            <div class="p-4 border-t border-dark-border bg-dark-card flex justify-end">
-                <!-- Actions like 'Pay Invoice' could go here -->
-                <button (click)="closeModal()"
-                    class="px-4 py-2 rounded-lg border border-dark-border text-text-secondary hover:text-white">
-                    Fechar
-                </button>
+            <div class="p-4 border-t border-dark-border bg-dark-card flex justify-between items-center">
+                <div class="flex items-center gap-2" *ngIf="invoiceStatus === 'open' && invoiceTotal > 0">
+                    <span class="text-sm text-text-secondary">Pagar:</span>
+                    <input type="number" [(ngModel)]="paymentAmount"
+                        class="bg-dark-bg border border-dark-border rounded px-2 py-1 text-white w-32"
+                        placeholder="Valor">
+                    <button (click)="payInvoice()"
+                        class="px-4 py-2 rounded-lg bg-green-600 text-white font-bold hover:bg-green-500">
+                        Pagar
+                    </button>
+                </div>
+                <div *ngIf="invoiceStatus !== 'open' || invoiceTotal <= 0" class="text-green-400 font-bold px-4">
+                    {{ invoiceTotal <= 0 ? 'Fatura Zerada/Paga' : 'Paga' }} </div>
+
+                        <button (click)="closeModal()"
+                            class="px-4 py-2 rounded-lg border border-dark-border text-text-secondary hover:text-white">
+                            Fechar
+                        </button>
+                </div>
             </div>
         </div>
     </div>
-</div>
