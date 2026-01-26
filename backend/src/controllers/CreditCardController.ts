@@ -165,7 +165,7 @@ export class CreditCardController {
         try {
             const { id, year } = req.params;
             const userId = req.userId;
-            const targetYear = parseInt(year);
+            const targetYear = parseInt(year as string);
 
             if (!userId) {
                 res.status(401).json({ error: 'Unauthorized' });
