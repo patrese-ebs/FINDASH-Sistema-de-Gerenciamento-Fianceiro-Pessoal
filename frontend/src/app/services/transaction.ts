@@ -66,7 +66,7 @@ export class TransactionService {
     const type = data.type;
     const url = (type === 'income') ? `${this.incomesUrl}/${id}` : `${this.expensesUrl}/${id}`;
 
-    // Backend uses isPaid for both incomes and expenses
-    return this.http.patch<Transaction>(url, data, { headers: this.getHeaders() });
+    // Backend uses PUT for updates
+    return this.http.put<Transaction>(url, data, { headers: this.getHeaders() });
   }
 }
