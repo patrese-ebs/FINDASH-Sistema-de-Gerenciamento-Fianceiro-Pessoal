@@ -77,9 +77,59 @@
                 </select>
             </div>
         </div>
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 fade-in">
+            <!-- Total Income Card -->
+            <div
+                class="card p-6 border-l-4 border-emerald-500 hover:transform hover:scale-105 transition-transform duration-300">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-text-secondary font-medium">Receitas</h3>
+                    <div class="p-2 bg-emerald-500 bg-opacity-10 rounded-lg">
+                        <span class="text-xl">💰</span>
+                    </div>
+                </div>
+                <p class="text-2xl font-bold text-white mb-1" id="summaryTotalIncome">R$ 0,00</p>
+                <p class="text-xs text-emerald-400 flex items-center gap-1">
+                    <span class="text-lg">↑</span>
+                    <span>Total do mês</span>
+                </p>
+            </div>
 
-        <!-- Tabs -->
-        <div class="flex gap-4 mb-6 border-b border-dark-border">
+            <!-- Total Expense Card -->
+            <div
+                class="card p-6 border-l-4 border-red-500 hover:transform hover:scale-105 transition-transform duration-300">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-text-secondary font-medium">Despesas</h3>
+                    <div class="p-2 bg-red-500 bg-opacity-10 rounded-lg">
+                        <span class="text-xl">💸</span>
+                    </div>
+                </div>
+                <p class="text-2xl font-bold text-white mb-1" id="summaryTotalExpense">R$ 0,00</p>
+                <p class="text-xs text-red-400 flex items-center gap-1">
+                    <span class="text-lg">↓</span>
+                    <span>Total do mês</span>
+                </p>
+            </div>
+
+            <!-- Balance Card -->
+            <div
+                class="card p-6 border-l-4 border-blue-500 hover:transform hover:scale-105 transition-transform duration-300">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-text-secondary font-medium">Saldo</h3>
+                    <div class="p-2 bg-blue-500 bg-opacity-10 rounded-lg">
+                        <span class="text-xl">⚖️</span>
+                    </div>
+                </div>
+                <p class="text-2xl font-bold text-white mb-1" id="summaryBalance">R$ 0,00</p>
+                <p class="text-xs text-blue-400 flex items-center gap-1">
+                    <span id="balanceIcon" class="text-lg">=</span>
+                    <span id="balanceStatus">Balanço do mês</span>
+                </p>
+            </div>
+        </div>
+
+        <!-- Section Toggles -->
+        <div class="flex gap-4 mb-6 border-b border-dark-border overflow-x-auto pb-1">
             <button id="incomesTab" class="px-6 py-3 font-medium border-b-2 border-accent-purple text-accent-purple">
                 💰 Receitas
             </button>
@@ -467,42 +517,107 @@
             });
         });
 
+        // Category Colors
+        const categoryColors = {
+            // Incomes
+            'Salário': 'bg-emerald-500 text-emerald-500',
+            'Freelance': 'bg-blue-500 text-blue-500',
+            'Investimentos': 'bg-purple-500 text-purple-500',
+            'Aluguel': 'bg-orange-500 text-orange-500',
+            // Expenses
+            'Alimentação': 'bg-orange-500 text-orange-500',
+            'Transporte': 'bg-blue-500 text-blue-500',
+            'Moradia': 'bg-indigo-500 text-indigo-500',
+            'Saúde': 'bg-red-500 text-red-500',
+            'Educação': 'bg-yellow-500 text-yellow-500',
+            'Lazer': 'bg-pink-500 text-pink-500',
+            // Default
+            'Outros': 'bg-gray-500 text-gray-500'
+        };
+
+        const getCategoryColor = (category) => {
+            return categoryColors[category] || categoryColors['Outros'];
+        };
+
+        // Update Summary
+        let currentTotalIncome = 0;
+        let currentTotalExpense = 0;
+
+        function updateBalance() {
+            const balance = currentTotalIncome - currentTotalExpense;
+            const balanceElement = document.getElementById('summaryBalance');
+            const balanceStatus = document.getElementById('balanceStatus');
+            const balanceIcon = document.getElementById('balanceIcon');
+
+            if (balanceElement) {
+                balanceElement.textContent = formatCurrency(balance);
+
+                if (balance >= 0) {
+                    balanceElement.classList.remove('text-red-400');
+                    balanceElement.classList.add('text-emerald-400');
+                    if (balanceStatus) balanceStatus.textContent = "Saldo positivo";
+                    if (balanceIcon) {
+                        balanceIcon.textContent = "↑";
+                        balanceIcon.className = "text-lg text-emerald-400";
+                    }
+                } else {
+                    balanceElement.classList.remove('text-emerald-400');
+                    balanceElement.classList.add('text-red-400');
+                    if (balanceStatus) balanceStatus.textContent = "Saldo negativo";
+                    if (balanceIcon) {
+                        balanceIcon.textContent = "↓";
+                        balanceIcon.className = "text-lg text-red-400";
+                    }
+                }
+            }
+        }
+
         // Load incomes
         // Render Incomes
         function renderIncomes(incomes) {
             const tbody = document.getElementById('incomesTableBody');
+
+            // Calculate total immediately
+            currentTotalIncome = incomes ? incomes.reduce((sum, income) => sum + parseFloat(income.amount), 0) : 0;
+            document.getElementById('totalIncome').textContent = formatCurrency(currentTotalIncome);
+            document.getElementById('summaryTotalIncome').textContent = formatCurrency(currentTotalIncome);
+            updateBalance();
+
             if (!incomes || incomes.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-text-secondary">Nenhuma receita encontrada</td></tr>';
-                document.getElementById('totalIncome').textContent = 'R$ 0,00';
                 return;
             }
 
-            tbody.innerHTML = incomes.map(income => `
-          <tr class="border-b border-dark-border hover:bg-dark-bg transition-colors">
-            <td class="py-3 px-4 text-sm">${income.date ? new Date(income.date).toLocaleDateString('pt-BR') : '-'}</td>
-            <td class="py-3 px-4">
-              <div class="font-medium">${income.description}</div>
-              ${income.isRecurring ? '<div class="text-xs text-accent-purple mb-1">🔄 Recorrente</div>' : ''}
+            tbody.innerHTML = incomes.map(income => {
+                const colorClass = getCategoryColor(income.category);
+                const bgClass = colorClass.split(' ')[0];
+                const textClass = colorClass.split(' ')[1];
+
+                return `
+          <tr class="border-b border-dark-border hover:bg-dark-card transition-colors group">
+            <td class="py-4 px-4 text-sm font-medium text-white">${income.date ? new Date(income.date).toLocaleDateString('pt-BR') : '-'}</td>
+            <td class="py-4 px-4">
+              <div class="font-medium text-white">${income.description}</div>
+              ${income.isRecurring ? '<div class="text-xs text-accent-purple mb-1 flex items-center gap-1"><span class="animate-spin-slow">Wait</span> <span>Recorrente</span></div>' : ''}
               <button onclick="toggleIncomeStatus('${income.id}')" 
-                      class="text-xs px-2 py-1 rounded-full ${income.isPaid ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-yellow-600 hover:bg-yellow-700 text-white'} transition-all flex items-center gap-1 cursor-pointer">
+                      class="mt-1 text-xs px-2 py-1 rounded-full ${income.isPaid ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'} transition-all flex items-center gap-1 cursor-pointer hover:scale-105">
                   ${income.isPaid ? '✅ Recebido' : '🕒 Pendente'}
               </button>
             </td>
-            <td class="py-3 px-4">
-              <span class="px-2 py-1 bg-green-500 bg-opacity-20 text-green-400 text-xs rounded-full">
+            <td class="py-4 px-4">
+              <span class="px-3 py-1 bg-opacity-10 ${bgClass.replace('bg-', 'bg-opacity-10 ')} ${textClass} text-xs font-medium rounded-full border border-current border-opacity-30">
                 ${income.category}
               </span>
             </td>
-            <td class="py-3 px-4 text-right font-medium text-green-400">${formatCurrency(income.amount)}</td>
-            <td class="py-3 px-4 text-right">
-              <button onclick="editIncome('${income.id}')" class="text-blue-400 hover:text-blue-300 text-sm mr-2">✏️</button>
-              <button onclick="deleteIncome('${income.id}')" class="text-red-400 hover:text-red-300 text-sm">🗑️</button>
+            <td class="py-4 px-4 text-right font-bold text-emerald-400 text-base">${formatCurrency(income.amount)}</td>
+            <td class="py-4 px-4 text-right">
+              <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button onclick="editIncome('${income.id}')" class="p-2 hover:bg-dark-bg rounded-lg text-blue-400 hover:text-blue-300 transition-colors" title="Editar">✏️</button>
+                  <button onclick="deleteIncome('${income.id}')" class="p-2 hover:bg-dark-bg rounded-lg text-red-400 hover:text-red-300 transition-colors" title="Excluir">🗑️</button>
+              </div>
             </td>
           </tr>
-        `).join('');
-
-            const total = incomes.reduce((sum, income) => sum + parseFloat(income.amount), 0);
-            document.getElementById('totalIncome').textContent = formatCurrency(total);
+        `}).join('');
         }
 
         // Load incomes (Fetch + Render)
@@ -522,39 +637,49 @@
         // Render Expenses
         function renderExpenses(expenses) {
             const tbody = document.getElementById('expensesTableBody');
+
+            // Calculate total immediately
+            currentTotalExpense = expenses ? expenses.reduce((sum, expense) => sum + parseFloat(expense.amount), 0) : 0;
+            document.getElementById('totalExpense').textContent = formatCurrency(currentTotalExpense);
+            document.getElementById('summaryTotalExpense').textContent = formatCurrency(currentTotalExpense);
+            updateBalance();
+
             if (!expenses || expenses.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-text-secondary">Nenhuma despesa encontrada</td></tr>';
-                document.getElementById('totalExpense').textContent = 'R$ 0,00';
                 return;
             }
 
-            tbody.innerHTML = expenses.map(expense => `
-           <tr class="border-b border-dark-border hover:bg-dark-bg transition-colors">
-             <td class="py-3 px-4 text-sm">${expense.date ? new Date(expense.date).toLocaleDateString('pt-BR') : '-'}</td>
-             <td class="py-3 px-4">
-                 <div class="font-medium">${expense.description}</div>
-                 ${expense.isRecurring ? '<div class="text-xs text-accent-purple mb-1">🔄 Recorrente</div>' : ''}
+            tbody.innerHTML = expenses.map(expense => {
+                const colorClass = getCategoryColor(expense.category);
+                const bgClass = colorClass.split(' ')[0];
+                const textClass = colorClass.split(' ')[1];
+
+                return `
+           <tr class="border-b border-dark-border hover:bg-dark-card transition-colors group">
+             <td class="py-4 px-4 text-sm font-medium text-white">${expense.date ? new Date(expense.date).toLocaleDateString('pt-BR') : '-'}</td>
+             <td class="py-4 px-4">
+                 <div class="font-medium text-white">${expense.description}</div>
+                 ${expense.isRecurring ? '<div class="text-xs text-accent-purple mb-1 flex items-center gap-1">🔄 Recorrente</div>' : ''}
                  <button onclick="toggleExpenseStatus('${expense.id}')" 
-                         class="text-xs px-2 py-1 rounded-full ${expense.isPaid ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-yellow-600 hover:bg-yellow-700 text-white'} transition-all flex items-center gap-1 cursor-pointer">
+                         class="mt-1 text-xs px-2 py-1 rounded-full ${expense.isPaid ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'} transition-all flex items-center gap-1 cursor-pointer hover:scale-105">
                      ${expense.isPaid ? '✅ Pago' : '🕒 Pendente'}
                  </button>
              </td>
-             <td class="py-3 px-4">
-               <span class="px-2 py-1 bg-red-500 bg-opacity-20 text-red-400 text-xs rounded-full">
+             <td class="py-4 px-4">
+               <span class="px-3 py-1 bg-opacity-10 ${bgClass.replace('bg-', 'bg-opacity-10 ')} ${textClass} text-xs font-medium rounded-full border border-current border-opacity-30">
                  ${expense.category}
                </span>
              </td>
-             <td class="py-3 px-4 text-sm text-text-secondary">${expense.paymentMethod}</td>
-             <td class="py-3 px-4 text-right font-medium text-red-400">${formatCurrency(expense.amount)}</td>
-             <td class="py-3 px-4 text-right">
-               <button onclick="editExpense('${expense.id}')" class="text-blue-400 hover:text-blue-300 text-sm mr-2">✏️</button>
-               <button onclick="deleteExpense('${expense.id}')" class="text-red-400 hover:text-red-300 text-sm">🗑️</button>
+             <td class="py-4 px-4 text-sm text-text-secondary">${expense.paymentMethod}</td>
+             <td class="py-4 px-4 text-right font-bold text-red-400 text-base">${formatCurrency(expense.amount)}</td>
+             <td class="py-4 px-4 text-right">
+               <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                   <button onclick="editExpense('${expense.id}')" class="p-2 hover:bg-dark-bg rounded-lg text-blue-400 hover:text-blue-300 transition-colors" title="Editar">✏️</button>
+                   <button onclick="deleteExpense('${expense.id}')" class="p-2 hover:bg-dark-bg rounded-lg text-red-400 hover:text-red-300 transition-colors" title="Excluir">🗑️</button>
+               </div>
              </td>
            </tr>
-         `).join('');
-
-            const total = expenses.reduce((sum, expense) => sum + parseFloat(expense.amount), 0);
-            document.getElementById('totalExpense').textContent = formatCurrency(total);
+         `}).join('');
         }
 
         // Load expenses (Fetch + Render)
