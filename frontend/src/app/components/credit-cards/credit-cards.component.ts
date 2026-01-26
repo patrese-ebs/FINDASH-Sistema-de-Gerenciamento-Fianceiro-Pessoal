@@ -380,10 +380,10 @@ export class CreditCardsComponent implements OnInit {
         const tx: Transaction = {
             id: item.id,
             description: item.description,
-            amount: item.totalAmount,
+            amount: item.totalAmount || item.amount || 0, // Fallback
             type: item.category === 'Pagamentos' ? 'income' : 'expense',
             category: item.category,
-            date: item.purchaseDate,
+            date: typeof item.purchaseDate === 'string' ? item.purchaseDate : new Date(item.purchaseDate).toISOString().split('T')[0],
             paymentMethod: 'credit',
             creditCardId: item.creditCardId,
             isPaid: false,
