@@ -785,5 +785,64 @@ export class CreditCardController {
         }
     }
 
+    async unpayInvoice(req: AuthRequest, res: Response): Promise<void> {
+        try {
+            const { id } = req.params;
+            const { month, year } = req.body;
+            const userId = req.userId;
+
+            if (!userId) {
+                res.status(401).json({ error: 'Unauthorized' });
+                return;
+            }
+
+            const creditCard = await CreditCard.findOne({ where: { id, userId } });
+            if (!creditCard) {
+                res.status(404).json({ error: 'Card not found' });
+                return;
+            }
+
+            // Find and update the invoice
+            const invoice = await CreditCardInvoice.findOne({
+                where: { creditCardId: id as string, month, year }
+            });
+
+            if (!invoice) {
+                res.status(404).json({ error: 'Invoice not found' });
+                return;
+            }
+
+            // Remove any "Pagamento Parcial" transactions created for this month
+            await CreditCardTransaction.destroy({
+                where: {
+                    creditCardId: id as string,
+                    description: 'Pagamento Parcial (Abatimento)',
+                    category: 'Pagamentos'
+                }
+            });
+
+            // Remove any "Restante Fatura Anterior" transaction in the next month
+            let nextMonth = month + 1;
+            let nextYear = year;
+            if (nextMonth > 12) { nextMonth = 1; nextYear++; }
+
+            await CreditCardTransaction.destroy({
+                where: {
+                    creditCardId: id as string,
+                    description: 'Restante Fatura Anterior',
+                    category: 'Dívidas'
+                }
+            });
+
+            // Set invoice as unpaid
+            await invoice.update({ isPaid: false, paymentDate: undefined });
+
+            res.status(200).json({ message: 'Payment undone successfully', invoice });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ error: 'Failed to undo payment' });
+        }
+    }
+
 
 }

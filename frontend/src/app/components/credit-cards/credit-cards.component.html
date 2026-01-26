@@ -412,6 +412,21 @@
                             </div>
                         </div>
 
+                        <!-- Undo Payment Section (Only if paid) -->
+                        <div *ngIf="monthData.isPaid"
+                            class="p-4 bg-green-500/5 border-b border-dark-border/50 flex items-center justify-between">
+                            <span class="text-sm text-green-200">✓ Esta fatura foi paga.</span>
+                            <button (click)="$event.stopPropagation(); unpayInvoice(i)"
+                                class="px-4 py-1.5 rounded bg-red-600/80 text-white text-sm font-bold hover:bg-red-500 flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                                </svg>
+                                Desfazer Pagamento
+                            </button>
+                        </div>
+
                         <table class="w-full text-left">
                             <thead class="text-xs text-text-secondary border-b border-dark-border/50">
                                 <tr>

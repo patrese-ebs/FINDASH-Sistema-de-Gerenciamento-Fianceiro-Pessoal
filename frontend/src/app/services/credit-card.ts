@@ -34,7 +34,8 @@ export class CreditCardService {
   }
 
   planInvoices(cardId: string, plans: any[]): Observable<any> {
-    return this.http.post(`${this.apiUrl}/${cardId}/plan-invoices`, { plans }, { headers: this.getHeaders() });
+    // Correct URL to match backend route: /credit-cards/:id/invoice/plan
+    return this.http.post(`${this.apiUrl}/${cardId}/invoice/plan`, { plans }, { headers: this.getHeaders() });
   }
 
   getSummary(month: number, year: number): Observable<any> {
@@ -47,6 +48,10 @@ export class CreditCardService {
 
   payInvoice(cardId: string, month: number, year: number, amount: number): Observable<any> {
     return this.http.post(`${this.apiUrl}/${cardId}/invoice/pay`, { month, year, amount }, { headers: this.getHeaders() });
+  }
+
+  unpayInvoice(cardId: string, month: number, year: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${cardId}/invoice/unpay`, { month, year }, { headers: this.getHeaders() });
   }
 
   getYearlyOverview(cardId: string, year: number): Observable<any[]> {

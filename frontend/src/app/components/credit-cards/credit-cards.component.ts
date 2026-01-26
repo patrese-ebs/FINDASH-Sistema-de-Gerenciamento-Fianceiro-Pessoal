@@ -376,6 +376,31 @@ export class CreditCardsComponent implements OnInit {
         }
     }
 
+    unpayInvoice(monthIndex: number) {
+        if (!this.viewingCard) return;
+
+        const monthData = this.yearlyOverview[monthIndex];
+        if (!monthData) return;
+
+        const monthName = this.months[monthData.month - 1]?.label || monthData.month;
+
+        if (confirm(`Desfazer pagamento de ${monthName}/${monthData.year}? Isso marcará a fatura como não paga.`)) {
+            this.cardService.unpayInvoice(this.viewingCard.id!, monthData.month, monthData.year)
+                .subscribe({
+                    next: () => {
+                        alert('Pagamento desfeito!');
+                        this.loadYearlyOverview(this.viewingCard!.id!, this.invoiceYear);
+                        this.loadCards();
+                        this.loadSummary();
+                    },
+                    error: (err) => {
+                        console.error('Unpay failed', err);
+                        alert('Erro ao desfazer pagamento');
+                    }
+                });
+        }
+    }
+
     editInvoiceItem(item: any) {
         const tx: Transaction = {
             id: item.id,
