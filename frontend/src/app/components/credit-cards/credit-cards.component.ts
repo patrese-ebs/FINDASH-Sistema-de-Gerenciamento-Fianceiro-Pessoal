@@ -44,7 +44,7 @@ export class CreditCardsComponent implements OnInit {
         // Card Form
         this.cardForm = this.fb.group({
             name: ['', Validators.required],
-            limit: [0, [Validators.required, Validators.min(1)]],
+            creditLimit: [0, [Validators.required, Validators.min(1)]],
             dueDay: [10, [Validators.required, Validators.min(1), Validators.max(31)]],
             closingDay: [3, [Validators.required, Validators.min(1), Validators.max(31)]],
             brand: ['Visa', Validators.required],
@@ -117,7 +117,7 @@ export class CreditCardsComponent implements OnInit {
         this.editingCardId = card.id!;
         this.cardForm.patchValue({
             name: card.name,
-            limit: card.limit,
+            creditLimit: card.creditLimit, // Use creditLimit
             dueDay: card.dueDay,
             closingDay: card.closingDay,
             brand: card.brand,

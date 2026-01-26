@@ -11,7 +11,7 @@
             <div class="flex gap-3">
                 <button (click)="openPlanningModal()"
                     class="btn-secondary px-4 py-2 rounded-lg bg-dark-card border border-dark-border hover:bg-dark-border text-white transition-colors">
-                    📅 Planejar Ano
+                    📅 Registrar Faturas
                 </button>
                 <button (click)="openTransactionModal(cards[0])"
                     class="btn-secondary px-4 py-2 rounded-lg bg-dark-card border border-dark-border hover:bg-dark-border text-white transition-colors"
@@ -82,13 +82,28 @@
                 <!-- Info Below Card -->
                 <div class="mt-3 bg-dark-card p-4 rounded-xl border border-dark-border">
                     <div class="flex justify-between items-center mb-2">
-                        <span class="text-xs text-text-secondary">Limite</span>
-                        <span class="font-bold text-white">{{ card.limit | currency:'BRL' }}</span>
+                        <span class="text-xs text-text-secondary">Limite utilizado</span>
+                        <span class="font-bold text-white">{{ (card.totalLiability || 0) | currency:'BRL' }}</span>
                     </div>
-                    <!-- Action Button (Hidden by default, visible on hover? No, card is clickable) -->
-                    <div
-                        class="text-xs text-center text-accent-purple opacity-50 group-hover:opacity-100 transition-opacity">
-                        Clique para editar
+
+                    <!-- Progress Bar -->
+                    <div class="w-full bg-dark-bg rounded-full h-2.5 mb-2 overflow-hidden border border-dark-border/50">
+                        <div class="h-2.5 rounded-full transition-all duration-500"
+                            [ngClass]="(card.usagePercentage || 0) > 90 ? 'bg-red-500' : ((card.usagePercentage || 0) > 50 ? 'bg-yellow-500' : 'bg-green-500')"
+                            [style.width.%]="(card.usagePercentage || 0) > 100 ? 100 : (card.usagePercentage || 0)">
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between items-center text-xs">
+                        <span class="text-text-secondary">Disponível</span>
+                        <span class="text-green-400 font-medium">{{ (card.availableCredit || 0) | currency:'BRL'
+                            }}</span>
+                    </div>
+
+                    <div class="text-center mt-3 pt-3 border-t border-dark-border/50">
+                        <span class="text-xs text-text-secondary">
+                            Limite Total: <span class="text-white">{{ card.creditLimit | currency:'BRL' }}</span>
+                        </span>
                     </div>
                 </div>
             </div>
@@ -149,7 +164,7 @@
 
                 <div>
                     <label class="block text-sm font-medium text-text-secondary mb-1">Limite (R$)</label>
-                    <input type="number" formControlName="limit"
+                    <input type="number" formControlName="creditLimit"
                         class="input-field w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 text-white">
                 </div>
 
@@ -231,7 +246,7 @@
             class="bg-dark-card border border-dark-border rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
             <div
                 class="p-6 border-b border-dark-border flex justify-between items-center sticky top-0 bg-dark-card z-10">
-                <h3 class="text-xl font-bold">Planejamento Anual</h3>
+                <h3 class="text-xl font-bold">Registrar Faturas Futuras</h3>
                 <button (click)="closeModal()" class="text-text-secondary hover:text-white">&times;</button>
             </div>
 
