@@ -9,7 +9,10 @@ RUN npm install
 COPY . .
 
 # Build the Angular app for production
-RUN npm run build --configuration=production
+# Build the Angular app for production
+# Increase memory limit for node process to avoid OOM
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+RUN npm run build -- --configuration=production --verbose
 
 # Production Stage
 FROM nginx:alpine
