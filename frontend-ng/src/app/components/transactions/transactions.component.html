@@ -11,37 +11,54 @@
         </div>
 
         <!-- Summary Cards -->
+        <!-- Summary Cards -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 transform transition-all duration-500 ease-out">
             <!-- Income Card -->
             <div
                 class="bg-dark-card p-6 rounded-xl border-l-4 border-emerald-500 shadow-lg hover:transform hover:scale-105 transition-transform duration-300">
-                <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center justify-between mb-4">
                     <h3 class="text-text-secondary font-medium">Receitas</h3>
                     <div class="p-2 bg-emerald-500/10 rounded-lg">
                         <span class="text-xl">💰</span>
                     </div>
                 </div>
-                <p class="text-2xl font-bold text-white mb-1">{{ totalIncome | currency:'BRL' }}</p>
-                <p class="text-xs text-emerald-400 flex items-center gap-1">
-                    <span class="text-lg">↑</span>
-                    <span>Total do mês</span>
-                </p>
+
+                <div class="space-y-3">
+                    <div class="flex justify-between items-end border-b border-dark-border pb-2">
+                        <span class="text-sm text-text-secondary">Previsto</span>
+                        <span class="text-lg font-bold text-white">{{ predictedIncome | currency:'BRL' }}</span>
+                    </div>
+                    <div class="flex justify-between items-end">
+                        <span class="text-sm text-emerald-400">Recebido</span>
+                        <span class="text-xl font-bold text-emerald-400">{{ receivedIncome | currency:'BRL' }}</span>
+                    </div>
+                </div>
             </div>
 
             <!-- Expense Card -->
             <div
                 class="bg-dark-card p-6 rounded-xl border-l-4 border-red-500 shadow-lg hover:transform hover:scale-105 transition-transform duration-300">
-                <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center justify-between mb-4">
                     <h3 class="text-text-secondary font-medium">Despesas</h3>
                     <div class="p-2 bg-red-500/10 rounded-lg">
                         <span class="text-xl">💸</span>
                     </div>
                 </div>
-                <p class="text-2xl font-bold text-white mb-1">{{ totalExpense | currency:'BRL' }}</p>
-                <p class="text-xs text-red-400 flex items-center gap-1">
-                    <span class="text-lg">↓</span>
-                    <span>Total do mês</span>
-                </p>
+
+                <div class="space-y-3">
+                    <div class="flex justify-between items-end border-b border-dark-border pb-2">
+                        <span class="text-sm text-text-secondary">Previsto</span>
+                        <span class="text-lg font-bold text-white">{{ totalExpense | currency:'BRL' }}</span>
+                    </div>
+                    <div class="flex justify-between items-end">
+                        <span class="text-sm text-red-400">Pago</span>
+                        <span class="text-lg font-bold text-red-400">{{ paidExpense | currency:'BRL' }}</span>
+                    </div>
+                    <div class="flex justify-between items-end">
+                        <span class="text-sm text-orange-400">A Pagar</span>
+                        <span class="text-lg font-bold text-orange-400">{{ toPayExpense | currency:'BRL' }}</span>
+                    </div>
+                </div>
             </div>
 
             <!-- Balance Card -->
@@ -53,14 +70,13 @@
                         <span class="text-xl">⚖️</span>
                     </div>
                 </div>
-                <p class="text-2xl font-bold text-white mb-1"
+                <p class="text-3xl font-bold text-white mb-2"
                     [ngClass]="{'text-emerald-400': balance >= 0, 'text-red-400': balance < 0}">
                     {{ balance | currency:'BRL' }}
                 </p>
-                <p class="text-xs text-blue-400 flex items-center gap-1">
-                    <span class="text-lg">=</span>
-                    <span>Balanço do mês</span>
-                </p>
+                <div class="text-xs text-text-secondary">
+                    Previsto (Receitas - Despesas)
+                </div>
             </div>
         </div>
 
@@ -110,10 +126,25 @@
                                     {{ t.category }}
                                 </span>
                             </td>
-                            <td class="p-4 text-sm text-text-secondary">{{ t.paymentMethod }}</td>
-                            <td class="p-4 text-right font-bold text-base"
-                                [ngClass]="{'text-emerald-400': t.type === 'income', 'text-red-400': t.type === 'expense'}">
-                                {{ t.amount | currency:'BRL' }}
+                            <td class="p-4 text-sm text-text-secondary">
+                                <span class="capitalize">{{ t.paymentMethod }}</span>
+                            </td>
+                            <td class="p-4 text-right">
+                                <div class="flex flex-col items-end gap-1">
+                                    <span class="font-bold text-base"
+                                        [ngClass]="{'text-emerald-400': t.type === 'income', 'text-red-400': t.type === 'expense'}">
+                                        {{ t.amount | currency:'BRL' }}
+                                    </span>
+                                    <button (click)="toggleStatus(t)"
+                                        class="text-xs px-2 py-0.5 rounded-full border transition-all hover:scale-105"
+                                        [ngClass]="{
+                                            'bg-emerald-500/20 text-emerald-400 border-emerald-500/30': t.isPaid,
+                                            'bg-yellow-500/20 text-yellow-500 border-yellow-500/30': !t.isPaid
+                                        }">
+                                        {{ t.isPaid ? (t.type === 'income' ? 'Recebido' : 'Pago') : (t.type === 'income'
+                                        ? 'Pendente' : 'Não Pago') }}
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                         <tr *ngIf="transactions.length === 0">

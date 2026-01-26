@@ -27,6 +27,10 @@ export class TransactionService {
     return this.http.post<Transaction>(`${this.apiUrl}`, transaction, { headers: this.getHeaders() });
   }
 
+  update(id: string, data: Partial<Transaction>): Observable<Transaction> {
+    return this.http.patch<Transaction>(`${this.apiUrl}/${id}`, data, { headers: this.getHeaders() });
+  }
+
   // Add Income endpoint if separate
   getIncome(): Observable<any[]> {
     return this.http.get<any[]>('/api/incomes', { headers: this.getHeaders() });
