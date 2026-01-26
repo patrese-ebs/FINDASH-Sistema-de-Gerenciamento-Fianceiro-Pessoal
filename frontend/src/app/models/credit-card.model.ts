@@ -7,4 +7,5 @@ export interface CreditCard {
     closingDay: number;
     dueDay: number;
     userId?: string;
+    imageUrl?: string;
 }

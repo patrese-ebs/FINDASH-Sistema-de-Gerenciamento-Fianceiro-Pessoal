@@ -24,4 +24,20 @@ export class CreditCardService {
   create(card: CreditCard): Observable<CreditCard> {
     return this.http.post<CreditCard>(`${this.apiUrl}`, card, { headers: this.getHeaders() });
   }
+
+  update(id: string, card: Partial<CreditCard>): Observable<CreditCard> {
+    return this.http.put<CreditCard>(`${this.apiUrl}/${id}`, card, { headers: this.getHeaders() });
+  }
+
+  delete(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`, { headers: this.getHeaders() });
+  }
+
+  planInvoices(cardId: string, plans: any[]): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${cardId}/plan-invoices`, { plans }, { headers: this.getHeaders() });
+  }
+
+  getSummary(month: number, year: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/summary?month=${month}&year=${year}`, { headers: this.getHeaders() });
+  }
 }

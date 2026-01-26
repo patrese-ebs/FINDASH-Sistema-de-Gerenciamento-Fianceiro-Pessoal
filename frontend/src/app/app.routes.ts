@@ -34,6 +34,10 @@ export const routes: Routes = [
         loadComponent: () => import('./components/credit-cards/credit-cards.component').then(m => m.CreditCardsComponent),
         canActivate: [authGuard]
     },
-    { path: 'investments', redirectTo: 'dashboard' },
+    {
+        path: 'investments',
+        loadComponent: () => import('./components/investments/investments.component').then(m => m.InvestmentsComponent),
+        canActivate: [authGuard]
+    },
     { path: 'goals', redirectTo: 'dashboard' },
 ];

@@ -9,4 +9,5 @@ export interface Transaction {
     isPaid: boolean;
     creditCardId?: string;
     userId?: string;
+    installments?: number;
 }

@@ -1,27 +1,20 @@
 /** @type {import('tailwindcss').Config} */
-export default {
+module.exports = {
     content: [
-        "./index.html",
-        "./src/**/*.{js,ts,jsx,tsx,html}",
+        "./src/**/*.{html,ts}",
     ],
     theme: {
         extend: {
             colors: {
-                'dark-bg': '#0f0f1a',
-                'dark-card': '#1a1a2e',
-                'dark-border': '#2a2a3e',
-                'accent-purple': '#8b5cf6',
+                'dark-bg': '#0f172a',
+                'dark-card': '#1e293b',
+                'dark-border': '#334155',
+                'accent-purple': '#818cf8',
                 'accent-blue': '#3b82f6',
-                'accent-gold': '#fbbf24',
-                'text-primary': '#ffffff',
-                'text-secondary': '#a0a0a0',
-            },
-            fontFamily: {
-                sans: ['Inter', 'system-ui', 'sans-serif'],
-            },
-            backdropBlur: {
-                xs: '2px',
-            },
+                'accent-gold': '#f59e0b',
+                'text-primary': '#f8fafc',
+                'text-secondary': '#94a3b8'
+            }
         },
     },
     plugins: [],

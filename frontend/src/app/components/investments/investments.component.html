@@ -1,0 +1,161 @@
+<div class="min-h-screen bg-dark-bg text-text-primary font-sans antialiased">
+    <app-sidebar></app-sidebar>
+
+    <div class="ml-64 p-8">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <h2 class="text-3xl font-bold">Investimentos</h2>
+                <p class="text-text-secondary mt-1">Acompanhe a evolução do seu patrimônio.</p>
+            </div>
+            <button (click)="openModal()"
+                class="btn-primary bg-gradient-to-r from-accent-purple to-accent-blue text-white px-4 py-2 rounded-lg font-bold hover:opacity-90 transition-opacity">
+                + Novo Investimento
+            </button>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-dark-card p-4 rounded-xl border border-dark-border shadow-lg">
+                <div class="text-sm text-text-secondary mb-1">Total Investido</div>
+                <div class="text-2xl font-bold text-white">{{ totalInvested | currency:'BRL' }}</div>
+            </div>
+            <div class="bg-dark-card p-4 rounded-xl border border-dark-border shadow-lg">
+                <div class="text-sm text-text-secondary mb-1">Valor Atual</div>
+                <div class="text-2xl font-bold text-cyan-400">{{ currentTotal | currency:'BRL' }}</div>
+            </div>
+            <div class="bg-dark-card p-4 rounded-xl border border-dark-border shadow-lg">
+                <div class="text-sm text-text-secondary mb-1">Rendimento Total</div>
+                <div class="text-2xl font-bold" [ngClass]="totalYield >= 0 ? 'text-green-400' : 'text-red-400'">
+                    {{ totalYield > 0 ? '+' : '' }}{{ totalYield | currency:'BRL' }}
+                    <span class="text-sm font-normal">({{ yieldPercent | number:'1.2-2' }}%)</span>
+                </div>
+            </div>
+        </div>
+
+        <div *ngIf="loading" class="flex justify-center p-12">
+            <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-accent-purple"></div>
+        </div>
+
+        <!-- Investments List -->
+        <div *ngIf="!loading" class="bg-dark-card rounded-xl border border-dark-border overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b border-dark-border">
+                            <th class="text-left py-3 px-4 text-sm font-medium text-text-secondary">NOME</th>
+                            <th class="text-left py-3 px-4 text-sm font-medium text-text-secondary">TIPO</th>
+                            <th class="text-right py-3 px-4 text-sm font-medium text-text-secondary">VALOR INVESTIDO
+                            </th>
+                            <th class="text-right py-3 px-4 text-sm font-medium text-text-secondary">VALOR ATUAL</th>
+                            <th class="text-right py-3 px-4 text-sm font-medium text-text-secondary">RENTABILIDADE</th>
+                            <th class="text-right py-3 px-4 text-sm font-medium text-text-secondary">AÇÕES</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let inv of investments"
+                            class="border-b border-dark-border hover:bg-dark-bg transition-colors">
+                            <td class="py-3 px-4 text-white font-medium">{{ inv.name }}</td>
+                            <td class="py-3 px-4">
+                                <span
+                                    class="bg-dark-bg px-2 py-1 rounded text-xs border border-dark-border text-text-secondary">{{
+                                    inv.type }}</span>
+                            </td>
+                            <td class="py-3 px-4 text-right text-text-secondary">{{ inv.amountInvested | currency:'BRL'
+                                }}</td>
+                            <td class="py-3 px-4 text-right text-white font-bold">{{ inv.currentValue | currency:'BRL'
+                                }}</td>
+                            <td class="py-3 px-4 text-right">
+                                <div class="font-bold"
+                                    [ngClass]="getProfit(inv) >= 0 ? 'text-green-400' : 'text-red-400'">
+                                    {{ getProfit(inv) > 0 ? '+' : '' }}{{ getProfit(inv) | currency:'BRL' }}
+                                </div>
+                                <div class="text-xs"
+                                    [ngClass]="getProfit(inv) >= 0 ? 'text-green-500' : 'text-red-500'">
+                                    {{ getProfitPercent(inv) | number:'1.2-2' }}%
+                                </div>
+                            </td>
+                            <td class="py-3 px-4 text-right">
+                                <button (click)="openModal(inv)"
+                                    class="text-text-secondary hover:text-accent-purple mr-3">✎</button>
+                                <button (click)="deleteInvestment(inv.id!)"
+                                    class="text-text-secondary hover:text-red-400">🗑</button>
+                            </td>
+                        </tr>
+                        <tr *ngIf="investments.length === 0">
+                            <td colspan="6" class="text-center py-8 text-text-secondary">Nenhum investimento encontrado.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div *ngIf="showModal"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-70 backdrop-blur-sm">
+        <div class="bg-dark-card border border-dark-border rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div class="p-6 border-b border-dark-border flex justify-between items-center">
+                <h3 class="text-xl font-bold">{{ editingId ? 'Editar Investimento' : 'Novo Investimento' }}</h3>
+                <button (click)="closeModal()" class="text-text-secondary hover:text-white">&times;</button>
+            </div>
+
+            <form [formGroup]="form" (ngSubmit)="onSubmit()" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-text-secondary mb-1">Nome do Ativo</label>
+                    <input type="text" formControlName="name"
+                        class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 text-white"
+                        placeholder="Ex: Tesouro Selic">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-text-secondary mb-1">Tipo</label>
+                    <select formControlName="type"
+                        class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 text-white">
+                        <option value="Renda Fixa">Renda Fixa</option>
+                        <option value="Ações">Ações</option>
+                        <option value="FIIs">FIIs</option>
+                        <option value="Criptomoedas">Criptomoedas</option>
+                        <option value="Fundos">Fundos</option>
+                        <option value="Outros">Outros</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-text-secondary mb-1">Valor Investido</label>
+                        <input type="number" formControlName="amountInvested"
+                            class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 text-white">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-text-secondary mb-1">Valor Atual</label>
+                        <input type="number" formControlName="currentValue"
+                            class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 text-white">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-text-secondary mb-1">Data da Compra</label>
+                    <input type="date" formControlName="purchaseDate"
+                        class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 text-white">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-text-secondary mb-1">Notas (Opcional)</label>
+                    <textarea formControlName="notes"
+                        class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 text-white h-20"></textarea>
+                </div>
+
+                <div class="pt-4 flex gap-3">
+                    <button type="button" (click)="closeModal()"
+                        class="flex-1 py-2 rounded-lg border border-dark-border text-text-secondary hover:bg-dark-bg">Cancelar</button>
+                    <button type="submit" [disabled]="submitting || form.invalid"
+                        class="flex-1 py-2 rounded-lg bg-gradient-to-r from-accent-purple to-accent-blue text-white font-bold hover:opacity-90">
+                        {{ submitting ? 'Salvando...' : 'Salvar' }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
