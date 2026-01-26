@@ -36,13 +36,14 @@ export class CreditCardsComponent implements OnInit {
     planningForm: FormGroup;
     planningMonths = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
-    // Invoice View Modal
+    // Invoice View Modal (Yearly Overview)
     showInvoiceModal: boolean = false;
-    invoiceMonth: number = new Date().getMonth() + 1;
     invoiceYear: number = new Date().getFullYear();
-    invoiceTotal: number = 0;
-    invoiceStatus: 'paid' | 'open' | 'closed' = 'open';
-    paymentAmount: number = 0; // For partial payment input
+    yearlyOverview: any[] = [];
+    selectedMonthIndex: number | null = null; // For accordion
+
+    // Payment UI state
+    paymentAmount: number = 0;
     viewingCard: CreditCard | null = null;
     months = [
         { val: 1, label: 'Janeiro' }, { val: 2, label: 'Fevereiro' }, { val: 3, label: 'Março' },
@@ -292,21 +293,7 @@ export class CreditCardsComponent implements OnInit {
         this.loadInvoice(card.id!, this.invoiceMonth, this.invoiceYear);
     }
 
-    loadInvoice(cardId: string, month: number, year: number) {
-        this.cardService.getInvoice(cardId, month, year).subscribe({
-            next: (data) => {
-                this.invoiceItems = data.items;
-                this.invoiceTotal = data.totalAmount;
-                this.paymentAmount = data.totalAmount; // Default to full amount
-                this.invoiceStatus = data.isPaid ? 'paid' : 'open'; // Simplified status
-            },
-            error: (err) => {
-                console.error('Failed to load invoice', err);
-                this.invoiceItems = [];
-                this.invoiceTotal = 0;
-            }
-        });
-    }
+    // Legacy loadInvoice removed in favor of yearly overview
 
     prevInvoiceMonth() {
         if (this.invoiceMonth === 1) {

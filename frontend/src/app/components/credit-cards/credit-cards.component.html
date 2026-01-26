@@ -40,8 +40,13 @@
                 <div class="text-2xl font-bold text-green-400">{{ summary.totalAvailable | currency:'BRL' }}</div>
             </div>
             <div class="stat-card bg-dark-card p-4 rounded-xl border border-dark-border shadow-lg">
-                <div class="text-sm text-text-secondary mb-1">Faturas do Mês</div>
-                <div class="text-2xl font-bold text-yellow-500">{{ summary.totalDueThisMonth | currency:'BRL' }}</div>
+                <div class="text-sm text-text-secondary mb-1">Faturas Mês (A Pagar)</div>
+                <div class="text-2xl font-bold text-yellow-500">{{ summary.totalPendingThisMonth | currency:'BRL' }}
+                </div>
+            </div>
+            <div class="stat-card bg-dark-card p-4 rounded-xl border border-dark-border shadow-lg">
+                <div class="text-sm text-text-secondary mb-1">Faturas Mês (Pagas)</div>
+                <div class="text-2xl font-bold text-green-500">{{ summary.totalPaidThisMonth | currency:'BRL' }}</div>
             </div>
         </div>
 

@@ -85,12 +85,6 @@ export class CreditCardController {
                 return;
             }
 
-            // We can reuse getAll logic or re-query. Re-using logic is safer to keep consistent.
-            // Since getAll helps construct the response, we can just call the internal logic 
-            // but we can't easily call 'getAll' because it sends a response.
-            // Let's duplicate the aggregation logic briefly or refactor. 
-            // For now, duplication with shared logic is fine for speed.
-
             const now = new Date();
             const queryMonth = req.query.month ? parseInt(req.query.month as string) : undefined;
             const queryYear = req.query.year ? parseInt(req.query.year as string) : undefined;
@@ -106,42 +100,126 @@ export class CreditCardController {
             let totalLimit = 0;
             let totalLiability = 0;
             let totalDueThisMonth = 0;
+            let totalPaidThisMonth = 0;
 
-            creditCards.forEach(card => {
-                const transactions = (card as any).transactions || [];
+            // We need to check invoice status for each card to know if "Due" is "Paid"
+            for (const card of creditCards) {
                 const creditLimit = parseFloat(card.creditLimit.toString());
-
                 totalLimit += creditLimit;
+
+                const transactions = (card as any).transactions || [];
+                let cardDueThisMonth = 0;
 
                 transactions.forEach((transaction: any) => {
                     const remainingInstallments = transaction.installments - transaction.currentInstallment + 1;
                     const installmentAmount = parseFloat(transaction.installmentAmount.toString());
-
                     totalLiability += (installmentAmount * remainingInstallments);
 
-                    // Check for current month due
+                    // Month Check
                     const dateStr = transaction.purchaseDate.toString();
                     const [pYear, pMonth] = dateStr.includes('T') ? dateStr.split('T')[0].split('-').map(Number) : dateStr.split('-').map(Number);
                     const monthsElapsed = (currentYear - pYear) * 12 + (currentMonth - pMonth);
 
                     if (monthsElapsed >= 0 && monthsElapsed < transaction.installments && transaction.currentInstallment + monthsElapsed <= transaction.installments) {
-                        totalDueThisMonth += installmentAmount;
+                        cardDueThisMonth += installmentAmount;
                     }
                 });
-            });
+
+                // Check if this card's invoice for this month is paid
+                const invoice = await CreditCardInvoice.findOne({
+                    where: {
+                        creditCardId: card.id,
+                        month: currentMonth,
+                        year: currentYear,
+                        isPaid: true
+                    }
+                });
+
+                if (invoice) {
+                    totalPaidThisMonth += cardDueThisMonth;
+                }
+
+                // Add to total due anyway (it's the monthly bill size)
+                totalDueThisMonth += cardDueThisMonth;
+            }
 
             const totalAvailable = totalLimit - totalLiability;
+            const totalPendingThisMonth = totalDueThisMonth - totalPaidThisMonth;
 
             res.status(200).json({
                 totalLimit,
                 totalLiability,
                 totalAvailable,
-                totalDueThisMonth
+                totalDueThisMonth,
+                totalPaidThisMonth,
+                totalPendingThisMonth
             });
 
         } catch (error) {
             console.error(error);
             res.status(500).json({ error: 'Failed to fetch summary' });
+        }
+    }
+
+    async getYearlyOverview(req: AuthRequest, res: Response): Promise<void> {
+        try {
+            const { id, year } = req.params;
+            const userId = req.userId;
+            const targetYear = parseInt(year);
+
+            if (!userId) {
+                res.status(401).json({ error: 'Unauthorized' });
+                return;
+            }
+
+            const creditCard = await CreditCard.findOne({ where: { id, userId } });
+            if (!creditCard) {
+                res.status(404).json({ error: 'Card not found' });
+                return;
+            }
+
+            const transactions = await CreditCardTransaction.findAll({ where: { creditCardId: id } });
+            const invoices = await CreditCardInvoice.findAll({
+                where: { creditCardId: id, year: targetYear }
+            });
+
+            // Calc 12 months
+            const overview = [];
+            for (let m = 1; m <= 12; m++) {
+                // Filter transactions for this month
+                const items = transactions.filter(t => {
+                    const dateStr = t.purchaseDate.toString();
+                    const [pYear, pMonth] = dateStr.includes('T') ? dateStr.split('T')[0].split('-').map(Number) : dateStr.split('-').map(Number);
+                    const monthsElapsed = (targetYear - pYear) * 12 + (m - pMonth);
+                    return monthsElapsed >= 0 && monthsElapsed < t.installments;
+                }).map(t => {
+                    const dateStr = t.purchaseDate.toString();
+                    const [pYear, pMonth] = dateStr.includes('T') ? dateStr.split('T')[0].split('-').map(Number) : dateStr.split('-').map(Number);
+                    const monthsElapsed = (targetYear - pYear) * 12 + (m - pMonth);
+                    return {
+                        ...t.toJSON(),
+                        installmentNumber: 1 + monthsElapsed,
+                        installmentAmount: parseFloat(t.installmentAmount.toString())
+                    };
+                });
+
+                const total = items.reduce((sum, i) => sum + i.installmentAmount, 0);
+                const inv = invoices.find(i => i.month === m);
+
+                overview.push({
+                    month: m,
+                    year: targetYear,
+                    total,
+                    isPaid: inv ? inv.isPaid : false,
+                    items // Include items for accordion View
+                });
+            }
+
+            res.status(200).json(overview);
+
+        } catch (error) {
+            console.error('Yearly overview failed', error);
+            res.status(500).json({ error: 'Failed' });
         }
     }
 

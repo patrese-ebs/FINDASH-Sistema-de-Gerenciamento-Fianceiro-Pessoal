@@ -48,4 +48,8 @@ export class CreditCardService {
   payInvoice(cardId: string, month: number, year: number, amount: number): Observable<any> {
     return this.http.post(`${this.apiUrl}/${cardId}/invoice/pay`, { month, year, amount }, { headers: this.getHeaders() });
   }
+
+  getYearlyOverview(cardId: string, year: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/${cardId}/yearly-overview/${year}`, { headers: this.getHeaders() });
+  }
 }

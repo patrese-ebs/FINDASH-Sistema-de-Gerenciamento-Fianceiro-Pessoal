@@ -66,6 +66,7 @@ router.get('/credit-cards/:id/invoice/:month/:year', authMiddleware, creditCardC
 router.post('/credit-cards/:id/invoice/pay', authMiddleware, creditCardController.payInvoice.bind(creditCardController));
 router.post('/credit-cards/:id/invoice/plan', authMiddleware, creditCardController.planInvoices.bind(creditCardController));
 router.get('/credit-cards/:id/balance', authMiddleware, creditCardController.getBalance.bind(creditCardController));
+router.get('/credit-cards/:id/yearly-overview/:year', authMiddleware, creditCardController.getYearlyOverview.bind(creditCardController));
 
 // Investment routes
 router.get('/investments', authMiddleware, investmentController.getAll.bind(investmentController));
