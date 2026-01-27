@@ -4,8 +4,8 @@ import { IncomeController } from '../controllers/IncomeController';
 import { ExpenseController } from '../controllers/ExpenseController';
 import { CreditCardController } from '../controllers/CreditCardController';
 import { InvestmentController } from '../controllers/InvestmentController';
-import { FinancialPlanController } from '../controllers/FinancialPlanController';
-import { ReportController } from '../controllers/ReportController';
+// import { FinancialPlanController } from '../controllers/FinancialPlanController';
+// import { ReportController } from '../controllers/ReportController';
 import aiRoutes from './aiRoutes';
 import { authMiddleware } from '../middleware/auth';
 
@@ -29,8 +29,8 @@ const incomeController = new IncomeController();
 const expenseController = new ExpenseController();
 const creditCardController = new CreditCardController();
 const investmentController = new InvestmentController();
-const financialPlanController = new FinancialPlanController();
-const reportController = new ReportController();
+// const financialPlanController = new FinancialPlanController();
+// const reportController = new ReportController();
 
 // Auth routes
 // Apply rate limit specifically to login/register/forgot
@@ -76,14 +76,14 @@ router.put('/investments/:id', authMiddleware, investmentController.update.bind(
 router.delete('/investments/:id', authMiddleware, investmentController.delete.bind(investmentController));
 
 // Financial Plan routes
-router.get('/financial-plans', authMiddleware, financialPlanController.getAll.bind(financialPlanController));
-router.post('/financial-plans', authMiddleware, financialPlanController.create.bind(financialPlanController));
-router.put('/financial-plans/:id', authMiddleware, financialPlanController.update.bind(financialPlanController));
-router.delete('/financial-plans/:id', authMiddleware, financialPlanController.delete.bind(financialPlanController));
+// router.get('/financial-plans', authMiddleware, financialPlanController.getAll.bind(financialPlanController));
+// router.post('/financial-plans', authMiddleware, financialPlanController.create.bind(financialPlanController));
+// router.put('/financial-plans/:id', authMiddleware, financialPlanController.update.bind(financialPlanController));
+// router.delete('/financial-plans/:id', authMiddleware, financialPlanController.delete.bind(financialPlanController));
 
 // Report routes
-router.get('/reports/dashboard', authMiddleware, reportController.getDashboard.bind(reportController));
-router.get('/reports/monthly/:month/:year', authMiddleware, reportController.getMonthlyReport.bind(reportController));
+// router.get('/reports/dashboard', authMiddleware, reportController.getDashboard.bind(reportController));
+// router.get('/reports/monthly/:month/:year', authMiddleware, reportController.getMonthlyReport.bind(reportController));
 
 // AI routes
 router.use('/ai', aiRoutes);
