@@ -11,7 +11,7 @@ interface ExpenseAttributes {
     date: Date;
     month: number;
     year: number;
-    paymentMethod: 'cash' | 'debit' | 'credit' | 'transfer';
+    paymentMethod: 'cash' | 'debit' | 'credit' | 'transfer' | 'pix';
     creditCardId?: string;
     isRecurring: boolean;
     recurrenceFrequency?: string;
@@ -33,7 +33,7 @@ class Expense extends Model<ExpenseAttributes, ExpenseCreationAttributes> implem
     public date!: Date;
     public month!: number;
     public year!: number;
-    public paymentMethod!: 'cash' | 'debit' | 'credit' | 'transfer';
+    public paymentMethod!: 'cash' | 'debit' | 'credit' | 'transfer' | 'pix';
     public creditCardId?: string;
     public isRecurring!: boolean;
     public recurrenceFrequency?: string;
@@ -85,7 +85,7 @@ Expense.init(
             allowNull: false,
         },
         paymentMethod: {
-            type: DataTypes.ENUM('cash', 'debit', 'credit', 'transfer'),
+            type: DataTypes.ENUM('cash', 'debit', 'credit', 'transfer', 'pix'),
             allowNull: false,
         },
         creditCardId: {
