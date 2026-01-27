@@ -56,7 +56,11 @@ export class TransactionService {
           date: i.date,
           paymentMethod: 'pix',
           isPaid: i.isPaid,
-          userId: i.userId
+          userId: i.userId,
+          isRecurring: i.isRecurring,
+          recurrenceFrequency: i.recurrenceFrequency,
+          recurrenceEndDate: i.recurrenceEndDate,
+          recurrenceId: i.recurrenceId
         }));
 
         // If no cards, return just expenses and incomes
@@ -127,8 +131,9 @@ export class TransactionService {
     return this.http.put<Transaction>(url, data, { headers: this.getHeaders() });
   }
 
-  delete(id: string, deleteRecurring: boolean = false): Observable<void> {
-    const url = `${this.expensesUrl}/${id}?deleteRecurring=${deleteRecurring}`;
+  delete(id: string, type: 'expense' | 'income', deleteRecurring: boolean = false): Observable<void> {
+    const baseUrl = type === 'income' ? this.incomesUrl : this.expensesUrl;
+    const url = `${baseUrl}/${id}?deleteRecurring=${deleteRecurring}`;
     return this.http.delete<void>(url, { headers: this.getHeaders() });
   }
 }

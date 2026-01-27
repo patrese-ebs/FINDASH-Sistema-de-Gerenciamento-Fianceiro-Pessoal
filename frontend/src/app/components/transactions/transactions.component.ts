@@ -290,7 +290,7 @@ export class TransactionsComponent implements OnInit {
         }
 
         // Handle recurring fields
-        if (formValue.isRecurring && formValue.type === 'expense') {
+        if (formValue.isRecurring) {
             if (formValue.repeatIndefinitely) {
                 formValue.recurrenceEndDate = null;
             }
@@ -359,7 +359,7 @@ export class TransactionsComponent implements OnInit {
         if (!this.transactionToDelete?.id) return;
 
         this.deleting = true;
-        this.transactionService.delete(this.transactionToDelete.id, deleteRecurring).subscribe({
+        this.transactionService.delete(this.transactionToDelete.id, this.transactionToDelete.type, deleteRecurring).subscribe({
             next: () => {
                 this.loadTransactions();
                 this.deleting = false;
