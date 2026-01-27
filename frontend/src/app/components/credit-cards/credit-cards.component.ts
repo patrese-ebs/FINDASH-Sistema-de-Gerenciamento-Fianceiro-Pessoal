@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule } from '@angular/forms';
-import { SidebarComponent } from '../sidebar/sidebar.component';
 import { CreditCardService } from '../../services/credit-card';
 import { CreditCard } from '../../models/credit-card.model';
 import { TransactionService } from '../../services/transaction';
@@ -10,7 +9,7 @@ import { Transaction } from '../../models/transaction.model';
 @Component({
     selector: 'app-credit-cards',
     standalone: true,
-    imports: [CommonModule, SidebarComponent, ReactiveFormsModule, FormsModule],
+    imports: [CommonModule, ReactiveFormsModule, FormsModule],
     templateUrl: './credit-cards.component.html',
 })
 export class CreditCardsComponent implements OnInit {

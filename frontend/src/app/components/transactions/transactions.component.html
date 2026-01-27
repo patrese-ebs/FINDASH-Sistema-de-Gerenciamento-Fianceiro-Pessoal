@@ -1,394 +1,387 @@
-<div class="min-h-screen bg-dark-bg text-text-primary font-sans antialiased">
-    <app-sidebar></app-sidebar>
+<div class="flex items-center justify-between mb-8">
+    <h2 class="text-3xl font-bold">Transações</h2>
 
-    <div class="ml-64 p-8">
-        <div class="flex items-center justify-between mb-8">
-            <h2 class="text-3xl font-bold">Transações</h2>
-
-            <!-- Month Selector -->
-            <div class="flex items-center gap-4 bg-dark-card border border-dark-border rounded-lg px-2 py-1">
-                <button (click)="prevMonth()"
-                    class="p-2 hover:bg-dark-bg rounded-lg text-text-secondary hover:text-white transition-colors">
-                    ◀
-                </button>
-                <div class="text-lg font-bold min-w-[150px] text-center">
-                    {{ months[selectedMonth-1].label }} {{ selectedYear }}
-                </div>
-                <button (click)="nextMonth()"
-                    class="p-2 hover:bg-dark-bg rounded-lg text-text-secondary hover:text-white transition-colors">
-                    ▶
-                </button>
-            </div>
-
-            <button (click)="openModal()"
-                class="bg-gradient-to-r from-accent-purple to-accent-blue text-white px-4 py-2 rounded-lg font-bold hover:opacity-90 transition-opacity">
-                + Nova Transação
-            </button>
+    <!-- Month Selector -->
+    <div class="flex items-center gap-4 bg-dark-card border border-dark-border rounded-lg px-2 py-1">
+        <button (click)="prevMonth()"
+            class="p-2 hover:bg-dark-bg rounded-lg text-text-secondary hover:text-white transition-colors">
+            ◀
+        </button>
+        <div class="text-lg font-bold min-w-[150px] text-center">
+            {{ months[selectedMonth-1].label }} {{ selectedYear }}
         </div>
+        <button (click)="nextMonth()"
+            class="p-2 hover:bg-dark-bg rounded-lg text-text-secondary hover:text-white transition-colors">
+            ▶
+        </button>
+    </div>
 
-        <!-- Summary Cards -->
-        <!-- Summary Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 transform transition-all duration-500 ease-out">
-            <!-- Income Card -->
-            <div
-                class="bg-dark-card p-6 rounded-xl border-l-4 border-emerald-500 shadow-lg hover:transform hover:scale-105 transition-transform duration-300">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-text-secondary font-medium">Receitas</h3>
-                    <div class="p-2 bg-emerald-500/10 rounded-lg">
-                        <span class="text-xl">💰</span>
-                    </div>
-                </div>
+    <button (click)="openModal()"
+        class="bg-gradient-to-r from-accent-purple to-accent-blue text-white px-4 py-2 rounded-lg font-bold hover:opacity-90 transition-opacity">
+        + Nova Transação
+    </button>
+</div>
 
-                <div class="space-y-3">
-                    <div class="flex justify-between items-end border-b border-dark-border pb-2">
-                        <span class="text-sm text-text-secondary">Previsto</span>
-                        <span class="text-lg font-bold text-white">{{ predictedIncome | currency:'BRL' }}</span>
-                    </div>
-                    <div class="flex justify-between items-end">
-                        <span class="text-sm text-emerald-400">Recebido</span>
-                        <span class="text-xl font-bold text-emerald-400">{{ receivedIncome | currency:'BRL' }}</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Expense Card -->
-            <div
-                class="bg-dark-card p-6 rounded-xl border-l-4 border-red-500 shadow-lg hover:transform hover:scale-105 transition-transform duration-300">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-text-secondary font-medium">Despesas</h3>
-                    <div class="p-2 bg-red-500/10 rounded-lg">
-                        <span class="text-xl">💸</span>
-                    </div>
-                </div>
-
-                <div class="space-y-3">
-                    <div class="flex justify-between items-end border-b border-dark-border pb-2">
-                        <span class="text-sm text-text-secondary">Previsto</span>
-                        <span class="text-lg font-bold text-white">{{ totalExpense | currency:'BRL' }}</span>
-                    </div>
-                    <div class="flex justify-between items-end">
-                        <span class="text-sm text-red-400">Pago</span>
-                        <span class="text-lg font-bold text-red-400">{{ paidExpense | currency:'BRL' }}</span>
-                    </div>
-                    <div class="flex justify-between items-end">
-                        <span class="text-sm text-orange-400">A Pagar</span>
-                        <span class="text-lg font-bold text-orange-400">{{ toPayExpense | currency:'BRL' }}</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Balance Card -->
-            <div
-                class="bg-dark-card p-6 rounded-xl border-l-4 border-blue-500 shadow-lg hover:transform hover:scale-105 transition-transform duration-300">
-                <div class="flex items-center justify-between mb-2">
-                    <h3 class="text-text-secondary font-medium">Saldo</h3>
-                    <div class="p-2 bg-blue-500/10 rounded-lg">
-                        <span class="text-xl">⚖️</span>
-                    </div>
-                </div>
-                <p class="text-3xl font-bold text-white mb-2"
-                    [ngClass]="{'text-emerald-400': balance >= 0, 'text-red-400': balance < 0}">
-                    {{ balance | currency:'BRL' }}
-                </p>
-                <div class="text-xs text-text-secondary">
-                    Previsto (Receitas - Despesas)
-                </div>
+<!-- Summary Cards -->
+<!-- Summary Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 transform transition-all duration-500 ease-out">
+    <!-- Income Card -->
+    <div
+        class="bg-dark-card p-6 rounded-xl border-l-4 border-emerald-500 shadow-lg hover:transform hover:scale-105 transition-transform duration-300">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-text-secondary font-medium">Receitas</h3>
+            <div class="p-2 bg-emerald-500/10 rounded-lg">
+                <span class="text-xl">💰</span>
             </div>
         </div>
 
-        <!-- Tabs & Filters -->
-        <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-            <!-- Main Type Tabs -->
-            <div class="flex gap-2 bg-dark-card p-1 rounded-xl border border-dark-border">
-                <button (click)="setFilter('expense')" class="px-6 py-2 rounded-lg font-medium transition-all"
-                    [ngClass]="filterType === 'expense' ? 'bg-red-500 text-white shadow-lg' : 'text-text-secondary hover:text-white hover:bg-dark-bg'">
-                    💸 Despesas
-                </button>
-                <button (click)="setFilter('income')" class="px-6 py-2 rounded-lg font-medium transition-all"
-                    [ngClass]="filterType === 'income' ? 'bg-emerald-500 text-white shadow-lg' : 'text-text-secondary hover:text-white hover:bg-dark-bg'">
-                    💰 Receitas
-                </button>
+        <div class="space-y-3">
+            <div class="flex justify-between items-end border-b border-dark-border pb-2">
+                <span class="text-sm text-text-secondary">Previsto</span>
+                <span class="text-lg font-bold text-white">{{ predictedIncome | currency:'BRL' }}</span>
             </div>
+            <div class="flex justify-between items-end">
+                <span class="text-sm text-emerald-400">Recebido</span>
+                <span class="text-xl font-bold text-emerald-400">{{ receivedIncome | currency:'BRL' }}</span>
+            </div>
+        </div>
+    </div>
 
-            <!-- Status Filters -->
-            <div class="flex gap-2">
-                <button (click)="setStatusFilter('all')"
-                    class="px-4 py-1.5 rounded-lg text-sm font-medium border transition-colors"
-                    [ngClass]="statusFilter === 'all' ? 'bg-accent-purple/20 border-accent-purple text-accent-purple' : 'border-dark-border text-text-secondary hover:border-text-secondary'">
-                    Todas
-                </button>
-                <button (click)="setStatusFilter('paid')"
-                    class="px-4 py-1.5 rounded-lg text-sm font-medium border transition-colors"
-                    [ngClass]="statusFilter === 'paid' ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400' : 'border-dark-border text-text-secondary hover:border-text-secondary'">
-                    {{ filterType === 'income' ? 'Recebidas' : 'Pagas' }}
-                </button>
-                <button (click)="setStatusFilter('pending')"
-                    class="px-4 py-1.5 rounded-lg text-sm font-medium border transition-colors"
-                    [ngClass]="statusFilter === 'pending' ? 'bg-yellow-500/20 border-yellow-500 text-yellow-500' : 'border-dark-border text-text-secondary hover:border-text-secondary'">
-                    {{ filterType === 'income' ? 'A Receber' : 'A Pagar' }}
-                </button>
+    <!-- Expense Card -->
+    <div
+        class="bg-dark-card p-6 rounded-xl border-l-4 border-red-500 shadow-lg hover:transform hover:scale-105 transition-transform duration-300">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-text-secondary font-medium">Despesas</h3>
+            <div class="p-2 bg-red-500/10 rounded-lg">
+                <span class="text-xl">💸</span>
             </div>
         </div>
 
-        <div class="bg-dark-card border border-dark-border rounded-xl p-6 shadow-lg overflow-hidden">
-            <div *ngIf="loading" class="flex justify-center p-8">
-                <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-accent-purple"></div>
+        <div class="space-y-3">
+            <div class="flex justify-between items-end border-b border-dark-border pb-2">
+                <span class="text-sm text-text-secondary">Previsto</span>
+                <span class="text-lg font-bold text-white">{{ totalExpense | currency:'BRL' }}</span>
             </div>
+            <div class="flex justify-between items-end">
+                <span class="text-sm text-red-400">Pago</span>
+                <span class="text-lg font-bold text-red-400">{{ paidExpense | currency:'BRL' }}</span>
+            </div>
+            <div class="flex justify-between items-end">
+                <span class="text-sm text-orange-400">A Pagar</span>
+                <span class="text-lg font-bold text-orange-400">{{ toPayExpense | currency:'BRL' }}</span>
+            </div>
+        </div>
+    </div>
 
-            <div *ngIf="!loading" class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="text-text-secondary border-b border-dark-border">
-                            <th class="p-4 font-medium">Data</th>
-                            <th class="p-4 font-medium">Descrição</th>
-                            <th class="p-4 font-medium">Categoria</th>
-                            <th class="p-4 font-medium">Método</th>
-                            <th class="p-4 font-medium text-right">Valor</th>
-                            <th class="p-4 font-medium text-center">Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr *ngFor="let t of filteredTransactions"
-                            class="border-b border-dark-border hover:bg-dark-bg transition-colors group"
-                            [class.cursor-pointer]="!t.isInvoice" (click)="!t.isInvoice && editTransaction(t)">
-                            <td class="p-4 text-sm">{{ t.date | date:'shortDate' }}</td>
-                            <td class="p-4 font-medium">
-                                <div class="flex items-center gap-2">
-                                    <span *ngIf="t.isRecurring" class="text-cyan-400"
-                                        title="Despesa Recorrente">🔄</span>
-                                    <span *ngIf="t.isInvoice" class="text-purple-400">💳</span>
-                                    {{ t.description }}
-                                    <span *ngIf="t.isPartiallyPaid" class="text-xs text-blue-400">(Parcial)</span>
-                                </div>
-                            </td>
-                            <td class="p-4">
-                                <span class="px-3 py-1 text-xs font-medium rounded-full border"
-                                    [ngClass]="getCategoryBg(t.category)">
-                                    {{ t.category }}
-                                </span>
-                            </td>
-                            <td class="p-4 text-sm text-text-secondary">
-                                <span class="capitalize">{{ t.paymentMethod }}</span>
-                            </td>
-                            <td class="p-4 text-right">
-                                <div class="flex flex-col items-end gap-1">
-                                    <span class="font-bold text-base"
-                                        [ngClass]="{'text-emerald-400': t.type === 'income', 'text-red-400': t.type === 'expense'}">
-                                        {{ t.amount | currency:'BRL' }}
-                                    </span>
-                                    <!-- Regular transaction status button -->
-                                    <button *ngIf="!t.isInvoice" (click)="$event.stopPropagation(); toggleStatus(t)"
-                                        class="text-xs px-2 py-0.5 rounded-full border transition-all hover:scale-105"
-                                        [ngClass]="{
+    <!-- Balance Card -->
+    <div
+        class="bg-dark-card p-6 rounded-xl border-l-4 border-blue-500 shadow-lg hover:transform hover:scale-105 transition-transform duration-300">
+        <div class="flex items-center justify-between mb-2">
+            <h3 class="text-text-secondary font-medium">Saldo</h3>
+            <div class="p-2 bg-blue-500/10 rounded-lg">
+                <span class="text-xl">⚖️</span>
+            </div>
+        </div>
+        <p class="text-3xl font-bold text-white mb-2"
+            [ngClass]="{'text-emerald-400': balance >= 0, 'text-red-400': balance < 0}">
+            {{ balance | currency:'BRL' }}
+        </p>
+        <div class="text-xs text-text-secondary">
+            Previsto (Receitas - Despesas)
+        </div>
+    </div>
+</div>
+
+<!-- Tabs & Filters -->
+<div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+    <!-- Main Type Tabs -->
+    <div class="flex gap-2 bg-dark-card p-1 rounded-xl border border-dark-border">
+        <button (click)="setFilter('expense')" class="px-6 py-2 rounded-lg font-medium transition-all"
+            [ngClass]="filterType === 'expense' ? 'bg-red-500 text-white shadow-lg' : 'text-text-secondary hover:text-white hover:bg-dark-bg'">
+            💸 Despesas
+        </button>
+        <button (click)="setFilter('income')" class="px-6 py-2 rounded-lg font-medium transition-all"
+            [ngClass]="filterType === 'income' ? 'bg-emerald-500 text-white shadow-lg' : 'text-text-secondary hover:text-white hover:bg-dark-bg'">
+            💰 Receitas
+        </button>
+    </div>
+
+    <!-- Status Filters -->
+    <div class="flex gap-2">
+        <button (click)="setStatusFilter('all')"
+            class="px-4 py-1.5 rounded-lg text-sm font-medium border transition-colors"
+            [ngClass]="statusFilter === 'all' ? 'bg-accent-purple/20 border-accent-purple text-accent-purple' : 'border-dark-border text-text-secondary hover:border-text-secondary'">
+            Todas
+        </button>
+        <button (click)="setStatusFilter('paid')"
+            class="px-4 py-1.5 rounded-lg text-sm font-medium border transition-colors"
+            [ngClass]="statusFilter === 'paid' ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400' : 'border-dark-border text-text-secondary hover:border-text-secondary'">
+            {{ filterType === 'income' ? 'Recebidas' : 'Pagas' }}
+        </button>
+        <button (click)="setStatusFilter('pending')"
+            class="px-4 py-1.5 rounded-lg text-sm font-medium border transition-colors"
+            [ngClass]="statusFilter === 'pending' ? 'bg-yellow-500/20 border-yellow-500 text-yellow-500' : 'border-dark-border text-text-secondary hover:border-text-secondary'">
+            {{ filterType === 'income' ? 'A Receber' : 'A Pagar' }}
+        </button>
+    </div>
+</div>
+
+<div class="bg-dark-card border border-dark-border rounded-xl p-6 shadow-lg overflow-hidden">
+    <div *ngIf="loading" class="flex justify-center p-8">
+        <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-accent-purple"></div>
+    </div>
+
+    <div *ngIf="!loading" class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="text-text-secondary border-b border-dark-border">
+                    <th class="p-4 font-medium">Data</th>
+                    <th class="p-4 font-medium">Descrição</th>
+                    <th class="p-4 font-medium">Categoria</th>
+                    <th class="p-4 font-medium">Método</th>
+                    <th class="p-4 font-medium text-right">Valor</th>
+                    <th class="p-4 font-medium text-center">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let t of filteredTransactions"
+                    class="border-b border-dark-border hover:bg-dark-bg transition-colors group"
+                    [class.cursor-pointer]="!t.isInvoice" (click)="!t.isInvoice && editTransaction(t)">
+                    <td class="p-4 text-sm">{{ t.date | date:'shortDate' }}</td>
+                    <td class="p-4 font-medium">
+                        <div class="flex items-center gap-2">
+                            <span *ngIf="t.isRecurring" class="text-cyan-400" title="Despesa Recorrente">🔄</span>
+                            <span *ngIf="t.isInvoice" class="text-purple-400">💳</span>
+                            {{ t.description }}
+                            <span *ngIf="t.isPartiallyPaid" class="text-xs text-blue-400">(Parcial)</span>
+                        </div>
+                    </td>
+                    <td class="p-4">
+                        <span class="px-3 py-1 text-xs font-medium rounded-full border"
+                            [ngClass]="getCategoryBg(t.category)">
+                            {{ t.category }}
+                        </span>
+                    </td>
+                    <td class="p-4 text-sm text-text-secondary">
+                        <span class="capitalize">{{ t.paymentMethod }}</span>
+                    </td>
+                    <td class="p-4 text-right">
+                        <div class="flex flex-col items-end gap-1">
+                            <span class="font-bold text-base"
+                                [ngClass]="{'text-emerald-400': t.type === 'income', 'text-red-400': t.type === 'expense'}">
+                                {{ t.amount | currency:'BRL' }}
+                            </span>
+                            <!-- Regular transaction status button -->
+                            <button *ngIf="!t.isInvoice" (click)="$event.stopPropagation(); toggleStatus(t)"
+                                class="text-xs px-2 py-0.5 rounded-full border transition-all hover:scale-105"
+                                [ngClass]="{
                                             'bg-emerald-500/20 text-emerald-400 border-emerald-500/30': t.isPaid,
                                             'bg-yellow-500/20 text-yellow-500 border-yellow-500/30': !t.isPaid
                                         }">
-                                        {{ t.isPaid ? (t.type === 'income' ? 'Recebido' : 'Pago') : (t.type === 'income'
-                                        ? 'Pendente' : 'Não Pago') }}
-                                    </button>
-                                    <!-- Invoice status (read-only link to cards page) -->
-                                    <a *ngIf="t.isInvoice" routerLink="/credit-cards"
-                                        class="text-xs px-2 py-0.5 rounded-full border transition-all hover:scale-105"
-                                        [ngClass]="{
+                                {{ t.isPaid ? (t.type === 'income' ? 'Recebido' : 'Pago') : (t.type === 'income'
+                                ? 'Pendente' : 'Não Pago') }}
+                            </button>
+                            <!-- Invoice status (read-only link to cards page) -->
+                            <a *ngIf="t.isInvoice" routerLink="/credit-cards"
+                                class="text-xs px-2 py-0.5 rounded-full border transition-all hover:scale-105"
+                                [ngClass]="{
                                             'bg-emerald-500/20 text-emerald-400 border-emerald-500/30': t.isPaid,
                                             'bg-blue-500/20 text-blue-400 border-blue-500/30': t.isPartiallyPaid,
                                             'bg-yellow-500/20 text-yellow-500 border-yellow-500/30': !t.isPaid && !t.isPartiallyPaid
                                         }">
-                                        {{ t.isPaid ? 'Paga' : (t.isPartiallyPaid ? 'Parcial' : 'A Pagar') }}
-                                    </a>
-                                </div>
-                            </td>
-                            <td class="p-4 text-center">
-                                <button *ngIf="!t.isInvoice" (click)="openDeleteModal(t, $event)"
-                                    class="p-2 text-red-400 hover:bg-red-500/20 rounded-lg transition-colors"
-                                    title="Excluir">
-                                    🗑️
-                                </button>
-                            </td>
-                        </tr>
-                        <tr *ngIf="transactions.length === 0">
-                            <td colspan="6" class="p-8 text-center text-text-secondary">
-                                Nenhuma transação encontrada.
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+                                {{ t.isPaid ? 'Paga' : (t.isPartiallyPaid ? 'Parcial' : 'A Pagar') }}
+                            </a>
+                        </div>
+                    </td>
+                    <td class="p-4 text-center">
+                        <button *ngIf="!t.isInvoice" (click)="openDeleteModal(t, $event)"
+                            class="p-2 text-red-400 hover:bg-red-500/20 rounded-lg transition-colors" title="Excluir">
+                            🗑️
+                        </button>
+                    </td>
+                </tr>
+                <tr *ngIf="transactions.length === 0">
+                    <td colspan="6" class="p-8 text-center text-text-secondary">
+                        Nenhuma transação encontrada.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
 
-    <!-- Modal -->
-    <div *ngIf="showModal"
-        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm">
-        <div
-            class="bg-dark-card border border-dark-border rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in">
-            <div class="p-6 border-b border-dark-border flex justify-between items-center">
-                <h3 class="text-xl font-bold">{{ editingTransactionId ? 'Editar Transação' : 'Nova Transação' }}</h3>
-                <button (click)="closeModal()" class="text-text-secondary hover:text-white">&times;</button>
-            </div>
-
-            <form [formGroup]="transactionForm" (ngSubmit)="onSubmit()" class="p-6 space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-text-secondary mb-1">Descrição</label>
-                    <input type="text" formControlName="description"
-                        class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 focus:outline-none focus:border-accent-purple transition-colors text-white"
-                        placeholder="Ex: Compras Supermercado">
+        <!-- Modal -->
+        <div *ngIf="showModal"
+            class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm">
+            <div
+                class="bg-dark-card border border-dark-border rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in">
+                <div class="p-6 border-b border-dark-border flex justify-between items-center">
+                    <h3 class="text-xl font-bold">{{ editingTransactionId ? 'Editar Transação' : 'Nova Transação' }}
+                    </h3>
+                    <button (click)="closeModal()" class="text-text-secondary hover:text-white">&times;</button>
                 </div>
 
-                <div class="grid grid-cols-2 gap-4">
+                <form [formGroup]="transactionForm" (ngSubmit)="onSubmit()" class="p-6 space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-text-secondary mb-1">Valor (R$)</label>
-                        <input type="number" formControlName="amount" step="0.01"
+                        <label class="block text-sm font-medium text-text-secondary mb-1">Descrição</label>
+                        <input type="text" formControlName="description"
                             class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 focus:outline-none focus:border-accent-purple transition-colors text-white"
-                            placeholder="0.00">
+                            placeholder="Ex: Compras Supermercado">
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-text-secondary mb-1">Data</label>
-                        <input type="date" formControlName="date"
-                            class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 focus:outline-none focus:border-accent-purple transition-colors text-white">
-                    </div>
-                </div>
 
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-text-secondary mb-1">Tipo</label>
-                        <select formControlName="type"
-                            class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 focus:outline-none focus:border-accent-purple transition-colors text-white">
-                            <option value="expense">Despesa</option>
-                            <option value="income">Receita</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-text-secondary mb-1">Categoria</label>
-                        <select formControlName="category"
-                            class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 focus:outline-none focus:border-accent-purple transition-colors text-white">
-                            <option value="Alimentação">Alimentação</option>
-                            <option value="Transporte">Transporte</option>
-                            <option value="Moradia">Moradia</option>
-                            <option value="Lazer">Lazer</option>
-                            <option value="Saúde">Saúde</option>
-                            <option value="Educação">Educação</option>
-                            <option value="Salário">Salário</option>
-                            <option value="Investimentos">Investimentos</option>
-                            <option value="Outros">Outros</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-text-secondary mb-1">Método</label>
-                    <select formControlName="paymentMethod"
-                        class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 focus:outline-none focus:border-accent-purple transition-colors text-white">
-                        <option value="pix">PIX</option>
-                        <option value="credit">Cartão de Crédito</option>
-                        <option value="debit">Cartão de Débito</option>
-                        <option value="cash">Dinheiro</option>
-                    </select>
-                </div>
-
-                <!-- Recurring Section -->
-                <div class="border-t border-dark-border pt-4 mt-2">
-                    <label class="flex items-center gap-3 cursor-pointer">
-                        <input type="checkbox" formControlName="isRecurring"
-                            class="w-5 h-5 rounded border-dark-border bg-dark-bg text-accent-purple focus:ring-accent-purple">
-                        <span class="text-sm font-medium text-white">🔄 {{ transactionForm.get('type')?.value ===
-                            'income' ? 'Receita Recorrente' : 'Despesa Recorrente' }}</span>
-                    </label>
-
-                    <div *ngIf="transactionForm.get('isRecurring')?.value"
-                        class="mt-4 space-y-4 pl-2 border-l-2 border-accent-purple">
+                    <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-text-secondary mb-1">Frequência</label>
-                            <select formControlName="recurrenceFrequency"
+                            <label class="block text-sm font-medium text-text-secondary mb-1">Valor (R$)</label>
+                            <input type="number" formControlName="amount" step="0.01"
+                                class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 focus:outline-none focus:border-accent-purple transition-colors text-white"
+                                placeholder="0.00">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-text-secondary mb-1">Data</label>
+                            <input type="date" formControlName="date"
                                 class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 focus:outline-none focus:border-accent-purple transition-colors text-white">
-                                <option value="monthly">Mensal</option>
-                                <option value="weekly">Semanal</option>
-                                <option value="yearly">Anual</option>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-text-secondary mb-1">Tipo</label>
+                            <select formControlName="type"
+                                class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 focus:outline-none focus:border-accent-purple transition-colors text-white">
+                                <option value="expense">Despesa</option>
+                                <option value="income">Receita</option>
                             </select>
                         </div>
-
-                        <label class="flex items-center gap-3 cursor-pointer">
-                            <input type="checkbox" formControlName="repeatIndefinitely"
-                                class="w-5 h-5 rounded border-dark-border bg-dark-bg text-accent-purple focus:ring-accent-purple">
-                            <span class="text-sm font-medium text-white">Repetir Indefinidamente</span>
-                        </label>
-
-                        <div *ngIf="!transactionForm.get('repeatIndefinitely')?.value">
-                            <label class="block text-sm font-medium text-text-secondary mb-1">Data Final</label>
-                            <input type="date" formControlName="recurrenceEndDate"
+                        <div>
+                            <label class="block text-sm font-medium text-text-secondary mb-1">Categoria</label>
+                            <select formControlName="category"
                                 class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 focus:outline-none focus:border-accent-purple transition-colors text-white">
+                                <option value="Alimentação">Alimentação</option>
+                                <option value="Transporte">Transporte</option>
+                                <option value="Moradia">Moradia</option>
+                                <option value="Lazer">Lazer</option>
+                                <option value="Saúde">Saúde</option>
+                                <option value="Educação">Educação</option>
+                                <option value="Salário">Salário</option>
+                                <option value="Investimentos">Investimentos</option>
+                                <option value="Outros">Outros</option>
+                            </select>
                         </div>
                     </div>
-                </div>
 
-                <div class="pt-4 flex justify-end gap-3">
-                    <button type="button" (click)="closeModal()"
-                        class="px-4 py-2 rounded-lg border border-dark-border hover:bg-dark-border transition-colors text-text-secondary">Cancelar</button>
-                    <button type="submit" [disabled]="submitting || transactionForm.invalid"
-                        class="px-6 py-2 rounded-lg bg-gradient-to-r from-accent-purple to-accent-blue text-white font-bold hover:opacity-90 transition-opacity disabled:opacity-50">
-                        {{ submitting ? 'Salvando...' : 'Salvar' }}
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-text-secondary mb-1">Método</label>
+                        <select formControlName="paymentMethod"
+                            class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 focus:outline-none focus:border-accent-purple transition-colors text-white">
+                            <option value="pix">PIX</option>
+                            <option value="credit">Cartão de Crédito</option>
+                            <option value="debit">Cartão de Débito</option>
+                            <option value="cash">Dinheiro</option>
+                        </select>
+                    </div>
 
-    <!-- Delete Confirmation Modal -->
-    <div *ngIf="showDeleteModal"
-        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm">
-        <div
-            class="bg-dark-card border border-dark-border rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in">
-            <div class="p-6 border-b border-dark-border">
-                <h3 class="text-xl font-bold text-white">Excluir {{ transactionToDelete?.type === 'income' ? 'Receita' :
-                    'Despesa' }}</h3>
-            </div>
-            <div class="p-6">
-                <p class="text-text-secondary mb-4">
-                    Tem certeza que deseja excluir
-                    <span class="text-white font-medium">"{{ transactionToDelete?.description }}"</span>?
-                </p>
+                    <!-- Recurring Section -->
+                    <div class="border-t border-dark-border pt-4 mt-2">
+                        <label class="flex items-center gap-3 cursor-pointer">
+                            <input type="checkbox" formControlName="isRecurring"
+                                class="w-5 h-5 rounded border-dark-border bg-dark-bg text-accent-purple focus:ring-accent-purple">
+                            <span class="text-sm font-medium text-white">🔄 {{ transactionForm.get('type')?.value ===
+                                'income' ? 'Receita Recorrente' : 'Despesa Recorrente' }}</span>
+                        </label>
 
-                <!-- Recurring options -->
-                <div *ngIf="transactionToDelete?.isRecurring" class="space-y-3">
-                    <p class="text-sm text-cyan-400 flex items-center gap-2">
-                        <span>🔄</span> Esta é uma {{ transactionToDelete?.type === 'income' ? 'receita' : 'despesa' }}
-                        recorrente.
-                    </p>
-                    <div class="flex flex-col gap-2">
-                        <button (click)="confirmDelete(false)" [disabled]="deleting"
-                            class="w-full px-4 py-3 rounded-lg border border-dark-border hover:bg-dark-bg transition-colors text-white text-left">
-                            Excluir apenas esta
-                            <span class="block text-xs text-text-secondary">As demais ocorrências permanecem</span>
+                        <div *ngIf="transactionForm.get('isRecurring')?.value"
+                            class="mt-4 space-y-4 pl-2 border-l-2 border-accent-purple">
+                            <div>
+                                <label class="block text-sm font-medium text-text-secondary mb-1">Frequência</label>
+                                <select formControlName="recurrenceFrequency"
+                                    class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 focus:outline-none focus:border-accent-purple transition-colors text-white">
+                                    <option value="monthly">Mensal</option>
+                                    <option value="weekly">Semanal</option>
+                                    <option value="yearly">Anual</option>
+                                </select>
+                            </div>
+
+                            <label class="flex items-center gap-3 cursor-pointer">
+                                <input type="checkbox" formControlName="repeatIndefinitely"
+                                    class="w-5 h-5 rounded border-dark-border bg-dark-bg text-accent-purple focus:ring-accent-purple">
+                                <span class="text-sm font-medium text-white">Repetir Indefinidamente</span>
+                            </label>
+
+                            <div *ngIf="!transactionForm.get('repeatIndefinitely')?.value">
+                                <label class="block text-sm font-medium text-text-secondary mb-1">Data Final</label>
+                                <input type="date" formControlName="recurrenceEndDate"
+                                    class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 focus:outline-none focus:border-accent-purple transition-colors text-white">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 flex justify-end gap-3">
+                        <button type="button" (click)="closeModal()"
+                            class="px-4 py-2 rounded-lg border border-dark-border hover:bg-dark-border transition-colors text-text-secondary">Cancelar</button>
+                        <button type="submit" [disabled]="submitting || transactionForm.invalid"
+                            class="px-6 py-2 rounded-lg bg-gradient-to-r from-accent-purple to-accent-blue text-white font-bold hover:opacity-90 transition-opacity disabled:opacity-50">
+                            {{ submitting ? 'Salvando...' : 'Salvar' }}
                         </button>
-                        <button (click)="confirmDelete(true)" [disabled]="deleting"
-                            class="w-full px-4 py-3 rounded-lg border border-red-500/50 bg-red-500/10 hover:bg-red-500/20 transition-colors text-red-400 text-left">
-                            Excluir esta e todas as futuras
-                            <span class="block text-xs text-red-300/70">Remove esta e todas as ocorrências
-                                posteriores</span>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Delete Confirmation Modal -->
+        <div *ngIf="showDeleteModal"
+            class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm">
+            <div
+                class="bg-dark-card border border-dark-border rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in">
+                <div class="p-6 border-b border-dark-border">
+                    <h3 class="text-xl font-bold text-white">Excluir {{ transactionToDelete?.type === 'income' ?
+                        'Receita' :
+                        'Despesa' }}</h3>
+                </div>
+                <div class="p-6">
+                    <p class="text-text-secondary mb-4">
+                        Tem certeza que deseja excluir
+                        <span class="text-white font-medium">"{{ transactionToDelete?.description }}"</span>?
+                    </p>
+
+                    <!-- Recurring options -->
+                    <div *ngIf="transactionToDelete?.isRecurring" class="space-y-3">
+                        <p class="text-sm text-cyan-400 flex items-center gap-2">
+                            <span>🔄</span> Esta é uma {{ transactionToDelete?.type === 'income' ? 'receita' : 'despesa'
+                            }}
+                            recorrente.
+                        </p>
+                        <div class="flex flex-col gap-2">
+                            <button (click)="confirmDelete(false)" [disabled]="deleting"
+                                class="w-full px-4 py-3 rounded-lg border border-dark-border hover:bg-dark-bg transition-colors text-white text-left">
+                                Excluir apenas esta
+                                <span class="block text-xs text-text-secondary">As demais ocorrências permanecem</span>
+                            </button>
+                            <button (click)="confirmDelete(true)" [disabled]="deleting"
+                                class="w-full px-4 py-3 rounded-lg border border-red-500/50 bg-red-500/10 hover:bg-red-500/20 transition-colors text-red-400 text-left">
+                                Excluir esta e todas as futuras
+                                <span class="block text-xs text-red-300/70">Remove esta e todas as ocorrências
+                                    posteriores</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Simple delete for non-recurring -->
+                    <div *ngIf="!transactionToDelete?.isRecurring" class="flex justify-end gap-3">
+                        <button (click)="cancelDelete()"
+                            class="px-4 py-2 rounded-lg border border-dark-border hover:bg-dark-border transition-colors text-text-secondary">
+                            Cancelar
+                        </button>
+                        <button (click)="confirmDelete(false)" [disabled]="deleting"
+                            class="px-6 py-2 rounded-lg bg-red-500 text-white font-bold hover:bg-red-600 transition-colors disabled:opacity-50">
+                            {{ deleting ? 'Excluindo...' : 'Excluir' }}
                         </button>
                     </div>
                 </div>
 
-                <!-- Simple delete for non-recurring -->
-                <div *ngIf="!transactionToDelete?.isRecurring" class="flex justify-end gap-3">
-                    <button (click)="cancelDelete()"
-                        class="px-4 py-2 rounded-lg border border-dark-border hover:bg-dark-border transition-colors text-text-secondary">
+                <!-- Cancel for recurring modal -->
+                <div *ngIf="transactionToDelete?.isRecurring" class="p-4 border-t border-dark-border">
+                    <button (click)="cancelDelete()" [disabled]="deleting"
+                        class="w-full px-4 py-2 rounded-lg border border-dark-border hover:bg-dark-border transition-colors text-text-secondary">
                         Cancelar
-                    </button>
-                    <button (click)="confirmDelete(false)" [disabled]="deleting"
-                        class="px-6 py-2 rounded-lg bg-red-500 text-white font-bold hover:bg-red-600 transition-colors disabled:opacity-50">
-                        {{ deleting ? 'Excluindo...' : 'Excluir' }}
                     </button>
                 </div>
             </div>
-
-            <!-- Cancel for recurring modal -->
-            <div *ngIf="transactionToDelete?.isRecurring" class="p-4 border-t border-dark-border">
-                <button (click)="cancelDelete()" [disabled]="deleting"
-                    class="w-full px-4 py-2 rounded-lg border border-dark-border hover:bg-dark-border transition-colors text-text-secondary">
-                    Cancelar
-                </button>
-            </div>
         </div>
-    </div>
-</div>

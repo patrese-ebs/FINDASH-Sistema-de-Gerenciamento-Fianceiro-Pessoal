@@ -14,30 +14,34 @@ const authGuard = () => {
     return false;
 };
 
+import { MainLayoutComponent } from './components/layout/main-layout.component';
+
 export const routes: Routes = [
     { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     { path: 'login', component: LoginComponent },
     { path: 'register', component: RegisterComponent },
     {
-        path: 'dashboard',
-        component: DashboardComponent,
-        canActivate: [authGuard]
-    },
-    // Placeholders for future routes
-    {
-        path: 'transactions',
-        loadComponent: () => import('./components/transactions/transactions.component').then(m => m.TransactionsComponent),
-        canActivate: [authGuard]
-    },
-    {
-        path: 'credit-cards', // Note: User might use /credit-cards or /cards 
-        loadComponent: () => import('./components/credit-cards/credit-cards.component').then(m => m.CreditCardsComponent),
-        canActivate: [authGuard]
-    },
-    {
-        path: 'investments',
-        loadComponent: () => import('./components/investments/investments.component').then(m => m.InvestmentsComponent),
-        canActivate: [authGuard]
-    },
-    { path: 'goals', redirectTo: 'dashboard' },
+        path: '',
+        component: MainLayoutComponent,
+        canActivate: [authGuard],
+        children: [
+            {
+                path: 'dashboard',
+                component: DashboardComponent
+            },
+            {
+                path: 'transactions',
+                loadComponent: () => import('./components/transactions/transactions.component').then(m => m.TransactionsComponent)
+            },
+            {
+                path: 'credit-cards',
+                loadComponent: () => import('./components/credit-cards/credit-cards.component').then(m => m.CreditCardsComponent)
+            },
+            {
+                path: 'investments',
+                loadComponent: () => import('./components/investments/investments.component').then(m => m.InvestmentsComponent)
+            },
+            { path: 'goals', redirectTo: 'dashboard' }
+        ]
+    }
 ];

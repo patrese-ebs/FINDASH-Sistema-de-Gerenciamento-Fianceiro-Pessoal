@@ -1,72 +1,62 @@
-<!-- Core Layout with Sidebar -->
-<div class="min-h-screen bg-dark-bg text-text-primary font-sans antialiased">
-    <!-- Reusable Sidebar Component -->
-    <app-sidebar></app-sidebar>
+<!-- Loading State -->
+<div *ngIf="loading" class="flex flex-col justify-center items-center h-64">
+    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent-purple mb-4"></div>
+    <p class="text-text-secondary">Carregando dados...</p>
+    <p *ngIf="error" class="text-red-400 mt-2">{{ error }}</p>
+</div>
 
-    <!-- Main Content -->
-    <div class="ml-64 p-8">
+<div *ngIf="!loading">
+    <!-- Header -->
+    <div class="mb-8">
+        <h2 class="text-3xl font-bold">Visão Geral Financeira</h2>
+        <p class="text-text-secondary mt-1">Bem-vindo de volta, aqui está o que está acontecendo com seu
+            dinheiro hoje.</p>
+    </div>
 
-        <!-- Loading State -->
-        <div *ngIf="loading" class="flex flex-col justify-center items-center h-64">
-            <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent-purple mb-4"></div>
-            <p class="text-text-secondary">Carregando dados...</p>
-            <p *ngIf="error" class="text-red-400 mt-2">{{ error }}</p>
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Current Balance -->
+        <div class="bg-dark-card border border-dark-border rounded-xl p-6 shadow-lg">
+            <div class="text-text-secondary text-sm font-medium mb-2">Saldo Atual (Líquido)</div>
+            <div class="text-2xl font-bold text-white">{{ totalBalance | currency:'BRL' }}</div>
+            <div class="text-xs text-text-secondary mt-1">Recebido - Pago</div>
         </div>
 
-        <div *ngIf="!loading">
-            <!-- Header -->
-            <div class="mb-8">
-                <h2 class="text-3xl font-bold">Visão Geral Financeira</h2>
-                <p class="text-text-secondary mt-1">Bem-vindo de volta, aqui está o que está acontecendo com seu
-                    dinheiro hoje.</p>
+        <!-- Projected Balance -->
+        <div class="bg-dark-card border border-dark-border rounded-xl p-6 shadow-lg">
+            <div class="text-text-secondary text-sm font-medium mb-2">Saldo Projetado</div>
+            <div class="text-2xl font-bold text-blue-400">{{ projectedBalance | currency:'BRL' }}</div>
+            <div class="text-xs text-text-secondary mt-1">Ao final do mês</div>
+        </div>
+
+        <!-- Monthly Income -->
+        <div class="bg-dark-card border border-dark-border rounded-xl p-6 shadow-lg">
+            <div class="text-text-secondary text-sm font-medium mb-2">Receitas (Mês)</div>
+            <div class="text-2xl font-bold text-green-400">{{ monthlyIncome | currency:'BRL' }}</div>
+        </div>
+
+        <!-- Monthly Expense -->
+        <div class="bg-dark-card border border-dark-border rounded-xl p-6 shadow-lg">
+            <div class="text-text-secondary text-sm font-medium mb-2">Despesas (Mês)</div>
+            <div class="text-2xl font-bold text-red-400">{{ monthlyExpenses | currency:'BRL' }}</div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <!-- Cash Flow Chart -->
+        <div class="bg-dark-card border border-dark-border rounded-xl p-6 shadow-lg lg:col-span-2">
+            <h3 class="text-xl font-bold mb-4">Análise de Fluxo de Caixa</h3>
+            <div class="h-64 relative">
+                <canvas #cashFlowChart></canvas>
             </div>
+        </div>
 
-            <!-- Stats Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <!-- Current Balance -->
-                <div class="bg-dark-card border border-dark-border rounded-xl p-6 shadow-lg">
-                    <div class="text-text-secondary text-sm font-medium mb-2">Saldo Atual (Líquido)</div>
-                    <div class="text-2xl font-bold text-white">{{ totalBalance | currency:'BRL' }}</div>
-                    <div class="text-xs text-text-secondary mt-1">Recebido - Pago</div>
-                </div>
-
-                <!-- Projected Balance -->
-                <div class="bg-dark-card border border-dark-border rounded-xl p-6 shadow-lg">
-                    <div class="text-text-secondary text-sm font-medium mb-2">Saldo Projetado</div>
-                    <div class="text-2xl font-bold text-blue-400">{{ projectedBalance | currency:'BRL' }}</div>
-                    <div class="text-xs text-text-secondary mt-1">Ao final do mês</div>
-                </div>
-
-                <!-- Monthly Income -->
-                <div class="bg-dark-card border border-dark-border rounded-xl p-6 shadow-lg">
-                    <div class="text-text-secondary text-sm font-medium mb-2">Receitas (Mês)</div>
-                    <div class="text-2xl font-bold text-green-400">{{ monthlyIncome | currency:'BRL' }}</div>
-                </div>
-
-                <!-- Monthly Expense -->
-                <div class="bg-dark-card border border-dark-border rounded-xl p-6 shadow-lg">
-                    <div class="text-text-secondary text-sm font-medium mb-2">Despesas (Mês)</div>
-                    <div class="text-2xl font-bold text-red-400">{{ monthlyExpenses | currency:'BRL' }}</div>
-                </div>
-            </div>
-
-            <!-- Charts Row -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                <!-- Cash Flow Chart -->
-                <div class="bg-dark-card border border-dark-border rounded-xl p-6 shadow-lg lg:col-span-2">
-                    <h3 class="text-xl font-bold mb-4">Análise de Fluxo de Caixa</h3>
-                    <div class="h-64 relative">
-                        <canvas #cashFlowChart></canvas>
-                    </div>
-                </div>
-
-                <!-- Expense Breakdown -->
-                <div class="bg-dark-card border border-dark-border rounded-xl p-6 shadow-lg">
-                    <h3 class="text-xl font-bold mb-4">Breakdown de Despesas</h3>
-                    <div class="h-64 relative">
-                        <canvas #expenseChart></canvas>
-                    </div>
-                </div>
+        <!-- Expense Breakdown -->
+        <div class="bg-dark-card border border-dark-border rounded-xl p-6 shadow-lg">
+            <h3 class="text-xl font-bold mb-4">Breakdown de Despesas</h3>
+            <div class="h-64 relative">
+                <canvas #expenseChart></canvas>
             </div>
         </div>
     </div>

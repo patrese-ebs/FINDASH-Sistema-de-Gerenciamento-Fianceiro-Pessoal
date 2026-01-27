@@ -2,14 +2,13 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { SidebarComponent } from '../sidebar/sidebar.component';
 import { TransactionService } from '../../services/transaction';
 import { Transaction } from '../../models/transaction.model';
 
 @Component({
     selector: 'app-transactions',
     standalone: true,
-    imports: [CommonModule, SidebarComponent, ReactiveFormsModule, RouterLink],
+    imports: [CommonModule, ReactiveFormsModule, RouterLink],
     templateUrl: './transactions.component.html',
 })
 export class TransactionsComponent implements OnInit {

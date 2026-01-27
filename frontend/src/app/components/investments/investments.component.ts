@@ -1,14 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { SidebarComponent } from '../sidebar/sidebar.component';
 import { InvestmentService } from '../../services/investment';
 import { Investment } from '../../models/investment.model';
 
 @Component({
     selector: 'app-investments',
     standalone: true,
-    imports: [CommonModule, SidebarComponent, ReactiveFormsModule],
+    imports: [CommonModule, ReactiveFormsModule],
     templateUrl: './investments.component.html',
 })
 export class InvestmentsComponent implements OnInit {
