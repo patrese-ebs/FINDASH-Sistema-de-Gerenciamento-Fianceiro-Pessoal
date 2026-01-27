@@ -144,6 +144,7 @@
                             <th class="p-4 font-medium">Categoria</th>
                             <th class="p-4 font-medium">Método</th>
                             <th class="p-4 font-medium text-right">Valor</th>
+                            <th class="p-4 font-medium text-center">Ações</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -153,6 +154,8 @@
                             <td class="p-4 text-sm">{{ t.date | date:'shortDate' }}</td>
                             <td class="p-4 font-medium">
                                 <div class="flex items-center gap-2">
+                                    <span *ngIf="t.isRecurring" class="text-cyan-400"
+                                        title="Despesa Recorrente">🔄</span>
                                     <span *ngIf="t.isInvoice" class="text-purple-400">💳</span>
                                     {{ t.description }}
                                     <span *ngIf="t.isPartiallyPaid" class="text-xs text-blue-400">(Parcial)</span>
@@ -195,9 +198,17 @@
                                     </a>
                                 </div>
                             </td>
+                            <td class="p-4 text-center">
+                                <button *ngIf="!t.isInvoice && t.type === 'expense'"
+                                    (click)="openDeleteModal(t, $event)"
+                                    class="p-2 text-red-400 hover:bg-red-500/20 rounded-lg transition-colors"
+                                    title="Excluir">
+                                    🗑️
+                                </button>
+                            </td>
                         </tr>
                         <tr *ngIf="transactions.length === 0">
-                            <td colspan="5" class="p-8 text-center text-text-secondary">
+                            <td colspan="6" class="p-8 text-center text-text-secondary">
                                 Nenhuma transação encontrada.
                             </td>
                         </tr>
@@ -276,6 +287,41 @@
                     </select>
                 </div>
 
+                <!-- Recurring Section - Only for expenses -->
+                <div *ngIf="transactionForm.get('type')?.value === 'expense'"
+                    class="border-t border-dark-border pt-4 mt-2">
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" formControlName="isRecurring"
+                            class="w-5 h-5 rounded border-dark-border bg-dark-bg text-accent-purple focus:ring-accent-purple">
+                        <span class="text-sm font-medium text-white">🔄 Despesa Recorrente</span>
+                    </label>
+
+                    <div *ngIf="transactionForm.get('isRecurring')?.value"
+                        class="mt-4 space-y-4 pl-2 border-l-2 border-accent-purple">
+                        <div>
+                            <label class="block text-sm font-medium text-text-secondary mb-1">Frequência</label>
+                            <select formControlName="recurrenceFrequency"
+                                class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 focus:outline-none focus:border-accent-purple transition-colors text-white">
+                                <option value="monthly">Mensal</option>
+                                <option value="weekly">Semanal</option>
+                                <option value="yearly">Anual</option>
+                            </select>
+                        </div>
+
+                        <label class="flex items-center gap-3 cursor-pointer">
+                            <input type="checkbox" formControlName="repeatIndefinitely"
+                                class="w-5 h-5 rounded border-dark-border bg-dark-bg text-accent-purple focus:ring-accent-purple">
+                            <span class="text-sm font-medium text-white">Repetir Indefinidamente</span>
+                        </label>
+
+                        <div *ngIf="!transactionForm.get('repeatIndefinitely')?.value">
+                            <label class="block text-sm font-medium text-text-secondary mb-1">Data Final</label>
+                            <input type="date" formControlName="recurrenceEndDate"
+                                class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 focus:outline-none focus:border-accent-purple transition-colors text-white">
+                        </div>
+                    </div>
+                </div>
+
                 <div class="pt-4 flex justify-end gap-3">
                     <button type="button" (click)="closeModal()"
                         class="px-4 py-2 rounded-lg border border-dark-border hover:bg-dark-border transition-colors text-text-secondary">Cancelar</button>
@@ -285,6 +331,63 @@
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div *ngIf="showDeleteModal"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm">
+        <div
+            class="bg-dark-card border border-dark-border rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in">
+            <div class="p-6 border-b border-dark-border">
+                <h3 class="text-xl font-bold text-white">Excluir Despesa</h3>
+            </div>
+            <div class="p-6">
+                <p class="text-text-secondary mb-4">
+                    Tem certeza que deseja excluir
+                    <span class="text-white font-medium">"{{ transactionToDelete?.description }}"</span>?
+                </p>
+
+                <!-- Recurring options -->
+                <div *ngIf="transactionToDelete?.isRecurring" class="space-y-3">
+                    <p class="text-sm text-cyan-400 flex items-center gap-2">
+                        <span>🔄</span> Esta é uma despesa recorrente.
+                    </p>
+                    <div class="flex flex-col gap-2">
+                        <button (click)="confirmDelete(false)" [disabled]="deleting"
+                            class="w-full px-4 py-3 rounded-lg border border-dark-border hover:bg-dark-bg transition-colors text-white text-left">
+                            Excluir apenas esta
+                            <span class="block text-xs text-text-secondary">As demais ocorrências permanecem</span>
+                        </button>
+                        <button (click)="confirmDelete(true)" [disabled]="deleting"
+                            class="w-full px-4 py-3 rounded-lg border border-red-500/50 bg-red-500/10 hover:bg-red-500/20 transition-colors text-red-400 text-left">
+                            Excluir esta e todas as futuras
+                            <span class="block text-xs text-red-300/70">Remove esta e todas as ocorrências
+                                posteriores</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Simple delete for non-recurring -->
+                <div *ngIf="!transactionToDelete?.isRecurring" class="flex justify-end gap-3">
+                    <button (click)="cancelDelete()"
+                        class="px-4 py-2 rounded-lg border border-dark-border hover:bg-dark-border transition-colors text-text-secondary">
+                        Cancelar
+                    </button>
+                    <button (click)="confirmDelete(false)" [disabled]="deleting"
+                        class="px-6 py-2 rounded-lg bg-red-500 text-white font-bold hover:bg-red-600 transition-colors disabled:opacity-50">
+                        {{ deleting ? 'Excluindo...' : 'Excluir' }}
+                    </button>
+                </div>
+            </div>
+
+            <!-- Cancel for recurring modal -->
+            <div *ngIf="transactionToDelete?.isRecurring" class="p-4 border-t border-dark-border">
+                <button (click)="cancelDelete()" [disabled]="deleting"
+                    class="w-full px-4 py-2 rounded-lg border border-dark-border hover:bg-dark-border transition-colors text-text-secondary">
+                    Cancelar
+                </button>
+            </div>
         </div>
     </div>
 </div>

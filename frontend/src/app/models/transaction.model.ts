@@ -10,6 +10,11 @@ export interface Transaction {
     creditCardId?: string;
     userId?: string;
     installments?: number;
+    // Recurring expense fields
+    isRecurring?: boolean;
+    recurrenceFrequency?: 'monthly' | 'weekly' | 'yearly';
+    recurrenceEndDate?: string;
+    recurrenceId?: string;
     // Virtual fields for Invoices
     isInvoice?: boolean;
     cardName?: string;

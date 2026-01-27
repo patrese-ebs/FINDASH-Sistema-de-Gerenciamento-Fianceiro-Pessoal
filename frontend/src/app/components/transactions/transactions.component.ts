@@ -20,6 +20,11 @@ export class TransactionsComponent implements OnInit {
     submitting: boolean = false;
     editingTransactionId: string | null = null; // Track editing state
 
+    // Delete modal state
+    showDeleteModal: boolean = false;
+    transactionToDelete: Transaction | null = null;
+    deleting: boolean = false;
+
     constructor(
         private transactionService: TransactionService,
         private fb: FormBuilder
@@ -30,7 +35,12 @@ export class TransactionsComponent implements OnInit {
             type: ['expense', Validators.required],
             category: ['Outros', Validators.required],
             paymentMethod: ['pix', Validators.required],
-            date: [new Date().toISOString().split('T')[0], Validators.required]
+            date: [new Date().toISOString().split('T')[0], Validators.required],
+            // Recurring fields
+            isRecurring: [false],
+            recurrenceFrequency: ['monthly'],
+            repeatIndefinitely: [true],
+            recurrenceEndDate: ['']
         });
     }
 
@@ -231,7 +241,11 @@ export class TransactionsComponent implements OnInit {
             paymentMethod: 'pix',
             date: new Date().toISOString().split('T')[0],
             description: '',
-            amount: 0
+            amount: 0,
+            isRecurring: false,
+            recurrenceFrequency: 'monthly',
+            repeatIndefinitely: true,
+            recurrenceEndDate: ''
         });
     }
 
@@ -248,7 +262,11 @@ export class TransactionsComponent implements OnInit {
             type: t.type,
             category: t.category,
             paymentMethod: t.paymentMethod,
-            date: dateStr
+            date: dateStr,
+            isRecurring: t.isRecurring || false,
+            recurrenceFrequency: t.recurrenceFrequency || 'monthly',
+            repeatIndefinitely: !t.recurrenceEndDate,
+            recurrenceEndDate: t.recurrenceEndDate || ''
         });
     }
 
@@ -270,6 +288,20 @@ export class TransactionsComponent implements OnInit {
         if (formValue.type === 'expense' && formValue.amount > 0) {
             formValue.amount = -formValue.amount;
         }
+
+        // Handle recurring fields
+        if (formValue.isRecurring && formValue.type === 'expense') {
+            if (formValue.repeatIndefinitely) {
+                formValue.recurrenceEndDate = null;
+            }
+        } else {
+            // Not recurring, clear these fields
+            formValue.isRecurring = false;
+            formValue.recurrenceFrequency = null;
+            formValue.recurrenceEndDate = null;
+        }
+        // Remove UI-only field
+        delete formValue.repeatIndefinitely;
 
         if (this.editingTransactionId) {
             this.transactionService.update(this.editingTransactionId, formValue).subscribe({
@@ -309,5 +341,35 @@ export class TransactionsComponent implements OnInit {
                 }
             });
         }
+    }
+
+    // Delete methods
+    openDeleteModal(t: Transaction, event: Event) {
+        event.stopPropagation();
+        this.transactionToDelete = t;
+        this.showDeleteModal = true;
+    }
+
+    cancelDelete() {
+        this.showDeleteModal = false;
+        this.transactionToDelete = null;
+    }
+
+    confirmDelete(deleteRecurring: boolean) {
+        if (!this.transactionToDelete?.id) return;
+
+        this.deleting = true;
+        this.transactionService.delete(this.transactionToDelete.id, deleteRecurring).subscribe({
+            next: () => {
+                this.loadTransactions();
+                this.deleting = false;
+                this.cancelDelete();
+            },
+            error: (err) => {
+                console.error('Failed to delete', err);
+                this.deleting = false;
+                alert('Erro ao excluir transação.');
+            }
+        });
     }
 }

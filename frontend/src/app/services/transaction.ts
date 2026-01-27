@@ -39,7 +39,11 @@ export class TransactionService {
           date: e.date,
           paymentMethod: e.paymentMethod,
           isPaid: e.isPaid,
-          userId: e.userId
+          userId: e.userId,
+          isRecurring: e.isRecurring,
+          recurrenceFrequency: e.recurrenceFrequency,
+          recurrenceEndDate: e.recurrenceEndDate,
+          recurrenceId: e.recurrenceId
         }));
 
         // Normalize Incomes
@@ -121,5 +125,10 @@ export class TransactionService {
     const url = (type === 'income') ? `${this.incomesUrl}/${id}` : `${this.expensesUrl}/${id}`;
 
     return this.http.put<Transaction>(url, data, { headers: this.getHeaders() });
+  }
+
+  delete(id: string, deleteRecurring: boolean = false): Observable<void> {
+    const url = `${this.expensesUrl}/${id}?deleteRecurring=${deleteRecurring}`;
+    return this.http.delete<void>(url, { headers: this.getHeaders() });
   }
 }
