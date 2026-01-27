@@ -236,6 +236,10 @@
                 </div>
 
                 <div class="pt-4 flex gap-3">
+                    <button type="button" *ngIf="editingCardId" (click)="onDeleteCard()"
+                        class="px-4 py-2 rounded-lg border border-red-500/50 text-red-400 hover:bg-red-500/10 mr-auto">
+                        Excluir
+                    </button>
                     <button type="button" (click)="closeModal()"
                         class="flex-1 py-2 rounded-lg border border-dark-border hover:bg-dark-border text-text-secondary">Cancelar</button>
                     <button type="submit" [disabled]="submitting || cardForm.invalid"

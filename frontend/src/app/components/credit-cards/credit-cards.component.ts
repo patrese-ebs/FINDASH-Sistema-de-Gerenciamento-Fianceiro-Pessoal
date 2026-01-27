@@ -188,6 +188,27 @@ export class CreditCardsComponent implements OnInit {
         }
     }
 
+    onDeleteCard() {
+        if (!this.editingCardId) return;
+
+        if (confirm('Tem certeza que deseja excluir este cartão? Todas as transações associadas serão perdidas.')) {
+            this.submitting = true;
+            this.cardService.delete(this.editingCardId).subscribe({
+                next: () => {
+                    this.loadCards();
+                    this.submitting = false;
+                    this.closeModal();
+                    alert('Cartão excluído com sucesso!');
+                },
+                error: (err) => {
+                    console.error('Delete failed', err);
+                    this.submitting = false;
+                    alert('Erro ao excluir cartão');
+                }
+            });
+        }
+    }
+
     // --- Transaction (Single Expense) ---
 
     openTransactionModal(card?: CreditCard) {
