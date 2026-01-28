@@ -13,7 +13,7 @@ export interface CreditCard {
     totalLiability?: number;
     currentBalance?: number;
     availableCredit?: number;
-    usagePercentage?: string; // "50.00"
+    usagePercentage?: number; // "50.00"
     currentInvoiceIsPaid?: boolean;
     isOverdue?: boolean;
 }

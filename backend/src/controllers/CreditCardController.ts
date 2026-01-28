@@ -132,7 +132,7 @@ export class CreditCardController {
                     totalLiability: calc.totalLiability, // Keeping individual liability for display
                     currentBalance: calc.totalLiability,
                     availableCredit, // This is the shared available credit
-                    usagePercentage: usagePercentage.toFixed(2),
+                    usagePercentage: parseFloat(usagePercentage.toFixed(2)),
                     currentInvoiceIsPaid: calc.currentInvoiceIsPaid,
                     isOverdue: calc.isOverdue
                 };
@@ -759,7 +759,7 @@ export class CreditCardController {
                 creditLimit: parentLimit, // Show Parent Limit as effective limit
                 currentBalance: currentCardLiability, // My specific balance
                 availableCredit, // Shared available credit
-                usagePercentage: usagePercentage.toFixed(2),
+                usagePercentage: parseFloat(usagePercentage.toFixed(2)),
                 shared: !!currentCard.sharedLimitCardId || childrenCards.length > 0
             });
         } catch (error) {
