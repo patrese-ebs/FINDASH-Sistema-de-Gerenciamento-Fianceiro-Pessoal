@@ -404,21 +404,14 @@ export class CreditCardsComponent implements OnInit {
         const val = this.planningForm.value;
         const plans = [];
 
+        // Send all months to ensure we update/clear values for the whole year
         for (let m of this.planningMonths) {
             const amount = val[`month_${m}`];
-            if (amount > 0) {
-                plans.push({
-                    month: m,
-                    year: val.year,
-                    amount: amount
-                });
-            }
-        }
-
-        if (plans.length === 0) {
-            alert('Preencha pelo menos um mês.');
-            this.submitting = false;
-            return;
+            plans.push({
+                month: m,
+                year: val.year,
+                amount: amount || 0
+            });
         }
 
         this.cardService.planInvoices(val.cardId, plans).subscribe({
