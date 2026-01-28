@@ -13,6 +13,7 @@ interface CreditCardAttributes {
     closingDay: number;
     dueDay: number;
     sharedLimitCardId?: string | null;
+    enabled?: boolean;
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -30,6 +31,7 @@ class CreditCard extends Model<CreditCardAttributes, CreditCardCreationAttribute
     public closingDay!: number;
     public dueDay!: number;
     public sharedLimitCardId?: string | null;
+    public enabled!: boolean;
     public readonly createdAt!: Date;
     public readonly updatedAt!: Date;
 }
@@ -96,6 +98,11 @@ CreditCard.init(
             },
             onDelete: 'SET NULL',
         },
+        enabled: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: true,
+        }
     },
     {
         sequelize,

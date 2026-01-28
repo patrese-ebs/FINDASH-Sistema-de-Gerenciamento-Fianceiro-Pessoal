@@ -66,7 +66,8 @@ export class CreditCardsComponent implements OnInit {
             brand: ['Visa', Validators.required],
             lastFourDigits: ['', [Validators.required, Validators.pattern(/^\d{4}$/)]],
             imageUrl: [''], // New field
-            sharedLimitCardId: [null] // Shared limit
+            sharedLimitCardId: [null], // Shared limit
+            enabled: [true] // Active/Cancelled
         });
 
         // Disable credit limit validator if shared limit is selected
@@ -166,7 +167,8 @@ export class CreditCardsComponent implements OnInit {
             brand: card.brand,
             lastFourDigits: card.lastFourDigits,
             imageUrl: card.imageUrl || '',
-            sharedLimitCardId: card.sharedLimitCardId || null
+            sharedLimitCardId: card.sharedLimitCardId || null,
+            enabled: card.enabled !== undefined ? card.enabled : true
         });
         this.showModal = true;
     }

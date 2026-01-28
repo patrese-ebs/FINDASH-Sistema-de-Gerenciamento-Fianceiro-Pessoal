@@ -172,8 +172,8 @@ export class CreditCardController {
 
             // We need to check invoice status for each card to know if "Due" is "Paid"
             for (const card of creditCards) {
-                // Only add to Total Limit if it's a Parent Card (not shared)
-                if (!card.sharedLimitCardId) {
+                // Only add to Total Limit if it's a Parent Card (not shared) AND is enabled
+                if (!card.sharedLimitCardId && card.enabled) {
                     const creditLimit = parseFloat(card.creditLimit.toString());
                     totalLimit += creditLimit;
                 }
@@ -306,7 +306,7 @@ export class CreditCardController {
 
     async create(req: AuthRequest, res: Response): Promise<void> {
         try {
-            const { name, lastFourDigits, brand, imageUrl, creditLimit, closingDay, dueDay, sharedLimitCardId } = req.body;
+            const { name, lastFourDigits, brand, imageUrl, creditLimit, closingDay, dueDay, sharedLimitCardId, enabled } = req.body;
             const userId = req.userId;
 
             if (!userId) {
@@ -324,6 +324,7 @@ export class CreditCardController {
                 closingDay,
                 dueDay,
                 sharedLimitCardId: sharedLimitCardId || null,
+                enabled: enabled !== undefined ? enabled : true,
             });
 
             res.status(201).json(creditCard);
@@ -335,7 +336,7 @@ export class CreditCardController {
     async update(req: AuthRequest, res: Response): Promise<void> {
         try {
             const { id } = req.params;
-            const { name, lastFourDigits, brand, imageUrl, creditLimit, closingDay, dueDay, sharedLimitCardId } = req.body;
+            const { name, lastFourDigits, brand, imageUrl, creditLimit, closingDay, dueDay, sharedLimitCardId, enabled } = req.body;
             const userId = req.userId;
 
             if (!userId) {
@@ -359,6 +360,7 @@ export class CreditCardController {
                 closingDay: closingDay || creditCard.closingDay,
                 dueDay: dueDay || creditCard.dueDay,
                 sharedLimitCardId: sharedLimitCardId !== undefined ? sharedLimitCardId : creditCard.sharedLimitCardId,
+                enabled: enabled !== undefined ? enabled : creditCard.enabled,
             });
 
             res.status(200).json(creditCard);

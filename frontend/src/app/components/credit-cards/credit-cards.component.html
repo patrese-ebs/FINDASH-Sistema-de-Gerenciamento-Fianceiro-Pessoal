@@ -59,9 +59,15 @@
         <!-- Card Header with gradient background -->
         <div class="h-36 w-full bg-cover bg-center relative overflow-hidden"
             [ngStyle]="{'background-image': card.imageUrl ? 'url(' + card.imageUrl + ')' : 'none'}"
-            [class]="!card.imageUrl ? 'bg-gradient-to-br ' + getBrandClass(card.brand) : ''">
+            [class]="(!card.imageUrl ? 'bg-gradient-to-br ' + getBrandClass(card.brand) : '') + (card.enabled === false ? ' grayscale opacity-75' : '')">
 
             <div class="absolute inset-0 bg-black/30 group-hover:bg-black/20 transition-all"></div>
+
+            <div *ngIf="card.enabled === false"
+                class="absolute inset-0 flex items-center justify-center z-20 bg-black/40 backdrop-blur-[1px]">
+                <span
+                    class="text-red-500 font-bold border border-red-500 px-3 py-1 rounded bg-black/50 transform -rotate-12 text-lg">CANCELADO</span>
+            </div>
 
             <!-- Chip Icon (only if no image) -->
             <div *ngIf="!card.imageUrl"
@@ -187,6 +193,15 @@
                 <input type="text" formControlName="name"
                     class="input-field w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 text-white"
                     placeholder="Ex: Nubank Principal">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-text-secondary mb-1">Status</label>
+                <select formControlName="enabled"
+                    class="input-field w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 text-white">
+                    <option [ngValue]="true">✅ Ativo</option>
+                    <option [ngValue]="false">🚫 Cancelado</option>
+                </select>
             </div>
 
             <div class="grid grid-cols-2 gap-4">
