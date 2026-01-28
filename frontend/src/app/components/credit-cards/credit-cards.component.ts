@@ -391,6 +391,12 @@ export class CreditCardsComponent implements OnInit {
         });
     }
 
+    clearPlanningFields() {
+        this.planningMonths.forEach(m => {
+            this.planningForm.patchValue({ [`month_${m}`]: 0 });
+        });
+    }
+
     onPlanningSubmit() {
         if (this.planningForm.invalid) return;
         this.submitting = true;

@@ -374,10 +374,15 @@
                     <input type="number" formControlName="year" (change)="loadPlanningData()"
                         class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 text-white">
                 </div>
-                <div class="flex items-end">
+                <div class="flex items-end gap-2">
                     <button type="button" (click)="loadPlanningData()"
                         class="px-4 py-2 rounded-lg bg-dark-bg border border-dark-border text-text-secondary hover:text-white hover:border-accent-purple transition-colors">
                         🔄 Carregar
+                    </button>
+                    <button type="button" (click)="clearPlanningFields()"
+                        class="px-4 py-2 rounded-lg bg-red-500/10 border border-red-500/30 text-red-300 hover:bg-red-500/20 hover:text-red-200 transition-colors"
+                        title="Zerar todos os campos para limpar o planejamento">
+                        🗑 Zerar
                     </button>
                 </div>
             </div>
