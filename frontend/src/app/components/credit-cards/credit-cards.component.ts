@@ -297,9 +297,45 @@ export class CreditCardsComponent implements OnInit {
 
     openPlanningModal() {
         this.showPlanningModal = true;
+        const defaultCardId = this.cards.length > 0 ? this.cards[0].id : '';
+        const currentYear = new Date().getFullYear();
+
         this.planningForm.patchValue({
-            year: new Date().getFullYear(),
-            cardId: this.cards.length > 0 ? this.cards[0].id : ''
+            year: currentYear,
+            cardId: defaultCardId
+        });
+
+        // Reset month values
+        this.planningMonths.forEach(m => {
+            this.planningForm.patchValue({ [`month_${m}`]: 0 });
+        });
+
+        // Auto-load existing data
+        if (defaultCardId) {
+            this.loadPlanningData();
+        }
+    }
+
+    loadPlanningData() {
+        const cardId = this.planningForm.get('cardId')?.value;
+        const year = this.planningForm.get('year')?.value;
+
+        if (!cardId || !year) return;
+
+        this.cardService.getYearlyOverview(cardId, year).subscribe({
+            next: (data) => {
+                // Populate form with existing totals
+                data.forEach(monthData => {
+                    const formControlName = `month_${monthData.month}`;
+                    // Use the total from existing transactions
+                    this.planningForm.patchValue({
+                        [formControlName]: monthData.total || 0
+                    });
+                });
+            },
+            error: (err) => {
+                console.error('Failed to load planning data', err);
+            }
         });
     }
 
@@ -332,6 +368,8 @@ export class CreditCardsComponent implements OnInit {
                 this.submitting = false;
                 this.closeModal();
                 alert('Planejamento salvo!');
+                this.loadCards();
+                this.loadSummary();
             },
             error: (err) => {
                 this.submitting = false;
@@ -452,17 +490,33 @@ export class CreditCardsComponent implements OnInit {
         this.openEditTransactionModal(tx);
     }
 
+    deleteInvoiceItem(item: any) {
+        if (!this.viewingCard) return;
+
+        const installmentInfo = item.installments > 1
+            ? ` (${item.installmentNumber}/${item.installments})`
+            : '';
+
+        if (confirm(`Excluir "${item.description}"${installmentInfo}? Esta ação não pode ser desfeita.`)) {
+            this.cardService.deleteTransaction(this.viewingCard.id!, item.id).subscribe({
+                next: () => {
+                    alert('Despesa excluída com sucesso!');
+                    this.loadYearlyOverview(this.viewingCard!.id!, this.invoiceYear);
+                    this.loadCards();
+                    this.loadSummary();
+                },
+                error: (err) => {
+                    console.error('Delete failed', err);
+                    alert('Erro ao excluir despesa');
+                }
+            });
+        }
+    }
+
     openEditTransactionModal(t: Transaction) {
         this.selectedCard = this.cards.find(c => c.id === t.creditCardId) || null;
         this.showTransactionModal = true;
-        // Check if editingTransactionId exists on component or add it
-        this.editingCardId = null; // Reuse this or add new propery? 
-        // Better to handle "editingTransactionId" properly but for now let's just populate form
-        // and handle submit.
-        // Wait, "onTransactionSubmit" creates a NEW transaction. We need update logic.
-        // For now, let's minimally enable "Edit" by just populating. 
-        // User asked for "Edit". I should have update logic.
-        // Let's add editingTransactionId to the class properties first if missing.
+        this.editingCardId = null;
         this.editingTransactionId = t.id!;
 
         this.transactionForm.patchValue({
@@ -494,3 +548,4 @@ export class CreditCardsComponent implements OnInit {
         return gradients[brand] || 'from-slate-800 to-black';
     }
 }
+

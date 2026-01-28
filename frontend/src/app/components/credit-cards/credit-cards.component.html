@@ -316,7 +316,7 @@
     <div
         class="bg-dark-card border border-dark-border rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
         <div class="p-6 border-b border-dark-border flex justify-between items-center sticky top-0 bg-dark-card z-10">
-            <h3 class="text-xl font-bold">Registrar Faturas Futuras</h3>
+            <h3 class="text-xl font-bold">Gerenciar Faturas - Planejamento</h3>
             <button (click)="closeModal()" class="text-text-secondary hover:text-white">&times;</button>
         </div>
 
@@ -324,24 +324,37 @@
             <div class="flex gap-4 mb-6">
                 <div class="flex-1">
                     <label class="block text-sm font-medium text-text-secondary mb-1">Cartão</label>
-                    <select formControlName="cardId"
+                    <select formControlName="cardId" (change)="loadPlanningData()"
                         class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 text-white">
                         <option *ngFor="let c of cards" [value]="c.id">{{ c.name }}</option>
                     </select>
                 </div>
                 <div class="flex-1">
                     <label class="block text-sm font-medium text-text-secondary mb-1">Ano</label>
-                    <input type="number" formControlName="year"
+                    <input type="number" formControlName="year" (change)="loadPlanningData()"
                         class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 text-white">
+                </div>
+                <div class="flex items-end">
+                    <button type="button" (click)="loadPlanningData()"
+                        class="px-4 py-2 rounded-lg bg-dark-bg border border-dark-border text-text-secondary hover:text-white hover:border-accent-purple transition-colors">
+                        🔄 Carregar
+                    </button>
                 </div>
             </div>
 
+            <p class="text-xs text-text-secondary mb-4">💡 Os valores mostrados são as faturas já existentes. Altere
+                para atualizar ou deixe 0 para não modificar.</p>
+
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                <div *ngFor="let m of planningMonths" class="bg-dark-bg p-3 rounded border border-dark-border">
-                    <label class="block text-sm text-text-secondary mb-1">Mês {{ m }}</label>
-                    <input type="number" [formControlName]="'month_' + m"
-                        class="w-full bg-dark-card border border-dark-border rounded px-2 py-1 text-white text-sm"
-                        placeholder="R$ 0,00">
+                <div *ngFor="let m of planningMonths" class="bg-dark-bg p-3 rounded border transition-colors"
+                    [ngClass]="planningForm.get('month_' + m)?.value > 0 ? 'border-accent-purple/50' : 'border-dark-border'">
+                    <label class="block text-sm text-text-secondary mb-1">{{ months[m - 1]?.label }}</label>
+                    <div class="relative">
+                        <span class="absolute left-2 top-1/2 -translate-y-1/2 text-text-secondary text-sm">R$</span>
+                        <input type="number" [formControlName]="'month_' + m"
+                            class="w-full bg-dark-card border border-dark-border rounded px-2 py-1 pl-8 text-white text-sm"
+                            placeholder="0,00">
+                    </div>
                 </div>
             </div>
 
@@ -349,8 +362,9 @@
                 <button type="button" (click)="closeModal()"
                     class="px-4 py-2 rounded-lg border border-dark-border text-text-secondary">Cancelar</button>
                 <button type="submit" [disabled]="submitting"
-                    class="px-6 py-2 rounded-lg bg-green-600 text-white font-bold hover:bg-green-500">Salvar
-                    Planejamento</button>
+                    class="px-6 py-2 rounded-lg bg-green-600 text-white font-bold hover:bg-green-500">
+                    {{ submitting ? 'Salvando...' : 'Salvar Alterações' }}
+                </button>
             </div>
         </form>
     </div>
@@ -482,10 +496,16 @@
                                 <td class="p-3 text-right font-bold text-white text-sm">
                                     {{ item.installmentAmount | currency:'BRL' }}
                                 </td>
-                                <td class="p-3 text-right">
-                                    <button (click)="editInvoiceItem(item)"
-                                        class="text-text-secondary hover:text-accent-purple opacity-0 group-hover:opacity-100 transition-opacity">
+                                <td class="p-3 text-right flex gap-2 justify-end">
+                                    <button (click)="$event.stopPropagation(); editInvoiceItem(item)"
+                                        class="text-text-secondary hover:text-accent-purple opacity-0 group-hover:opacity-100 transition-opacity"
+                                        title="Editar">
                                         ✎
+                                    </button>
+                                    <button (click)="$event.stopPropagation(); deleteInvoiceItem(item)"
+                                        class="text-text-secondary hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                                        title="Excluir">
+                                        🗑
                                     </button>
                                 </td>
                             </tr>
