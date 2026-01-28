@@ -659,7 +659,8 @@ export class CreditCardController {
                 return;
             }
 
-            const { deleteMode, refMonth, refYear } = req.body; // deleteMode: 'all' | 'future'
+            const { deleteMode, refMonth, refYear } = req.body;
+            console.log('Delete Transaction Params:', { id, transactionId, deleteMode, refMonth, refYear, body: req.body });
 
             if (deleteMode === 'future' && refMonth && refYear && transaction.installments > 1) {
                 // Logic to "stop" the recurrence
