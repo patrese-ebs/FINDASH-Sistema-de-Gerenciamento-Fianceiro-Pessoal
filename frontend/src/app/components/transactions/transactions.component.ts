@@ -106,13 +106,13 @@ export class TransactionsComponent implements OnInit {
     get totalExpense() {
         return this.getMonthTransactions()
             .filter(t => t.type === 'expense')
-            .reduce((sum, t) => sum + Number(t.amount), 0);
+            .reduce((sum, t) => sum + Math.abs(Number(t.amount)), 0);
     }
 
     get paidExpense() {
         return this.getMonthTransactions()
             .filter(t => t.type === 'expense' && t.isPaid)
-            .reduce((sum, t) => sum + Number(t.amount), 0);
+            .reduce((sum, t) => sum + Math.abs(Number(t.amount)), 0);
     }
 
     get toPayExpense() {
