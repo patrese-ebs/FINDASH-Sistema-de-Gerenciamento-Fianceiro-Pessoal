@@ -570,7 +570,8 @@ export class CreditCardsComponent implements OnInit {
                 },
                 error: (err) => {
                     console.error('Delete failed', err);
-                    alert('Erro ao excluir despesa');
+                    const msg = err.error?.error || 'Erro ao excluir despesa';
+                    alert(msg);
                 }
             });
         }
