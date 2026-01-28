@@ -230,21 +230,18 @@ export class CreditCardsComponent implements OnInit {
         this.submitting = true;
 
         const val = this.transactionForm.value;
-        const tx: Transaction = {
-            description: val.description,
-            amount: val.totalValue,
-            type: 'expense',
-            category: val.category,
-            date: val.date,
-            paymentMethod: 'credit',
-            creditCardId: val.cardId,
-            isPaid: false,
-            installments: val.installments
-        };
 
         if (this.editingTransactionId) {
-            // Update Existing
-            this.transactionService.update(this.editingTransactionId, tx).subscribe({
+            // Update Existing Credit Card Transaction using CreditCardService
+            const updateData = {
+                description: val.description,
+                totalAmount: val.totalValue,
+                installments: val.installments,
+                category: val.category,
+                purchaseDate: val.date
+            };
+
+            this.cardService.updateTransaction(val.cardId, this.editingTransactionId, updateData).subscribe({
                 next: () => {
                     this.submitting = false;
                     this.closeModal();
@@ -253,14 +250,29 @@ export class CreditCardsComponent implements OnInit {
                     if (this.viewingCard && this.showInvoiceModal) {
                         this.loadYearlyOverview(this.viewingCard.id!, this.invoiceYear);
                     }
+                    this.loadCards();
+                    this.loadSummary();
                 },
                 error: (err) => {
+                    console.error('Update failed', err);
                     this.submitting = false;
                     alert('Erro ao atualizar despesa');
                 }
             });
         } else {
-            // Create New
+            // Create New Transaction
+            const tx: Transaction = {
+                description: val.description,
+                amount: val.totalValue,
+                type: 'expense',
+                category: val.category,
+                date: val.date,
+                paymentMethod: 'credit',
+                creditCardId: val.cardId,
+                isPaid: false,
+                installments: val.installments
+            };
+
             this.transactionService.create(tx).subscribe({
                 next: () => {
                     this.submitting = false;
@@ -269,6 +281,8 @@ export class CreditCardsComponent implements OnInit {
                     if (this.viewingCard && this.showInvoiceModal) {
                         this.loadYearlyOverview(this.viewingCard.id!, this.invoiceYear);
                     }
+                    this.loadCards();
+                    this.loadSummary();
                 },
                 error: (err) => {
                     this.submitting = false;
@@ -277,6 +291,7 @@ export class CreditCardsComponent implements OnInit {
             });
         }
     }
+
 
     // --- Planning (12 Months) ---
 

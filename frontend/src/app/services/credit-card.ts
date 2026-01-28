@@ -57,4 +57,12 @@ export class CreditCardService {
   getYearlyOverview(cardId: string, year: number): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/${cardId}/yearly-overview/${year}`, { headers: this.getHeaders() });
   }
+
+  updateTransaction(cardId: string, transactionId: string, data: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${cardId}/transactions/${transactionId}`, data, { headers: this.getHeaders() });
+  }
+
+  deleteTransaction(cardId: string, transactionId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${cardId}/transactions/${transactionId}`, { headers: this.getHeaders() });
+  }
 }
