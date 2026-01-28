@@ -12,6 +12,7 @@ interface CreditCardAttributes {
     creditLimit: number;
     closingDay: number;
     dueDay: number;
+    sharedLimitCardId?: string | null;
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -28,6 +29,7 @@ class CreditCard extends Model<CreditCardAttributes, CreditCardCreationAttribute
     public creditLimit!: number;
     public closingDay!: number;
     public dueDay!: number;
+    public sharedLimitCardId?: string | null;
     public readonly createdAt!: Date;
     public readonly updatedAt!: Date;
 }
@@ -85,6 +87,15 @@ CreditCard.init(
                 max: 31,
             },
         },
+        sharedLimitCardId: {
+            type: DataTypes.UUID,
+            allowNull: true,
+            references: {
+                model: 'credit_cards',
+                key: 'id',
+            },
+            onDelete: 'SET NULL',
+        },
     },
     {
         sequelize,
@@ -96,5 +107,9 @@ CreditCard.init(
 // Associations
 CreditCard.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 User.hasMany(CreditCard, { foreignKey: 'userId', as: 'creditCards' });
+
+// Self-referencing association for shared limit
+CreditCard.belongsTo(CreditCard, { foreignKey: 'sharedLimitCardId', as: 'parentCard' });
+CreditCard.hasMany(CreditCard, { foreignKey: 'sharedLimitCardId', as: 'childCards' });
 
 export default CreditCard;

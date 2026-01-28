@@ -149,7 +149,15 @@
                 </div>
                 <div>
                     <span class="text-text-secondary">Limite: </span>
-                    <span class="text-white font-medium">{{ card.creditLimit | currency:'BRL' }}</span>
+                    <span class="text-white font-medium">
+                        <ng-container *ngIf="!card.sharedLimitCardId">{{ card.creditLimit | currency:'BRL'
+                            }}</ng-container>
+                        <ng-container *ngIf="card.sharedLimitCardId">
+                            <span class="text-xs text-blue-300 flex items-center gap-1">
+                                🔗 Compart. c/ {{ getParentCardName(card) }}
+                            </span>
+                        </ng-container>
+                    </span>
                 </div>
             </div>
         </div>
@@ -209,9 +217,26 @@
             </div>
 
             <div>
+                <label class="block text-sm font-medium text-text-secondary mb-1">Compartilhar Limite (Opcional)</label>
+                <select formControlName="sharedLimitCardId"
+                    class="input-field w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 text-white mb-3">
+                    <option [ngValue]="null">Não, definir limite próprio</option>
+                    <option *ngFor="let c of availableParentCards" [value]="c.id">
+                        {{ c.name }} (Final {{ c.lastFourDigits }})
+                    </option>
+                </select>
+            </div>
+
+            <div *ngIf="!cardForm.get('sharedLimitCardId')?.value">
                 <label class="block text-sm font-medium text-text-secondary mb-1">Limite (R$)</label>
                 <input type="number" formControlName="creditLimit"
                     class="input-field w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 text-white">
+            </div>
+
+            <div *ngIf="cardForm.get('sharedLimitCardId')?.value"
+                class="p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                <p class="text-sm text-blue-300">ℹ️ Este cartão compartilhará o limite do cartão selecionado. Todas as
+                    compras reduzirão o saldo disponível conjunto.</p>
             </div>
 
             <div class="grid grid-cols-2 gap-4">

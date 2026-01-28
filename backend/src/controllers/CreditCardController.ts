@@ -34,8 +34,8 @@ export class CreditCardController {
                 }
             });
 
-            // Calculate balance info for each card
-            const cardsWithBalance = creditCards.map(card => {
+            // First pass: Calculate individual liabilities and invoice amounts
+            const cardCalculations = creditCards.map(card => {
                 const transactions = (card as any).transactions || [];
 
                 // 1. Total Pending (Liability) - Future + Current
@@ -63,10 +63,6 @@ export class CreditCardController {
                     return sum;
                 }, 0);
 
-                const creditLimit = parseFloat(card.creditLimit.toString());
-                const availableCredit = creditLimit - totalLiability;
-                const usagePercentage = creditLimit > 0 ? (totalLiability / creditLimit) * 100 : 0;
-
                 // 3. Check invoice status for current month
                 const currentInvoice = allInvoices.find(inv => inv.creditCardId === card.id);
                 const currentInvoiceIsPaid = currentInvoice ? currentInvoice.isPaid : false;
@@ -77,18 +73,72 @@ export class CreditCardController {
                 const isOverdue = !currentInvoiceIsPaid && currentInvoiceAmount > 0 && today > dueDay;
 
                 return {
-                    ...card.toJSON(),
-                    currentInvoiceAmount,
+                    id: card.id,
+                    instance: card,
                     totalLiability,
-                    currentBalance: totalLiability,
-                    availableCredit,
-                    usagePercentage: usagePercentage.toFixed(2),
+                    currentInvoiceAmount,
                     currentInvoiceIsPaid,
                     isOverdue
                 };
             });
 
-            res.status(200).json(cardsWithBalance);
+            // Second pass: Adjust for Shared Limits
+            // We need to group liabilities by "Family" (Parent Card + Children)
+            const parentCards = cardCalculations.filter(c => !c.instance.sharedLimitCardId);
+            const childCards = cardCalculations.filter(c => c.instance.sharedLimitCardId);
+
+            const response = cardCalculations.map(calc => {
+                const card = calc.instance;
+                let creditLimit = parseFloat(card.creditLimit.toString());
+                let totalLiability = calc.totalLiability;
+
+                // If this is a child card, find its parent to correctly display "Available Credit"
+                if (card.sharedLimitCardId) {
+                    const parent = cardCalculations.find(c => c.id === card.sharedLimitCardId);
+                    if (parent) {
+                        // The limit displayed for the child should ideally be the Parent's limit (shared pool)
+                        creditLimit = parseFloat(parent.instance.creditLimit.toString());
+
+                        // BUT, to calculate available credit, we need the FAMILY total liability
+                        const parentLiability = parent.totalLiability;
+
+                        // Find all siblings (other children of the same parent)
+                        const siblings = childCards.filter(c => c.instance.sharedLimitCardId === parent.id && c.id !== card.id);
+                        const siblingsLiability = siblings.reduce((sum, s) => sum + s.totalLiability, 0);
+
+                        // Family Liability = Parent + Me + Siblings
+                        const familyLiability = parentLiability + calc.totalLiability + siblingsLiability;
+
+                        // Available Credit is based on the shared pool
+                        var availableCredit = creditLimit - familyLiability;
+                    } else {
+                        // Orphaned child (shouldn't happen with integrity checks but safe fallback)
+                        var availableCredit = creditLimit - totalLiability;
+                    }
+                } else {
+                    // Parent Card: Need to sum up all its children's liabilities
+                    const children = childCards.filter(c => c.instance.sharedLimitCardId === card.id);
+                    const childrenLiability = children.reduce((sum, c) => sum + c.totalLiability, 0);
+
+                    const familyLiability = totalLiability + childrenLiability;
+                    var availableCredit = creditLimit - familyLiability;
+                }
+
+                const usagePercentage = creditLimit > 0 ? ((creditLimit - availableCredit!) / creditLimit) * 100 : 0;
+
+                return {
+                    ...card.toJSON(),
+                    currentInvoiceAmount: calc.currentInvoiceAmount,
+                    totalLiability: calc.totalLiability, // Keeping individual liability for display
+                    currentBalance: calc.totalLiability,
+                    availableCredit, // This is the shared available credit
+                    usagePercentage: usagePercentage.toFixed(2),
+                    currentInvoiceIsPaid: calc.currentInvoiceIsPaid,
+                    isOverdue: calc.isOverdue
+                };
+            });
+
+            res.status(200).json(response);
         } catch (error) {
             console.error(error);
             res.status(500).json({ error: 'Failed to fetch credit cards' });
@@ -122,8 +172,11 @@ export class CreditCardController {
 
             // We need to check invoice status for each card to know if "Due" is "Paid"
             for (const card of creditCards) {
-                const creditLimit = parseFloat(card.creditLimit.toString());
-                totalLimit += creditLimit;
+                // Only add to Total Limit if it's a Parent Card (not shared)
+                if (!card.sharedLimitCardId) {
+                    const creditLimit = parseFloat(card.creditLimit.toString());
+                    totalLimit += creditLimit;
+                }
 
                 const transactions = (card as any).transactions || [];
                 let cardDueThisMonth = 0;
@@ -253,7 +306,7 @@ export class CreditCardController {
 
     async create(req: AuthRequest, res: Response): Promise<void> {
         try {
-            const { name, lastFourDigits, brand, imageUrl, creditLimit, closingDay, dueDay } = req.body;
+            const { name, lastFourDigits, brand, imageUrl, creditLimit, closingDay, dueDay, sharedLimitCardId } = req.body;
             const userId = req.userId;
 
             if (!userId) {
@@ -270,6 +323,7 @@ export class CreditCardController {
                 creditLimit,
                 closingDay,
                 dueDay,
+                sharedLimitCardId: sharedLimitCardId || null,
             });
 
             res.status(201).json(creditCard);
@@ -281,7 +335,7 @@ export class CreditCardController {
     async update(req: AuthRequest, res: Response): Promise<void> {
         try {
             const { id } = req.params;
-            const { name, lastFourDigits, brand, imageUrl, creditLimit, closingDay, dueDay } = req.body;
+            const { name, lastFourDigits, brand, imageUrl, creditLimit, closingDay, dueDay, sharedLimitCardId } = req.body;
             const userId = req.userId;
 
             if (!userId) {
@@ -304,6 +358,7 @@ export class CreditCardController {
                 creditLimit: creditLimit || creditCard.creditLimit,
                 closingDay: closingDay || creditCard.closingDay,
                 dueDay: dueDay || creditCard.dueDay,
+                sharedLimitCardId: sharedLimitCardId !== undefined ? sharedLimitCardId : creditCard.sharedLimitCardId,
             });
 
             res.status(200).json(creditCard);
@@ -650,26 +705,65 @@ export class CreditCardController {
                 return;
             }
 
-            const transactions = await CreditCardTransaction.findAll({
-                where: { creditCardId: id },
+            // If shared, we need the parent ID. If parent, we need all children.
+            // Simplified: Fetch logic similar to getAll but targeted?
+            // Actually, easier to fetch ALL user cards to calculate "Group Liability" correctly
+            // without recursing/complex queries.
+
+            const allUserCards = await CreditCard.findAll({
+                where: { userId },
+                include: [{ model: CreditCardTransaction, as: 'transactions' }]
             });
 
-            // Calculate total pending installments
-            const totalPending = transactions.reduce((sum, transaction) => {
+            // Identify the relevant card in the list
+            const currentCard = allUserCards.find(c => c.id === id);
+            if (!currentCard) throw new Error("Card not found in list");
+
+            // Identify Parent and Children
+            let parentCard = currentCard;
+            if (currentCard.sharedLimitCardId) {
+                const foundParent = allUserCards.find(c => c.id === currentCard.sharedLimitCardId);
+                if (foundParent) parentCard = foundParent;
+            }
+
+            // Find all children of this parent (including the current card if it's a child)
+            const childrenCards = allUserCards.filter(c => c.sharedLimitCardId === parentCard.id);
+            const familyCards = [parentCard, ...childrenCards];
+
+            // Calculate Total Family Liability
+            let familyLiability = 0;
+            familyCards.forEach(card => {
+                const transactions = (card as any).transactions || [];
+                const cardLiability = transactions.reduce((sum: number, transaction: any) => {
+                    const remainingInstallments = transaction.installments - transaction.currentInstallment + 1;
+                    return sum + (parseFloat(transaction.installmentAmount.toString()) * remainingInstallments);
+                }, 0);
+                familyLiability += cardLiability;
+            });
+
+            // Available Credit Calculation
+            const parentLimit = parseFloat(parentCard.creditLimit.toString());
+            const availableCredit = parentLimit - familyLiability;
+
+            // Current Card's Specific Liability (for reference)
+            const transactions = (currentCard as any).transactions || [];
+            const currentCardLiability = transactions.reduce((sum: number, transaction: any) => {
                 const remainingInstallments = transaction.installments - transaction.currentInstallment + 1;
                 return sum + (parseFloat(transaction.installmentAmount.toString()) * remainingInstallments);
             }, 0);
 
-            const availableCredit = parseFloat(creditCard.creditLimit.toString()) - totalPending;
-            const usagePercentage = (totalPending / parseFloat(creditCard.creditLimit.toString())) * 100;
+            // Display values
+            const usagePercentage = (familyLiability / parentLimit) * 100;
 
             res.status(200).json({
-                creditLimit: creditCard.creditLimit,
-                currentBalance: totalPending,
-                availableCredit,
+                creditLimit: parentLimit, // Show Parent Limit as effective limit
+                currentBalance: currentCardLiability, // My specific balance
+                availableCredit, // Shared available credit
                 usagePercentage: usagePercentage.toFixed(2),
+                shared: !!currentCard.sharedLimitCardId || childrenCards.length > 0
             });
         } catch (error) {
+            console.error(error);
             res.status(500).json({ error: 'Failed to fetch balance' });
         }
     }

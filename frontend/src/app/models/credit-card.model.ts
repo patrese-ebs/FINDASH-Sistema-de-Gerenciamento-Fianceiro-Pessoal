@@ -3,17 +3,17 @@ export interface CreditCard {
     name: string;
     lastFourDigits: string;
     brand: string;
-    userId?: string;
     imageUrl?: string;
-    // Backend computed fields
-    creditLimit?: number;
-    limit?: number;
+    creditLimit: number;
     closingDay: number;
     dueDay: number;
-    totalLiability?: number;
-    availableCredit?: number;
-    usagePercentage?: number;
+    sharedLimitCardId?: string | null;
+    // Computed fields
     currentInvoiceAmount?: number;
+    totalLiability?: number;
+    currentBalance?: number;
+    availableCredit?: number;
+    usagePercentage?: string; // "50.00"
     currentInvoiceIsPaid?: boolean;
     isOverdue?: boolean;
 }

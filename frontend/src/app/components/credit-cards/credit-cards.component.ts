@@ -65,7 +65,21 @@ export class CreditCardsComponent implements OnInit {
             closingDay: [3, [Validators.required, Validators.min(1), Validators.max(31)]],
             brand: ['Visa', Validators.required],
             lastFourDigits: ['', [Validators.required, Validators.pattern(/^\d{4}$/)]],
-            imageUrl: [''] // New field
+            imageUrl: [''], // New field
+            sharedLimitCardId: [null] // Shared limit
+        });
+
+        // Disable credit limit validator if shared limit is selected
+        this.cardForm.get('sharedLimitCardId')?.valueChanges.subscribe(val => {
+            const limitControl = this.cardForm.get('creditLimit');
+            if (val) {
+                limitControl?.clearValidators();
+                limitControl?.disable();
+            } else {
+                limitControl?.setValidators([Validators.required, Validators.min(1)]);
+                limitControl?.enable();
+            }
+            limitControl?.updateValueAndValidity();
         });
 
         // Transaction Form
@@ -89,6 +103,18 @@ export class CreditCardsComponent implements OnInit {
             planningControls[`month_${m}`] = [0];
         });
         this.planningForm = this.fb.group(planningControls);
+    }
+
+    get availableParentCards(): CreditCard[] {
+        if (!this.editingCardId) return this.cards;
+        // Exclude self from parent options to avoid cycles
+        return this.cards.filter(c => c.id !== this.editingCardId);
+    }
+
+    getParentCardName(card: CreditCard): string {
+        if (!card.sharedLimitCardId) return '';
+        const parent = this.cards.find(c => c.id === card.sharedLimitCardId);
+        return parent ? parent.name : 'Cartão Desconhecido';
     }
 
     ngOnInit() {
@@ -139,7 +165,8 @@ export class CreditCardsComponent implements OnInit {
             closingDay: card.closingDay,
             brand: card.brand,
             lastFourDigits: card.lastFourDigits,
-            imageUrl: card.imageUrl || ''
+            imageUrl: card.imageUrl || '',
+            sharedLimitCardId: card.sharedLimitCardId || null
         });
         this.showModal = true;
     }
