@@ -264,10 +264,24 @@
                 <input type="text" formControlName="description"
                     class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 text-white">
             </div>
-            <div>
-                <label class="block text-sm font-medium text-text-secondary mb-1">Valor</label>
-                <input type="number" formControlName="totalValue"
-                    class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 text-white">
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-text-secondary mb-1">Valor Total (R$)</label>
+                    <input type="number" formControlName="totalValue"
+                        class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 text-white"
+                        placeholder="0.00">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-text-secondary mb-1">Parcelas</label>
+                    <input type="number" formControlName="installments" min="1" max="48"
+                        class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 text-white"
+                        placeholder="1">
+                    <span class="text-xs text-text-secondary mt-1 block"
+                        *ngIf="transactionForm.get('installments')?.value > 1 && transactionForm.get('totalValue')?.value > 0">
+                        {{ (transactionForm.get('totalValue')?.value / transactionForm.get('installments')?.value) |
+                        currency:'BRL' }} por parcela
+                    </span>
+                </div>
             </div>
             <div class="grid grid-cols-2 gap-4">
                 <div>
