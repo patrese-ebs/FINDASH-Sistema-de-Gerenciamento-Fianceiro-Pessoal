@@ -9,7 +9,7 @@ interface CreditCardInvoiceAttributes {
     year: number;
     amount: number;
     isPaid: boolean;
-    paymentDate?: Date;
+    paymentDate?: Date | null;
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -23,7 +23,7 @@ class CreditCardInvoice extends Model<CreditCardInvoiceAttributes, CreditCardInv
     public year!: number;
     public amount!: number;
     public isPaid!: boolean;
-    public paymentDate?: Date;
+    public paymentDate?: Date | null;
     public readonly createdAt!: Date;
     public readonly updatedAt!: Date;
 }
