@@ -1,0 +1,55 @@
+
+> frontend@0.0.0 build
+> ng build
+
+[33m❯[39m Building...
+[32m✔[39m Building...
+Application bundle generation failed. [12.137 seconds] - 2026-01-28T14:06:24.475Z
+
+[1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: SidebarComponent is not used within the template of DashboardComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/dashboard/dashboard.component.ts:13:28:
+[37m      13 │     imports: [CommonModule, [32mSidebarComponent[37m],
+         ╵                             [32m~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'enabled' does not exist on type 'CreditCard'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/credit-cards/credit-cards.component.html:62:102:
+[37m      62 │ ...s(card.brand) : '') + (card.[32menabled[37m === false ? ' grayscale opa...
+         ╵                                [32m~~~~~~~[0m
+
+  Error occurs in the template of component CreditCardsComponent.
+
+    src/app/components/credit-cards/credit-cards.component.ts:13:17:
+[37m      13 │     templateUrl: [32m'./credit-cards.component.html'[37m,
+         ╵                  [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'enabled' does not exist on type 'CreditCard'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/credit-cards/credit-cards.component.html:66:29:
+[37m      66 │             <div *ngIf="card.[32menabled[37m === false"
+         ╵                              [32m~~~~~~~[0m
+
+  Error occurs in the template of component CreditCardsComponent.
+
+    src/app/components/credit-cards/credit-cards.component.ts:13:17:
+[37m      13 │     templateUrl: [32m'./credit-cards.component.html'[37m,
+         ╵                  [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'enabled' does not exist on type 'CreditCard'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/credit-cards/credit-cards.component.ts:171:26:
+[37m      171 │             enabled: card.[32menabled[37m !== undefined ? card.enabled : ...
+          ╵                           [32m~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'enabled' does not exist on type 'CreditCard'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/credit-cards/credit-cards.component.ts:171:55:
+[37m      171 │ ...        enabled: card.enabled !== undefined ? card.[32menabled[37m : true
+          ╵                                                       [32m~~~~~~~[0m
+
+[39m[22m

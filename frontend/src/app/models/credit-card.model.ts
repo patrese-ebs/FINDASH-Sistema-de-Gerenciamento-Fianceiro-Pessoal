@@ -8,6 +8,7 @@ export interface CreditCard {
     closingDay: number;
     dueDay: number;
     sharedLimitCardId?: string | null;
+    enabled?: boolean;
     // Computed fields
     currentInvoiceAmount?: number;
     totalLiability?: number;
