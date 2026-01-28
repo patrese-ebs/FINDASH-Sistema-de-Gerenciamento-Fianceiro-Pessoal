@@ -444,45 +444,73 @@ export class CreditCardController {
                 return;
             }
 
-            const transactionsToCreate = plans.map(plan => {
-                // Determine due date (using card's due day or default to 10th)
-                const dueDay = creditCard.dueDay || 10;
-                // We want the purchase date to fall into the billing cycle of that month.
-                // Simplified: Set purchase date to ~30 days before the due date of that month to ensure it hits the invoice.
-                // OR: Just set it to the 1st of that month if we trust the "Month" filter logic which looks at installmnets.
-
-                // Better approach based on current logic:
-                // If the user wants this for "March 2026", and it's a 1x installment, 
-                // the purchase date should be early enough in March (or late Feb) to appear in March Invoice.
-
-                // Let's use the 1st of the target month. 
-                // If closing day is early (e.g. 5th), purchase on 1st might fall in PREVIOUS month invoice if buying before closing?
-                // Actually typical logic: Purchase before closing day = Current Month Invoice. Purchase after closing = Next Month.
-                // To force it into "March" Invoice:
-                // If Closing Day > 1: Purchase on Month, (ClosingDay - 1). 
-                // Example: Closing Day 10. Purchase on March 9 -> March Invoice.
-
-                const closingDay = creditCard.closingDay || 10;
-                let purchaseDay = closingDay - 1;
-                if (purchaseDay < 1) purchaseDay = 1; // Safety
-
-                const purchaseDate = new Date(plan.year, plan.month - 1, purchaseDay);
-
-                return {
-                    creditCardId: id as string,
-                    description: 'Fatura Estimada (Planejamento)',
-                    totalAmount: parseFloat(plan.amount),
-                    installments: 1,
-                    currentInstallment: 1,
-                    installmentAmount: parseFloat(plan.amount),
-                    purchaseDate: purchaseDate,
-                    category: 'Outros'
-                };
+            // Fetch ALL transactions to correctly calculate what is already "Real" in those months
+            const allTransactions = await CreditCardTransaction.findAll({
+                where: { creditCardId: id }
             });
 
-            await CreditCardTransaction.bulkCreate(transactionsToCreate);
+            // Iterate over each plan request
+            for (const plan of plans) {
+                const targetMonth = parseInt(plan.month);
+                const targetYear = parseInt(plan.year);
+                const targetTotal = parseFloat(plan.amount);
 
-            res.status(201).json({ message: 'Invoices planned successfully', count: transactionsToCreate.length });
+                // 1. Identify Existing Transactions for this Invoice Month
+                // Logic mirrors getInvoice/yearOverview: find transactions that have an installment falling in this month
+                const invoiceTransactions = allTransactions.filter(t => {
+                    const dateStr = t.purchaseDate.toString();
+                    const [pYear, pMonth] = dateStr.includes('T')
+                        ? dateStr.split('T')[0].split('-').map(Number)
+                        : dateStr.split('-').map(Number);
+
+                    // Calculate offset
+                    const monthsElapsed = (targetYear - pYear) * 12 + (targetMonth - pMonth);
+
+                    return monthsElapsed >= 0 &&
+                        monthsElapsed < t.installments &&
+                        t.currentInstallment + monthsElapsed <= t.installments;
+                });
+
+                // 2. Separate into Real vs Planned
+                // We identify "Planned" by specific description or flag.
+                const plannedTransactions = invoiceTransactions.filter(t => t.description === 'Fatura Estimada (Planejamento)');
+                const realTransactions = invoiceTransactions.filter(t => t.description !== 'Fatura Estimada (Planejamento)');
+
+                // 3. Calculate Real Sum
+                const realSum = realTransactions.reduce((sum, t) => sum + parseFloat(t.installmentAmount.toString()), 0);
+
+                // 4. Calculate Difference
+                const neededAmount = Math.max(0, targetTotal - realSum);
+
+                // 5. Delete Existing Planned Transactions for this month
+                if (plannedTransactions.length > 0) {
+                    const idsToDelete = plannedTransactions.map(t => t.id);
+                    await CreditCardTransaction.destroy({ where: { id: idsToDelete } });
+                }
+
+                // 6. Create New Planned Transaction if needed
+                if (neededAmount > 0) {
+                    const closingDay = creditCard.closingDay || 10;
+                    let purchaseDay = closingDay - 1;
+                    if (purchaseDay < 1) purchaseDay = 1;
+
+                    // Ensure purchase date is in the correct month to hit this invoice
+                    const purchaseDate = new Date(targetYear, targetMonth - 1, purchaseDay);
+
+                    await CreditCardTransaction.create({
+                        creditCardId: id as string,
+                        description: 'Fatura Estimada (Planejamento)',
+                        totalAmount: neededAmount,
+                        installments: 1,
+                        currentInstallment: 1,
+                        installmentAmount: neededAmount,
+                        purchaseDate: purchaseDate,
+                        category: 'Outros'
+                    });
+                }
+            }
+
+            res.status(200).json({ message: 'Invoices updated successfully' });
         } catch (error) {
             console.error('Failed to plan invoices:', error);
             res.status(500).json({ error: 'Failed to plan invoices' });
