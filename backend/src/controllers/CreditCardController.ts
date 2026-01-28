@@ -1043,8 +1043,12 @@ export class CreditCardController {
                 }
             });
 
-            // Set invoice as unpaid
-            await invoice.update({ isPaid: false, paymentDate: undefined });
+            // Set invoice as unpaid and clear amount
+            await invoice.update({
+                isPaid: false,
+                amount: 0,
+                paymentDate: null
+            });
 
             res.status(200).json({ message: 'Payment undone successfully', invoice });
         } catch (error) {

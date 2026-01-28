@@ -498,10 +498,12 @@
                         </div>
                     </div>
 
-                    <!-- Undo Payment Section (Only if paid) -->
-                    <div *ngIf="monthData.isPaid"
+                    <!-- Undo Payment Section (Only if paid or has paid amount) -->
+                    <div *ngIf="monthData.isPaid || monthData.paidAmount > 0"
                         class="p-4 bg-green-500/5 border-b border-dark-border/50 flex items-center justify-between">
-                        <span class="text-sm text-green-200">✓ Esta fatura foi paga.</span>
+                        <span class="text-sm text-green-200" *ngIf="monthData.isPaid">✓ Esta fatura foi paga.</span>
+                        <span class="text-sm text-blue-200" *ngIf="!monthData.isPaid">Valor pago: {{
+                            monthData.paidAmount | currency:'BRL' }}</span>
                         <button (click)="$event.stopPropagation(); unpayInvoice(i)"
                             class="px-4 py-1.5 rounded bg-red-600/80 text-white text-sm font-bold hover:bg-red-500 flex items-center gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24"
