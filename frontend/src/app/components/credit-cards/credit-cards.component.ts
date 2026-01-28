@@ -42,6 +42,15 @@ export class CreditCardsComponent implements OnInit {
     yearlyOverview: any[] = [];
     selectedMonthIndex: number | null = null; // For accordion
 
+    // Recurrence Logic
+    showRecurrenceModal: boolean = false;
+    recurrenceAction: 'edit' | 'delete' | null = null;
+    pendingRecurrenceItem: any = null;
+    pendingRecurrenceFormValue: any = null;
+    isEditingRecurrent: boolean = false;
+    currentRefMonth: number | null = null;
+    currentRefYear: number | null = null;
+
     // Payment UI state
     paymentAmount: number = 0;
     viewingCard: CreditCard | null = null;
@@ -178,7 +187,12 @@ export class CreditCardsComponent implements OnInit {
         this.showTransactionModal = false;
         this.showPlanningModal = false;
         this.showInvoiceModal = false;
+        this.showInvoiceModal = false;
         this.selectedCard = null;
+        this.showRecurrenceModal = false;
+        this.recurrenceAction = null;
+        this.pendingRecurrenceItem = null;
+        this.pendingRecurrenceFormValue = null;
     }
 
     onCardSubmit() {
@@ -261,6 +275,15 @@ export class CreditCardsComponent implements OnInit {
         const val = this.transactionForm.value;
 
         if (this.editingTransactionId) {
+            // Check for Recurrence Edit
+            if (this.isEditingRecurrent && !this.recurrenceAction) { // Only if not already confirmed
+                this.recurrenceAction = 'edit';
+                this.pendingRecurrenceFormValue = val;
+                this.showRecurrenceModal = true;
+                this.submitting = false;
+                return;
+            }
+
             // Update Existing Credit Card Transaction using CreditCardService
             const updateData = {
                 description: val.description,
@@ -522,6 +545,17 @@ export class CreditCardsComponent implements OnInit {
     deleteInvoiceItem(item: any) {
         if (!this.viewingCard) return;
 
+        // Capture Ref Context
+        this.currentRefMonth = this.selectedMonthIndex !== null ? this.selectedMonthIndex + 1 : null;
+        this.currentRefYear = this.invoiceYear;
+
+        if (item.installments > 1) {
+            this.recurrenceAction = 'delete';
+            this.pendingRecurrenceItem = item;
+            this.showRecurrenceModal = true;
+            return;
+        }
+
         const installmentInfo = item.installments > 1
             ? ` (${item.installmentNumber}/${item.installments})`
             : '';
@@ -546,7 +580,11 @@ export class CreditCardsComponent implements OnInit {
         this.selectedCard = this.cards.find(c => c.id === t.creditCardId) || null;
         this.showTransactionModal = true;
         this.editingCardId = null;
+        this.editingCardId = null;
         this.editingTransactionId = t.id!;
+        this.isEditingRecurrent = (t.installments || 1) > 1;
+        this.currentRefMonth = this.selectedMonthIndex !== null ? this.selectedMonthIndex + 1 : null;
+        this.currentRefYear = this.invoiceYear;
 
         this.transactionForm.patchValue({
             cardId: t.creditCardId,
@@ -556,6 +594,71 @@ export class CreditCardsComponent implements OnInit {
             category: t.category,
             date: t.date.toString().split('T')[0]
         });
+    }
+
+    // Recurrence Actions
+    confirmRecurrence(mode: 'all' | 'future') {
+        this.showRecurrenceModal = false;
+        this.submitting = true;
+        const refMonth = this.currentRefMonth;
+        const refYear = this.currentRefYear;
+
+        if (this.recurrenceAction === 'delete') {
+            const item = this.pendingRecurrenceItem;
+            // For delete, we send the deleteMode and Ref
+            this.cardService.deleteTransaction(this.viewingCard!.id!, item.id, {
+                deleteMode: mode,
+                refMonth,
+                refYear
+            }).subscribe({
+                next: () => {
+                    alert('Despesa excluída!');
+                    this.loadYearlyOverview(this.viewingCard!.id!, this.invoiceYear);
+                    this.loadCards();
+                    this.loadSummary();
+                    this.submitting = false;
+                    this.recurrenceAction = null;
+                },
+                error: (err) => {
+                    console.error(err);
+                    alert('Erro ao excluir');
+                    this.submitting = false;
+                }
+            });
+
+        } else if (this.recurrenceAction === 'edit') {
+            const val = this.pendingRecurrenceFormValue;
+
+            const updateData = {
+                description: val.description,
+                totalAmount: val.totalValue,
+                installments: val.installments,
+                category: val.category,
+                purchaseDate: val.date,
+                updateMode: mode,
+                refMonth,
+                refYear
+            };
+
+            this.cardService.updateTransaction(val.cardId, this.editingTransactionId!, updateData).subscribe({
+                next: () => {
+                    this.submitting = false;
+                    this.closeModal();
+                    alert('Despesa atualizada!');
+                    if (this.viewingCard && this.showInvoiceModal) {
+                        this.loadYearlyOverview(this.viewingCard.id!, this.invoiceYear);
+                    }
+                    this.loadCards();
+                    this.loadSummary();
+                    this.recurrenceAction = null;
+                },
+                error: (err) => {
+                    console.error('Update failed', err);
+                    this.submitting = false;
+                    alert('Erro ao atualizar despesa');
+                }
+            });
+        }
     }
 
     // Helper for class binding

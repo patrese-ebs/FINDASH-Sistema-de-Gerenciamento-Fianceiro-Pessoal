@@ -557,13 +557,56 @@
                     </table>
                 </div>
             </div>
-        </div>
 
-        <div class="p-4 border-t border-dark-border bg-dark-card flex justify-end">
-            <button (click)="closeModal()"
-                class="px-4 py-2 rounded-lg border border-dark-border text-text-secondary hover:text-white">
-                Fechar
-            </button>
+            <div class="p-4 border-t border-dark-border bg-dark-card flex justify-end">
+                <button (click)="closeModal()"
+                    class="px-4 py-2 rounded-lg border border-dark-border text-text-secondary hover:text-white">
+                    Fechar
+                </button>
+            </div>
         </div>
     </div>
-</div>
+
+    <!-- Recurrence Action Modal -->
+    <div *ngIf="showRecurrenceModal"
+        class="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black bg-opacity-80 backdrop-blur-sm">
+        <div class="bg-dark-card border border-dark-border rounded-xl shadow-2xl w-full max-w-sm overflow-hidden">
+            <div class="p-6 border-b border-dark-border">
+                <h3 class="text-lg font-bold text-white">
+                    {{ recurrenceAction === 'delete' ? 'Excluir Despesa Recorrente' : 'Editar Despesa Recorrente' }}
+                </h3>
+            </div>
+            <div class="p-6 space-y-4">
+                <p class="text-text-secondary">
+                    Esta despesa se repete em vários meses. Como deseja aplicar a alteração?
+                </p>
+
+                <button (click)="confirmRecurrence('future')"
+                    class="w-full text-left p-4 rounded-lg border border-dark-border hover:bg-dark-bg/50 transition-colors group">
+                    <div class="font-bold text-white mb-1 group-hover:text-accent-purple">
+                        {{ recurrenceAction === 'delete' ? 'Desta em diante (Recomendado)' : 'Desta em diante' }}
+                    </div>
+                    <div class="text-xs text-text-secondary">
+                        {{ recurrenceAction === 'delete'
+                        ? 'Mantém o histórico passado e cancela apenas as cobranças futuras.'
+                        : 'Mantém o histórico e altera apenas as parcelas futuras.' }}
+                    </div>
+                </button>
+
+                <button (click)="confirmRecurrence('all')"
+                    class="w-full text-left p-4 rounded-lg border border-dark-border hover:bg-dark-bg/50 transition-colors group">
+                    <div class="font-bold text-white mb-1 group-hover:text-red-400">
+                        Todas as parcelas
+                    </div>
+                    <div class="text-xs text-text-secondary">
+                        {{ recurrenceAction === 'delete'
+                        ? 'Remove todas as ocorrências, inclusive as passadas.'
+                        : 'Altera todas as parcelas, incluindo retroativas.' }}
+                    </div>
+                </button>
+            </div>
+            <div class="p-4 bg-dark-bg/50 flex justify-end">
+                <button (click)="closeModal()" class="text-text-secondary hover:text-white px-4 py-2">Cancelar</button>
+            </div>
+        </div>
+    </div>

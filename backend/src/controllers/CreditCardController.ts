@@ -530,7 +530,7 @@ export class CreditCardController {
     async updateTransaction(req: AuthRequest, res: Response): Promise<void> {
         try {
             const { id, transactionId } = req.params;
-            const { description, totalAmount, installments, category, purchaseDate } = req.body;
+            const { description, totalAmount, installments, category, purchaseDate, updateMode, refMonth, refYear } = req.body;
             const userId = req.userId;
 
             if (!userId) {
@@ -554,21 +554,79 @@ export class CreditCardController {
                 return;
             }
 
-            // Calculate new installment amount if needed
-            const newTotal = totalAmount !== undefined ? totalAmount : transaction.totalAmount;
-            const newInstallments = installments !== undefined ? installments : transaction.installments;
-            const installmentAmount = newTotal / newInstallments;
+            // Normal update
+            if (updateMode !== 'future' || !refMonth || !refYear || transaction.installments <= 1) {
+                const newTotal = totalAmount !== undefined ? totalAmount : transaction.totalAmount;
+                const newInstallments = installments !== undefined ? installments : transaction.installments;
+                const installmentAmount = newTotal / newInstallments;
+
+                await transaction.update({
+                    description: description || transaction.description,
+                    totalAmount: newTotal,
+                    installments: newInstallments,
+                    installmentAmount: installmentAmount,
+                    category: category || transaction.category,
+                    purchaseDate: purchaseDate ? new Date(purchaseDate) : transaction.purchaseDate
+                });
+
+                res.status(200).json(transaction);
+                return;
+            }
+
+            // Future Update (Split)
+            const pDate = new Date(transaction.purchaseDate);
+            const pMonth = pDate.getMonth() + 1;
+            const pYear = pDate.getFullYear();
+
+            const monthsElapsed = (refYear - pYear) * 12 + (refMonth - pMonth);
+
+            if (monthsElapsed <= 0) {
+                // Editing from start, treat as normal update
+                const newTotal = totalAmount !== undefined ? totalAmount : transaction.totalAmount;
+                const newInstallments = installments !== undefined ? installments : transaction.installments;
+                const installmentAmount = newTotal / newInstallments;
+
+                await transaction.update({
+                    description: description || transaction.description,
+                    totalAmount: newTotal,
+                    installments: newInstallments,
+                    installmentAmount: installmentAmount,
+                    category: category || transaction.category,
+                    purchaseDate: purchaseDate ? new Date(purchaseDate) : transaction.purchaseDate
+                });
+                res.status(200).json(transaction);
+                return;
+            }
+
+            // 1. Stop Old
+            const oldInstallments = monthsElapsed;
+            const oldTotal = transaction.installmentAmount * oldInstallments;
 
             await transaction.update({
-                description: description || transaction.description,
-                totalAmount: newTotal,
-                installments: newInstallments,
-                installmentAmount: installmentAmount,
-                category: category || transaction.category,
-                purchaseDate: purchaseDate ? new Date(purchaseDate) : transaction.purchaseDate
+                installments: oldInstallments,
+                totalAmount: oldTotal
             });
 
-            res.status(200).json(transaction);
+            // 2. Start New
+            const newPurchaseDate = new Date(refYear, refMonth - 1, 1);
+
+            const nextInstallments = installments !== undefined ? installments : (transaction.installments - monthsElapsed);
+            const nextTotal = totalAmount !== undefined ? totalAmount : (transaction.installmentAmount * nextInstallments);
+            const nextInstallmentAmount = nextTotal / nextInstallments;
+
+            const newTransaction = await CreditCardTransaction.create({
+                creditCardId: id as string,
+                description: description || transaction.description,
+                totalAmount: nextTotal,
+                installments: nextInstallments,
+                currentInstallment: 1,
+                installmentAmount: nextInstallmentAmount,
+                purchaseDate: newPurchaseDate,
+                category: category || transaction.category
+            });
+
+            res.status(200).json(newTransaction);
+
         } catch (error) {
             console.error(error);
             res.status(500).json({ error: 'Failed to update transaction' });
@@ -601,8 +659,46 @@ export class CreditCardController {
                 return;
             }
 
-            await transaction.destroy();
-            res.status(204).send();
+            const { deleteMode, refMonth, refYear } = req.body; // deleteMode: 'all' | 'future'
+
+            if (deleteMode === 'future' && refMonth && refYear && transaction.installments > 1) {
+                // Logic to "stop" the recurrence
+                // 1. Calculate how many installments have passed until the reference date
+                const purchaseDate = new Date(transaction.purchaseDate);
+                const pMonth = purchaseDate.getMonth() + 1; // 1-12
+                const pYear = purchaseDate.getFullYear();
+
+                const monthsElapsed = (refYear - pYear) * 12 + (refMonth - pMonth);
+
+                // If monthsElapsed <= 0, it means we are deleting from the start (or before), so delete all.
+                if (monthsElapsed <= 0) {
+                    await transaction.destroy();
+                } else {
+                    // Update installments to stop before the reference month
+                    // The new number of installments is equal to monthsElapsed
+                    // Example: Purchase Jan ($100, 10x). Delete Future from March (3rd month).
+                    // Elapsed: (3-1) = 2 months. We want 2 installments (Jan, Feb).
+
+                    const newInstallments = monthsElapsed;
+
+                    if (newInstallments < transaction.currentInstallment) {
+                        // Should not happen if logic is correct, but safety check
+                        await transaction.destroy();
+                    } else {
+                        const newTotal = transaction.installmentAmount * newInstallments;
+
+                        await transaction.update({
+                            installments: newInstallments,
+                            totalAmount: newTotal
+                        });
+                    }
+                }
+            } else {
+                // Default: Delete all
+                await transaction.destroy();
+            }
+
+            res.status(200).send();
         } catch (error) {
             console.error(error);
             res.status(500).json({ error: 'Failed to delete transaction' });

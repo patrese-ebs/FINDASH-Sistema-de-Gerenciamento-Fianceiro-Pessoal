@@ -62,7 +62,10 @@ export class CreditCardService {
     return this.http.put(`${this.apiUrl}/${cardId}/transactions/${transactionId}`, data, { headers: this.getHeaders() });
   }
 
-  deleteTransaction(cardId: string, transactionId: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${cardId}/transactions/${transactionId}`, { headers: this.getHeaders() });
+  deleteTransaction(cardId: string, transactionId: string, body?: any): Observable<void> {
+    return this.http.request<void>('delete', `${this.apiUrl}/${cardId}/transactions/${transactionId}`, {
+      headers: this.getHeaders(),
+      body: body
+    });
   }
 }
