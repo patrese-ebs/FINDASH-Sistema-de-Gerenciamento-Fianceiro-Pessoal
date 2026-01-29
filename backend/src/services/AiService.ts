@@ -40,12 +40,12 @@ class AiService {
         `;
 
         try {
-            // Primary Model - Use specific version 001 or gemini-pro
-            return await this.generateWithModel('gemini-1.5-flash-001', input, prompt);
+            // Primary Model
+            return await this.generateWithModel('gemini-1.5-flash', input, prompt);
         } catch (primaryError: any) {
             console.error('Primary model failed:', primaryError.message);
             try {
-                // Fallback to gemini-pro (1.0)
+                // Fallback
                 return await this.generateWithModel('gemini-pro', input, prompt);
             } catch (fallbackError: any) {
                 console.error('Fallback model failed:', fallbackError.message);
@@ -105,15 +105,25 @@ class AiService {
 
         try {
             const genAI = this.getClient();
-            // Use gemini-pro as the primary for insights (robust, widely available)
-            const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+            const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
             const result = await model.generateContent(prompt);
             return result.response.text();
         } catch (error: any) {
             console.error('AI Insight Error:', error);
-            // Return actual error for debugging
-            return `Erro ao gerar insights: ${error.message || 'Erro desconhecido'}. (Key: ${process.env.GEMINI_API_KEY ? 'Present' : 'Missing'})`;
+
+            // Debugging: Try to list available models to see what IS allowed
+            try {
+                const apiKey = process.env.GEMINI_API_KEY;
+                // Using global fetch (Node 18+)
+                const listResp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+                const listData = await listResp.json();
+                const availableModels = (listData.models || []).map((m: any) => m.name).join(', ');
+
+                return `Erro: Modelo não encontrado. Modelos disponíveis: ${availableModels}`;
+            } catch (listErr: any) {
+                return `Erro ao gerar insights: ${error.message}. (Key: ${process.env.GEMINI_API_KEY ? 'Present' : 'Missing'}) - Falha ao listar modelos: ${listErr.message}`;
+            }
         }
     }
 }
