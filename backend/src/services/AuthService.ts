@@ -143,4 +143,25 @@ export class AuthService {
         // Delete used token (and potentially all other tokens for this user)
         await PasswordResetToken.destroy({ where: { userId: user.id } });
     }
+    async updateProfile(userId: string, data: { name?: string; email?: string; password?: string }) {
+        const user = await User.findByPk(userId);
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        const updates: any = {};
+        if (data.name) updates.name = data.name;
+        if (data.email) updates.email = data.email; // Note: In a real app, verify email uniqueness if changed
+        if (data.password) {
+            updates.password = await bcrypt.hash(data.password, 10);
+        }
+
+        await user.update(updates);
+
+        return {
+            id: user.id,
+            email: user.email,
+            name: user.name
+        };
+    }
 }

@@ -34,3 +34,31 @@ export const parseExpense = async (req: Request, res: Response) => {
         res.status(500).json({ error: 'Failed to process request', details: error.message || JSON.stringify(error) });
     }
 };
+
+export const getInsights = async (req: Request, res: Response) => {
+    try {
+        // In a real app, inject TransactionService to fetch data
+        // For now, we might need to duplicate fetching logic or import the service dynamically
+        // simpler: let frontend pass summary? No, secure backend should do it.
+        // Let's assume we can fetch transactions here.
+        // Importing standard TransactionService might be circular if not careful.
+        // Let's use direct DB call or import.
+
+        // Dynamic import to avoid circular dep issues if any
+        const { Expense, Income } = await import('../models');
+
+        const expenses = await Expense.findAll({ limit: 50, order: [['date', 'DESC']] });
+        const incomes = await Income.findAll({ limit: 50, order: [['date', 'DESC']] });
+
+        const allTx = [
+            ...expenses.map(e => ({ ...e.dataValues, type: 'expense' })),
+            ...incomes.map(i => ({ ...i.dataValues, type: 'income' }))
+        ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+        const insights = await aiService.generateInsights(allTx);
+        res.json({ insights });
+    } catch (error: any) {
+        console.error('AI Insight Controller Error:', error);
+        res.status(500).json({ error: 'Failed to generate insights' });
+    }
+};

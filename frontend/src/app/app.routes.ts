@@ -41,6 +41,10 @@ export const routes: Routes = [
                 path: 'investments',
                 loadComponent: () => import('./components/investments/investments.component').then(m => m.InvestmentsComponent)
             },
+            {
+                path: 'minha-conta',
+                loadComponent: () => import('./components/minha-conta/minha-conta.component').then(m => m.MinhaContaComponent)
+            },
             { path: 'goals', redirectTo: 'dashboard' }
         ]
     }

@@ -97,4 +97,23 @@ export class AuthController {
             }
         }
     }
+    async updateProfile(req: AuthRequest, res: Response): Promise<void> {
+        try {
+            if (!req.userId) {
+                res.status(401).json({ error: 'Unauthorized' });
+                return;
+            }
+
+            const { name, email, password } = req.body;
+            const updatedUser = await authService.updateProfile(req.userId, { name, email, password });
+
+            res.status(200).json(updatedUser);
+        } catch (error) {
+            if (error instanceof Error) {
+                res.status(400).json({ error: error.message });
+            } else {
+                res.status(500).json({ error: 'Internal server error' });
+            }
+        }
+    }
 }

@@ -85,6 +85,36 @@ class AiService {
         return Array.isArray(parsed) ? parsed : [parsed];
     }
 
+    async generateInsights(transactions: any[]): Promise<string> {
+        if (!transactions || transactions.length === 0) {
+            return "Ainda não há transações suficientes para gerar insights.";
+        }
+
+        const simplifiedTx = transactions.slice(0, 50).map(t => ({
+            date: t.date,
+            description: t.description,
+            amount: t.amount,
+            type: t.type,
+            category: t.category
+        }));
+
+        const prompt = `
+            Analyze these financial transactions (last 30 days) and provide 3 short, actionable insights or tips in Portuguese (Brazil).
+            Focus on spending habits, recurring expenses, or saving opportunities.
+            Use emojis. Keep it friendly and concise.
+            
+            Transactions:
+            ${JSON.stringify(simplifiedTx)}
+        `;
+
+        try {
+            const result = await this.model.generateContent(prompt);
+            return result.response.text();
+        } catch (error) {
+            console.error('AI Insight Error:', error);
+            return "Não foi possível gerar insights no momento.";
+        }
+    }
 }
 
 export default new AiService();

@@ -7,10 +7,27 @@
 
 <div *ngIf="!loading">
     <!-- Header -->
-    <div class="mb-8">
-        <h2 class="text-3xl font-bold">Visão Geral Financeira</h2>
-        <p class="text-text-secondary mt-1">Bem-vindo de volta, aqui está o que está acontecendo com seu
-            dinheiro hoje.</p>
+    <div class="flex flex-col md:flex-row justify-between items-end mb-8 gap-4">
+        <div>
+            <h2 class="text-3xl font-bold">Visão Geral Financeira</h2>
+            <p class="text-text-secondary mt-1">Bem-vindo de volta, aqui está o que está acontecendo com seu
+                dinheiro hoje.</p>
+        </div>
+
+        <!-- Month Selector -->
+        <div class="flex items-center gap-4 bg-dark-card border border-dark-border rounded-lg px-2 py-1">
+            <button (click)="prevMonth()"
+                class="p-2 hover:bg-dark-bg rounded-lg text-text-secondary hover:text-white transition-colors">
+                ◀
+            </button>
+            <div class="text-lg font-bold min-w-[150px] text-center">
+                {{ getMonthName(selectedMonth) || 'Mês' }} {{ selectedYear }}
+            </div>
+            <button (click)="nextMonth()"
+                class="p-2 hover:bg-dark-bg rounded-lg text-text-secondary hover:text-white transition-colors">
+                ▶
+            </button>
+        </div>
     </div>
 
     <!-- Stats Cards -->
@@ -39,6 +56,35 @@
         <div class="bg-dark-card border border-dark-border rounded-xl p-6 shadow-lg">
             <div class="text-text-secondary text-sm font-medium mb-2">Despesas (Mês)</div>
             <div class="text-2xl font-bold text-red-400">{{ monthlyExpenses | currency:'BRL' }}</div>
+        </div>
+    </div>
+
+    <!-- AI Insights -->
+    <div
+        class="mb-8 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border border-indigo-500/30 rounded-xl p-6 shadow-lg animate-fade-in relative overflow-hidden">
+        <div class="absolute top-0 right-0 p-4 opacity-10">
+            <span class="text-6xl">🤖</span>
+        </div>
+
+        <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+            <span class="text-2xl">🤖</span> Insights Financeiros IA
+        </h3>
+
+        <div *ngIf="loadingInsights" class="flex items-center gap-3 text-text-secondary animate-pulse">
+            <div class="h-4 w-4 bg-indigo-400 rounded-full animate-bounce"></div>
+            <div class="h-4 w-4 bg-purple-400 rounded-full animate-bounce delay-75"></div>
+            <div class="h-4 w-4 bg-pink-400 rounded-full animate-bounce delay-150"></div>
+            <span>Analisando suas transações...</span>
+        </div>
+
+        <div *ngIf="!loadingInsights && insights" class="prose prose-invert max-w-none">
+            <div class="whitespace-pre-line text-gray-300 leading-relaxed font-medium">
+                {{ insights }}
+            </div>
+        </div>
+
+        <div *ngIf="!loadingInsights && !insights" class="text-text-secondary italic">
+            Nenhum insight disponível no momento. Continue registrando transações!
         </div>
     </div>
 
