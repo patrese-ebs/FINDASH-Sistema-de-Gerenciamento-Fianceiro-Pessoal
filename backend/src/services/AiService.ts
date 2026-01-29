@@ -107,12 +107,15 @@ class AiService {
             ${JSON.stringify(simplifiedTx)}
         `;
 
-    } catch(error: any) {
-        console.error('AI Insight Error:', error);
-        // Return actual error for debugging
-        return `Erro ao gerar insights: ${error.message || 'Erro desconhecido'}. Verifique a API Key e cotas.`;
+        try {
+            const result = await this.model.generateContent(prompt);
+            return result.response.text();
+        } catch (error: any) {
+            console.error('AI Insight Error:', error);
+            // Return actual error for debugging
+            return `Erro ao gerar insights: ${error.message || 'Erro desconhecido'}. Verifique a API Key e cotas.`;
+        }
     }
-}
 }
 
 export default new AiService();
