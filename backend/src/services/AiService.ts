@@ -11,21 +11,18 @@ interface ExpenseData {
 }
 
 class AiService {
-    private genAI: GoogleGenerativeAI;
-    private model: any;
 
-    constructor() {
+    private getClient(): GoogleGenerativeAI {
         const apiKey = process.env.GEMINI_API_KEY;
-        console.log('Using Gemini API Key:', apiKey ? apiKey.substring(0, 5) + '...' : 'NONE');
         if (!apiKey) {
-            console.warn('GEMINI_API_KEY is not set in environment variables.');
+            console.error('GEMINI_API_KEY is missing in process.env');
+            throw new Error('GEMINI_API_KEY não configurada no servidor.');
         }
-        this.genAI = new GoogleGenerativeAI(apiKey || '');
-        this.model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+        return new GoogleGenerativeAI(apiKey);
     }
 
     async parseExpense(input: string | { path: string, mimeType: string }): Promise<ExpenseData[]> {
-        let prompt = `
+        const prompt = `
             You are a financial assistant. Extract transaction details from the input.
             
             Return a valid JSON ARRAY of objects (even if only one item is found). 
@@ -43,15 +40,13 @@ class AiService {
         `;
 
         try {
-            // Primary Model: gemini-2.5-flash (Found in available models list)
-            return await this.generateWithModel('gemini-2.5-flash', input, prompt);
+            // Primary Model
+            return await this.generateWithModel('gemini-1.5-flash', input, prompt);
         } catch (primaryError: any) {
-            console.error('Primary model (gemini-2.5-flash) failed:', primaryError.message);
-
+            console.error('Primary model failed:', primaryError.message);
             try {
-                // Fallback: gemini-2.0-flash
-                console.log('Attempting fallback to gemini-2.0-flash...');
-                return await this.generateWithModel('gemini-2.0-flash', input, prompt);
+                // Fallback
+                return await this.generateWithModel('gemini-1.0-pro', input, prompt);
             } catch (fallbackError: any) {
                 console.error('Fallback model failed:', fallbackError.message);
                 throw new Error(`Primary: ${primaryError.message} | Fallback: ${fallbackError.message}`);
@@ -60,7 +55,9 @@ class AiService {
     }
 
     private async generateWithModel(modelName: string, input: string | { path: string, mimeType: string }, prompt: string): Promise<ExpenseData[]> {
-        const model = this.genAI.getGenerativeModel({ model: modelName });
+        const genAI = this.getClient();
+        const model = genAI.getGenerativeModel({ model: modelName });
+
         let result;
 
         if (typeof input === 'string') {
@@ -81,7 +78,6 @@ class AiService {
         const jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
 
         const parsed = JSON.parse(jsonStr);
-        // Ensure result is always an array
         return Array.isArray(parsed) ? parsed : [parsed];
     }
 
@@ -108,12 +104,14 @@ class AiService {
         `;
 
         try {
-            const result = await this.model.generateContent(prompt);
+            const genAI = this.getClient();
+            const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+
+            const result = await model.generateContent(prompt);
             return result.response.text();
         } catch (error: any) {
             console.error('AI Insight Error:', error);
-            // Return actual error for debugging
-            return `Erro ao gerar insights: ${error.message || 'Erro desconhecido'}. Verifique a API Key e cotas.`;
+            return `Erro ao gerar insights: ${error.message || 'Erro desconhecido'}. (Key: ${process.env.GEMINI_API_KEY ? 'Present' : 'Missing'})`;
         }
     }
 }
