@@ -40,13 +40,13 @@ class AiService {
         `;
 
         try {
-            // Primary Model
-            return await this.generateWithModel('gemini-1.5-flash', input, prompt);
+            // Primary Model - Use specific version 001 or gemini-pro
+            return await this.generateWithModel('gemini-1.5-flash-001', input, prompt);
         } catch (primaryError: any) {
             console.error('Primary model failed:', primaryError.message);
             try {
-                // Fallback
-                return await this.generateWithModel('gemini-1.0-pro', input, prompt);
+                // Fallback to gemini-pro (1.0)
+                return await this.generateWithModel('gemini-pro', input, prompt);
             } catch (fallbackError: any) {
                 console.error('Fallback model failed:', fallbackError.message);
                 throw new Error(`Primary: ${primaryError.message} | Fallback: ${fallbackError.message}`);
@@ -105,12 +105,14 @@ class AiService {
 
         try {
             const genAI = this.getClient();
-            const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+            // Use gemini-pro as the primary for insights (robust, widely available)
+            const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
 
             const result = await model.generateContent(prompt);
             return result.response.text();
         } catch (error: any) {
             console.error('AI Insight Error:', error);
+            // Return actual error for debugging
             return `Erro ao gerar insights: ${error.message || 'Erro desconhecido'}. (Key: ${process.env.GEMINI_API_KEY ? 'Present' : 'Missing'})`;
         }
     }
