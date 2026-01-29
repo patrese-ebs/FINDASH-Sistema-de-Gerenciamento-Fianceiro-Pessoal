@@ -40,12 +40,13 @@ class AiService {
         `;
 
         try {
-            // Primary Model
-            return await this.generateWithModel('gemini-1.5-flash', input, prompt);
+            // Using gemini-2.5-flash as confirmed by API capability check
+            return await this.generateWithModel('gemini-2.5-flash', input, prompt);
         } catch (primaryError: any) {
-            console.error('Primary model failed:', primaryError.message);
+            console.error('Primary model (gemini-2.5-flash) failed:', primaryError.message);
             try {
-                // Fallback
+                // Fallback to gemini-pro just in case
+                console.log('Attempting fallback to gemini-pro...');
                 return await this.generateWithModel('gemini-pro', input, prompt);
             } catch (fallbackError: any) {
                 console.error('Fallback model failed:', fallbackError.message);
@@ -105,36 +106,15 @@ class AiService {
 
         try {
             const genAI = this.getClient();
-            const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+            // Using gemini-2.5-flash as confirmed via curl
+            const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
             const result = await model.generateContent(prompt);
             return result.response.text();
         } catch (error: any) {
             console.error('AI Insight Error:', error);
-
-            // Debugging: Try to list available models to see what IS allowed
-            try {
-                const apiKey = process.env.GEMINI_API_KEY;
-                const https = require('https');
-
-                const listModels = (): Promise<string> => {
-                    return new Promise((resolve, reject) => {
-                        https.get(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`, (res: any) => {
-                            let data = '';
-                            res.on('data', (chunk: any) => data += chunk);
-                            res.on('end', () => resolve(data));
-                        }).on('error', (err: any) => reject(err));
-                    });
-                };
-
-                const dataStr = await listModels();
-                const listData = JSON.parse(dataStr);
-                const availableModels = (listData.models || []).map((m: any) => m.name).join(', ');
-
-                return `Erro: Modelo não encontrado. Modelos disponíveis: ${availableModels}`;
-            } catch (listErr: any) {
-                return `Erro ao gerar insights: ${error.message}. (Key: ${process.env.GEMINI_API_KEY ? 'Present' : 'Missing'}) - Falha ao listar modelos.`;
-            }
+            // Simple generic error message now that we know the model
+            return `Erro ao gerar insights: ${error.message || 'Erro desconhecido'}. Verifique a API Key e cotas.`;
         }
     }
 }
