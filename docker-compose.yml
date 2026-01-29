@@ -27,6 +27,7 @@ services:
       DB_PASSWORD: postgres123
       DB_NAME: financial_manager
       JWT_SECRET: ${JWT_SECRET:-secret_jwt_key_change_in_prod}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
       CORS_ORIGIN: "*"
       # Email config (replace with real SMTP in prod)
       SMTP_HOST: ${SMTP_HOST}

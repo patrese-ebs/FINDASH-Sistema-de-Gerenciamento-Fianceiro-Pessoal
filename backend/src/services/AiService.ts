@@ -107,14 +107,12 @@ class AiService {
             ${JSON.stringify(simplifiedTx)}
         `;
 
-        try {
-            const result = await this.model.generateContent(prompt);
-            return result.response.text();
-        } catch (error) {
-            console.error('AI Insight Error:', error);
-            return "Não foi possível gerar insights no momento.";
-        }
+    } catch(error: any) {
+        console.error('AI Insight Error:', error);
+        // Return actual error for debugging
+        return `Erro ao gerar insights: ${error.message || 'Erro desconhecido'}. Verifique a API Key e cotas.`;
     }
+}
 }
 
 export default new AiService();
