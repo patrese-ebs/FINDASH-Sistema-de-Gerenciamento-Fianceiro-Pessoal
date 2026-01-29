@@ -115,14 +115,25 @@ class AiService {
             // Debugging: Try to list available models to see what IS allowed
             try {
                 const apiKey = process.env.GEMINI_API_KEY;
-                // Using global fetch (Node 18+)
-                const listResp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
-                const listData = await listResp.json();
+                const https = require('https');
+
+                const listModels = (): Promise<string> => {
+                    return new Promise((resolve, reject) => {
+                        https.get(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`, (res: any) => {
+                            let data = '';
+                            res.on('data', (chunk: any) => data += chunk);
+                            res.on('end', () => resolve(data));
+                        }).on('error', (err: any) => reject(err));
+                    });
+                };
+
+                const dataStr = await listModels();
+                const listData = JSON.parse(dataStr);
                 const availableModels = (listData.models || []).map((m: any) => m.name).join(', ');
 
                 return `Erro: Modelo não encontrado. Modelos disponíveis: ${availableModels}`;
             } catch (listErr: any) {
-                return `Erro ao gerar insights: ${error.message}. (Key: ${process.env.GEMINI_API_KEY ? 'Present' : 'Missing'}) - Falha ao listar modelos: ${listErr.message}`;
+                return `Erro ao gerar insights: ${error.message}. (Key: ${process.env.GEMINI_API_KEY ? 'Present' : 'Missing'}) - Falha ao listar modelos.`;
             }
         }
     }
