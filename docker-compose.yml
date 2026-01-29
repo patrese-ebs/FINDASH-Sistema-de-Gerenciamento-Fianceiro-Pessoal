@@ -19,6 +19,8 @@ services:
       context: ./backend
     container_name: financial_manager_backend
     restart: always
+    env_file:
+      - ./backend/.env
     environment:
       NODE_ENV: production
       PORT: 3000
