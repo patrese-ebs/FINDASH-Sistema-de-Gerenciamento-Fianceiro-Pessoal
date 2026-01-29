@@ -152,8 +152,8 @@ export class DashboardComponent implements OnInit, AfterViewInit {
             return month === this.selectedMonth && year === this.selectedYear;
         });
 
-        const income = thisMonthTx.filter(t => t.type === 'income' || (t.amount > 0 && !t.isInvoice));
-        const expense = thisMonthTx.filter(t => t.type === 'expense' || t.amount < 0);
+        const income = thisMonthTx.filter(t => t.type === 'income');
+        const expense = thisMonthTx.filter(t => t.type === 'expense');
 
         this.monthlyIncome = income.reduce((acc, t) => acc + Math.abs(Number(t.amount)), 0);
         this.monthlyExpenses = expense.reduce((acc, t) => acc + Math.abs(Number(t.amount)), 0);
