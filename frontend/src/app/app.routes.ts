@@ -2,6 +2,10 @@ import { Routes } from '@angular/router';
 import { LoginComponent } from './components/login/login.component';
 import { RegisterComponent } from './components/register/register.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
+import { TransactionsComponent } from './components/transactions/transactions.component';
+import { CreditCardsComponent } from './components/credit-cards/credit-cards.component';
+import { InvestmentsComponent } from './components/investments/investments.component';
+import { MinhaContaComponent } from './components/minha-conta/minha-conta.component';
 import { AuthService } from './services/auth';
 import { inject } from '@angular/core';
 
@@ -31,19 +35,19 @@ export const routes: Routes = [
             },
             {
                 path: 'transactions',
-                loadComponent: () => import('./components/transactions/transactions.component').then(m => m.TransactionsComponent)
+                component: TransactionsComponent
             },
             {
                 path: 'credit-cards',
-                loadComponent: () => import('./components/credit-cards/credit-cards.component').then(m => m.CreditCardsComponent)
+                component: CreditCardsComponent
             },
             {
                 path: 'investments',
-                loadComponent: () => import('./components/investments/investments.component').then(m => m.InvestmentsComponent)
+                component: InvestmentsComponent
             },
             {
                 path: 'minha-conta',
-                loadComponent: () => import('./components/minha-conta/minha-conta.component').then(m => m.MinhaContaComponent)
+                component: MinhaContaComponent
             },
             { path: 'goals', redirectTo: 'dashboard' }
         ]
