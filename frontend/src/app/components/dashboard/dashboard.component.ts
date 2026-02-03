@@ -1,5 +1,6 @@
 import { Component, OnInit, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { SidebarComponent } from '../sidebar/sidebar.component';
 import { TransactionService } from '../../services/transaction';
 import { AuthService } from '../../services/auth';
@@ -12,7 +13,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 @Component({
     selector: 'app-dashboard',
     standalone: true,
-    imports: [CommonModule, SidebarComponent],
+    imports: [CommonModule, FormsModule, SidebarComponent],
     templateUrl: './dashboard.component.html',
 })
 export class DashboardComponent implements OnInit, AfterViewInit {
@@ -23,6 +24,11 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     // AI Insights
     insights: string = '';
     loadingInsights: boolean = false;
+
+    // AI Debt Search
+    debtSearchQuery: string = '';
+    debtSearchResult: string = '';
+    searchingDebt: boolean = false;
 
 
     // Filter state
@@ -244,6 +250,27 @@ export class DashboardComponent implements OnInit, AfterViewInit {
                     x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
                 },
                 plugins: { legend: { labels: { color: '#94a3b8' } } }
+            }
+        });
+    }
+
+    searchDebt() {
+        if (!this.debtSearchQuery.trim()) return;
+
+        this.searchingDebt = true;
+        this.debtSearchResult = '';
+
+        const headers = new HttpHeaders().set('Authorization', `Bearer ${this.authService.getToken()}`);
+
+        this.http.post<{ result: string }>('/api/ai/search-debt', { query: this.debtSearchQuery }, { headers }).subscribe({
+            next: (data) => {
+                this.debtSearchResult = data.result;
+                this.searchingDebt = false;
+            },
+            error: (err) => {
+                console.error('Failed to search debt', err);
+                this.debtSearchResult = '❌ Erro ao pesquisar. Tente novamente.';
+                this.searchingDebt = false;
             }
         });
     }

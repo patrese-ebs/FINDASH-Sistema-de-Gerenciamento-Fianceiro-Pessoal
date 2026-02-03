@@ -62,3 +62,26 @@ export const getInsights = async (req: Request, res: Response) => {
         res.status(500).json({ error: 'Failed to generate insights' });
     }
 };
+
+export const searchDebt = async (req: Request, res: Response) => {
+    try {
+        const { query } = req.body;
+        const userId = (req as any).userId;
+
+        if (!query) {
+            res.status(400).json({ error: 'Por favor, forneça uma pergunta.' });
+            return;
+        }
+
+        if (!userId) {
+            res.status(401).json({ error: 'Não autorizado' });
+            return;
+        }
+
+        const result = await aiService.searchDebt(query, userId);
+        res.json({ result });
+    } catch (error: any) {
+        console.error('AI Debt Search Controller Error:', error);
+        res.status(500).json({ error: 'Falha ao pesquisar dívida' });
+    }
+};

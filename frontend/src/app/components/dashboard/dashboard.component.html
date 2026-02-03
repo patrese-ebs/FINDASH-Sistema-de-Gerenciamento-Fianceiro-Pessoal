@@ -88,6 +88,49 @@
         </div>
     </div>
 
+    <!-- AI Debt Search -->
+    <div
+        class="mb-8 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-emerald-500/30 rounded-xl p-6 shadow-lg relative overflow-hidden">
+        <div class="absolute top-0 right-0 p-4 opacity-10">
+            <span class="text-6xl">🔍</span>
+        </div>
+
+        <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+            <span class="text-2xl">🔍</span> Pesquisa de Dívidas com IA
+        </h3>
+
+        <p class="text-text-secondary text-sm mb-4">
+            Pergunte sobre qualquer dívida ou transação. Exemplo: "Quanto devo na compra do celular?" ou "Quais são
+            minhas despesas com alimentação?"
+        </p>
+
+        <div class="flex gap-3">
+            <input type="text" [(ngModel)]="debtSearchQuery" (keyup.enter)="searchDebt()"
+                placeholder="Digite sua pergunta sobre dívidas..."
+                class="flex-1 bg-dark-bg border border-dark-border rounded-lg px-4 py-3 text-white placeholder-text-secondary focus:border-emerald-500 focus:outline-none transition-colors" />
+            <button (click)="searchDebt()" [disabled]="searchingDebt || !debtSearchQuery"
+                class="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-800 disabled:cursor-not-allowed rounded-lg font-semibold transition-colors flex items-center gap-2">
+                <span *ngIf="searchingDebt" class="animate-spin">⏳</span>
+                <span *ngIf="!searchingDebt">🔍</span>
+                Buscar
+            </button>
+        </div>
+
+        <div *ngIf="searchingDebt" class="mt-4 flex items-center gap-3 text-text-secondary animate-pulse">
+            <div class="h-4 w-4 bg-emerald-400 rounded-full animate-bounce"></div>
+            <div class="h-4 w-4 bg-teal-400 rounded-full animate-bounce delay-75"></div>
+            <div class="h-4 w-4 bg-cyan-400 rounded-full animate-bounce delay-150"></div>
+            <span>Pesquisando suas dívidas...</span>
+        </div>
+
+        <div *ngIf="!searchingDebt && debtSearchResult"
+            class="mt-4 bg-dark-bg/50 rounded-lg p-4 border border-emerald-500/20">
+            <div class="whitespace-pre-line text-gray-300 leading-relaxed">
+                {{ debtSearchResult }}
+            </div>
+        </div>
+    </div>
+
     <!-- Charts Row -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         <!-- Cash Flow Chart -->

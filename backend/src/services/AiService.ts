@@ -117,6 +117,100 @@ class AiService {
             return `Erro ao gerar insights: ${error.message || 'Erro desconhecido'}. Verifique a API Key e cotas.`;
         }
     }
+
+    async searchDebt(query: string, userId: string): Promise<string> {
+        try {
+            // Dynamic imports to avoid circular dependencies
+            const { Expense, CreditCard, CreditCardTransaction, CreditCardInvoice } = await import('../models');
+
+            // Fetch all relevant financial data for this user
+            const expenses = await Expense.findAll({
+                where: { userId, isPaid: false },
+                order: [['date', 'DESC']],
+                limit: 100
+            });
+
+            const creditCards = await CreditCard.findAll({
+                where: { userId },
+                include: [{
+                    model: CreditCardTransaction,
+                    as: 'transactions'
+                }]
+            });
+
+            // Get all invoices for context
+            const cardIds = creditCards.map(c => c.id);
+            const invoices = await CreditCardInvoice.findAll({
+                where: { creditCardId: cardIds }
+            });
+
+            // Prepare data for AI
+            const expenseSummary = expenses.map(e => ({
+                description: e.description,
+                amount: e.amount,
+                category: e.category,
+                date: e.date,
+                isPaid: e.isPaid
+            }));
+
+            const cardsSummary = creditCards.map(card => {
+                const transactions = (card as any).transactions || [];
+                const cardInvoices = invoices.filter(inv => inv.creditCardId === card.id);
+
+                return {
+                    cardName: card.name,
+                    lastFourDigits: card.lastFourDigits,
+                    creditLimit: card.creditLimit,
+                    transactions: transactions.map((t: any) => ({
+                        description: t.description,
+                        totalAmount: t.totalAmount,
+                        installments: t.installments,
+                        currentInstallment: t.currentInstallment,
+                        purchaseDate: t.purchaseDate,
+                        category: t.category
+                    })),
+                    invoices: cardInvoices.map(inv => ({
+                        month: inv.month,
+                        year: inv.year,
+                        amount: inv.amount,
+                        isPaid: inv.isPaid
+                    }))
+                };
+            });
+
+            const prompt = `
+                Você é um assistente financeiro especializado. O usuário quer saber sobre uma dívida específica.
+                
+                Pergunta do usuário: "${query}"
+                
+                Aqui estão os dados financeiros do usuário:
+                
+                DESPESAS PENDENTES:
+                ${JSON.stringify(expenseSummary, null, 2)}
+                
+                CARTÕES DE CRÉDITO E TRANSAÇÕES:
+                ${JSON.stringify(cardsSummary, null, 2)}
+                
+                Por favor, responda à pergunta do usuário de forma clara e objetiva em português (Brasil).
+                Se encontrar a dívida mencionada, forneça todos os detalhes relevantes:
+                - Valor total e parcelas (se houver)
+                - Status de pagamento
+                - Data da compra/despesa
+                - Cartão relacionado (se aplicável)
+                
+                Se não encontrar, informe educadamente que não há registros correspondentes.
+                Use emojis para tornar a resposta mais amigável.
+            `;
+
+            const genAI = this.getClient();
+            const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+            const result = await model.generateContent(prompt);
+            return result.response.text();
+        } catch (error: any) {
+            console.error('AI Debt Search Error:', error);
+            return `❌ Erro ao pesquisar: ${error.message || 'Erro desconhecido'}. Verifique a conexão.`;
+        }
+    }
 }
 
 export default new AiService();

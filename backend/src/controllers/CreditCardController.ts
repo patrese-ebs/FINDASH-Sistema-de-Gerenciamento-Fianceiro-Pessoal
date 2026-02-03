@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { CreditCard, CreditCardTransaction, CreditCardInvoice } from '../models';
+import { CreditCard, CreditCardTransaction, CreditCardInvoice, Expense } from '../models';
 import { AuthRequest } from '../types';
 
 export class CreditCardController {
@@ -979,6 +979,20 @@ export class CreditCardController {
                 installmentAmount: -paymentAmount,
                 purchaseDate: new Date(year, month - 1, 15),
                 category: 'Pagamentos'
+            });
+
+            // Create Expense to reflect payment in dashboard balance
+            const paymentDate = new Date();
+            await Expense.create({
+                userId,
+                description: `Pagamento ${isFullyPaid ? 'Fatura' : 'Parcial'} - ${creditCard.name}`,
+                amount: paymentAmount,
+                date: paymentDate,
+                month: paymentDate.getMonth() + 1,
+                year: paymentDate.getFullYear(),
+                category: 'Cartão de Crédito',
+                paymentMethod: 'transfer',
+                isPaid: true
             });
 
             res.status(200).json({
