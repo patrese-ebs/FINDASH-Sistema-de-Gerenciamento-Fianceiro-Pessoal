@@ -103,20 +103,42 @@ export class TransactionsComponent implements OnInit {
         return this.totalIncome; // "Previsto" is total for the month
     }
 
+    // Total Expense (Previsto) = sum of ALL expense amounts (full invoice values)
     get totalExpense() {
         return this.getMonthTransactions()
             .filter(t => t.type === 'expense')
             .reduce((sum, t) => sum + Math.abs(Number(t.amount)), 0);
     }
 
+    // Paid Expense = expenses marked as paid + partial payments on invoices
     get paidExpense() {
         return this.getMonthTransactions()
-            .filter(t => t.type === 'expense' && t.isPaid)
-            .reduce((sum, t) => sum + Math.abs(Number(t.amount)), 0);
+            .filter(t => t.type === 'expense')
+            .reduce((sum, t) => {
+                // Fully paid regular expenses or invoices
+                if (t.isPaid) {
+                    return sum + Math.abs(Number(t.amount));
+                }
+                // Partially paid invoices - add the paid portion
+                if (t.isInvoice && t.isPartiallyPaid && t.paidAmount !== undefined) {
+                    return sum + Math.abs(Number(t.paidAmount));
+                }
+                return sum;
+            }, 0);
     }
 
+    // To Pay = remaining amounts for unpaid items
     get toPayExpense() {
-        return this.totalExpense - this.paidExpense;
+        return this.getMonthTransactions()
+            .filter(t => t.type === 'expense' && !t.isPaid)
+            .reduce((sum, t) => {
+                // Partially paid invoice - only remaining amount
+                if (t.isInvoice && t.isPartiallyPaid && t.remainingAmount !== undefined) {
+                    return sum + Math.abs(Number(t.remainingAmount));
+                }
+                // Unpaid - full amount
+                return sum + Math.abs(Number(t.amount));
+            }, 0);
     }
 
     get balance() {
@@ -208,6 +230,14 @@ export class TransactionsComponent implements OnInit {
 
     getAbsoluteAmount(amount: number): number {
         return Math.abs(Number(amount));
+    }
+
+    // For display in the table - show remaining amount for partially paid invoices
+    getDisplayAmount(t: Transaction): number {
+        if (t.isInvoice && t.isPartiallyPaid && t.remainingAmount !== undefined) {
+            return Math.abs(Number(t.remainingAmount));
+        }
+        return Math.abs(Number(t.amount));
     }
 
     loadTransactions() {

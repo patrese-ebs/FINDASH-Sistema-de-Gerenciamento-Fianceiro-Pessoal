@@ -168,7 +168,11 @@
                     <td class="p-4 text-right">
                         <div class="flex flex-col items-end gap-1">
                             <span class="font-bold text-base"
-                                [ngClass]="{'text-emerald-400': t.type === 'income', 'text-red-400': t.type === 'expense'}">
+                                [ngClass]="{'text-emerald-400': t.type === 'income', 'text-red-400': t.type === 'expense'}"
+                                [title]="t.isPartiallyPaid ? 'Valor original: ' + (getAbsoluteAmount(t.amount) | currency:'BRL') : ''">
+                                {{ getDisplayAmount(t) | currency:'BRL' }}
+                            </span>
+                            <span *ngIf="t.isPartiallyPaid" class="text-xs text-text-secondary line-through">
                                 {{ getAbsoluteAmount(t.amount) | currency:'BRL' }}
                             </span>
                             <!-- Regular transaction status button -->
