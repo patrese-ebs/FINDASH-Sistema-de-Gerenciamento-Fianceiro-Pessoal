@@ -206,6 +206,10 @@ export class TransactionsComponent implements OnInit {
         return bgs[category] || bgs['Outros'];
     }
 
+    getAbsoluteAmount(amount: number): number {
+        return Math.abs(Number(amount));
+    }
+
     loadTransactions() {
         this.loading = false; // Non-blocking load
 
