@@ -19,8 +19,6 @@ services:
       context: ./backend
     container_name: financial_manager_backend
     restart: always
-    env_file:
-      - ./backend/.env
     environment:
       NODE_ENV: production
       PORT: 3000
@@ -28,6 +26,11 @@ services:
       DB_USER: postgres
       DB_PASSWORD: postgres123
       DB_NAME: financial_manager
+      JWT_SECRET: patreseLarissaEdinA@14566
+      GEMINI_API_KEY: AIzaSyDFaw3iReq95zXyG9eHNfGozoQ9GTiApbE
+      CLERK_PUBLISHABLE_KEY: pk_live_Y2xlcmsuaXppdGVjbm9sb2dpYS5jb20uYnIk
+      CLERK_SECRET_KEY: sk_live_fSdRiBemXWGcbry4kItnCzo39OakJnidj2rpqpsrYB
+      CORS_ORIGIN: "*"
     ports:
       - "3001:3000"
     depends_on:
