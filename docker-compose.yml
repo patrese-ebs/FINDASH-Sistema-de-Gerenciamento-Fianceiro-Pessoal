@@ -19,6 +19,8 @@ services:
       context: ./backend
     container_name: financial_manager_backend
     restart: always
+    env_file:
+      - ./backend/.env
     environment:
       NODE_ENV: production
       PORT: 3000
@@ -26,14 +28,6 @@ services:
       DB_USER: postgres
       DB_PASSWORD: postgres123
       DB_NAME: financial_manager
-      JWT_SECRET: ${JWT_SECRET:-secret_jwt_key_change_in_prod}
-      GEMINI_API_KEY: ${GEMINI_API_KEY}
-      CORS_ORIGIN: "*"
-      # Email config (replace with real SMTP in prod)
-      SMTP_HOST: ${SMTP_HOST}
-      SMTP_PORT: ${SMTP_PORT}
-      SMTP_USER: ${SMTP_USER}
-      SMTP_PASS: ${SMTP_PASS}
     ports:
       - "3001:3000"
     depends_on:
