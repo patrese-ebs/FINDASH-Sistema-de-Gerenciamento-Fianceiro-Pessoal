@@ -206,17 +206,14 @@ export class CreditCardsComponent implements OnInit {
 
     /**
      * Returns the next due date for the card.
-     * Due date is always after the closing date.
+     * Due date is in the SAME month as the closing date (fechamento e vencimento no mesmo mês).
      */
     getNextDueDate(card: CreditCard): Date {
         const closingDate = this.getNextClosingDate(card);
         let month = closingDate.getMonth();
         let year = closingDate.getFullYear();
 
-        // Due date is typically in the month after closing
-        month += 1;
-        if (month > 11) { month = 0; year += 1; }
-
+        // Due date is in the same month as closing
         const lastDay = new Date(year, month + 1, 0).getDate();
         return new Date(year, month, Math.min(card.dueDay, lastDay));
     }
@@ -234,7 +231,7 @@ export class CreditCardsComponent implements OnInit {
 
     /**
      * Tells if a purchase made TODAY goes to the current invoice or the next one.
-     * Returns: { goesToNext: boolean, invoiceMonth: string, closingDate: Date }
+     * The invoice is named by the month the closing/due date falls in (same month).
      */
     getPurchaseRoutingInfo(card: CreditCard): { goesToNext: boolean; label: string; closingDate: Date } {
         const today = new Date();
@@ -243,12 +240,9 @@ export class CreditCardsComponent implements OnInit {
         const goesToNext = day >= closing;
 
         const closingDate = this.getNextClosingDate(card);
-        const targetMonth = goesToNext
-            ? new Date(closingDate.getFullYear(), closingDate.getMonth() + 1, 1)
-            : new Date(today.getFullYear(), today.getMonth() + 1, 1);
-
-        const monthName = this.months[targetMonth.getMonth()]?.label || '';
-        const label = `${monthName}/${targetMonth.getFullYear()}`;
+        // The invoice month = the month the closing date falls into
+        const monthName = this.months[closingDate.getMonth()]?.label || '';
+        const label = `${monthName}/${closingDate.getFullYear()}`;
 
         return { goesToNext, label, closingDate };
     }
