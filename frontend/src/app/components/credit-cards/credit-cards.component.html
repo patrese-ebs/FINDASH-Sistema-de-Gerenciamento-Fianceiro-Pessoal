@@ -60,10 +60,51 @@
     <div class="fd-spinner w-8 h-8"></div>
 </div>
 
+<!-- Filter Tabs -->
+<div *ngIf="!loading" class="flex items-center gap-2 mb-5 flex-wrap">
+    <button (click)="cardFilter = 'all'"
+        class="flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all border" [ngClass]="cardFilter === 'all'
+            ? 'bg-dark-surface border-dark-border text-text-primary'
+            : 'border-transparent text-text-secondary hover:text-text-primary hover:bg-dark-surface/50'">
+        Todos
+        <span class="text-xs bg-dark-border/60 px-1.5 py-0.5 rounded font-mono">{{ cards.length }}</span>
+    </button>
+    <button (click)="cardFilter = 'pending'"
+        class="flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all border" [ngClass]="cardFilter === 'pending'
+            ? 'bg-accent-gold/10 border-accent-gold/40 text-accent-gold'
+            : 'border-transparent text-text-secondary hover:text-text-primary hover:bg-dark-surface/50'">
+        <span class="w-2 h-2 rounded-full bg-accent-gold"></span>
+        A Pagar
+        <span class="text-xs bg-accent-gold/20 text-accent-gold px-1.5 py-0.5 rounded font-mono">
+            {{ cards | filterCards:'pending' }}
+        </span>
+    </button>
+    <button (click)="cardFilter = 'paid'"
+        class="flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all border" [ngClass]="cardFilter === 'paid'
+            ? 'bg-accent-emerald/10 border-accent-emerald/40 text-accent-emerald'
+            : 'border-transparent text-text-secondary hover:text-text-primary hover:bg-dark-surface/50'">
+        <span class="w-2 h-2 rounded-full bg-accent-emerald"></span>
+        Pagos
+        <span class="text-xs bg-accent-emerald/20 text-accent-emerald px-1.5 py-0.5 rounded font-mono">
+            {{ cards | filterCards:'paid' }}
+        </span>
+    </button>
+    <button (click)="cardFilter = 'cancelled'"
+        class="flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all border" [ngClass]="cardFilter === 'cancelled'
+            ? 'bg-dark-surface border-dark-border text-text-secondary'
+            : 'border-transparent text-text-secondary hover:text-text-primary hover:bg-dark-surface/50'">
+        <span class="w-2 h-2 rounded-full bg-text-secondary"></span>
+        Cancelados
+        <span class="text-xs bg-dark-border/60 px-1.5 py-0.5 rounded font-mono">
+            {{ cards | filterCards:'cancelled' }}
+        </span>
+    </button>
+</div>
+
 <!-- Cards Grid -->
 <div *ngIf="!loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-    <div *ngFor="let card of cards; let i = index" class="fd-card overflow-hidden cursor-pointer group hover-lift"
-        (click)="openInvoiceModal(card)">
+    <div *ngFor="let card of filteredCards; let i = index"
+        class="fd-card overflow-hidden cursor-pointer group hover-lift" (click)="openInvoiceModal(card)">
 
         <!-- Card Visual Header -->
         <div class="h-36 w-full relative overflow-hidden"
@@ -133,6 +174,75 @@
                 </div>
             </div>
 
+            <!-- Invoice Dates Row -->
+            <ng-container *ngIf="card.enabled !== false">
+                <div class="grid grid-cols-2 gap-2 mb-3 pb-3 border-b border-dark-border/50">
+                    <!-- Closing Date -->
+                    <div class="bg-dark-surface/60 rounded-md px-2.5 py-2">
+                        <div class="flex items-center gap-1 mb-0.5">
+                            <svg class="w-3 h-3 text-accent-gold flex-shrink-0" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" d="M12 15V9m-3 3h6" />
+                                <circle cx="12" cy="12" r="9" />
+                            </svg>
+                            <span
+                                class="text-[10px] text-text-secondary font-medium uppercase tracking-wide">Fechamento</span>
+                        </div>
+                        <div class="text-xs font-bold text-accent-gold font-mono">
+                            dia {{ card.closingDay }}
+                        </div>
+                        <div class="text-[10px] text-text-secondary font-mono">
+                            {{ getNextClosingDate(card) | date:'dd/MM/yyyy' }}
+                        </div>
+                    </div>
+                    <!-- Due Date -->
+                    <div class="bg-dark-surface/60 rounded-md px-2.5 py-2">
+                        <div class="flex items-center gap-1 mb-0.5">
+                            <svg class="w-3 h-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                stroke-width="2"
+                                [ngClass]="getDaysUntilDue(card) <= 5 ? 'text-accent-red' : 'text-accent-emerald'">
+                                <rect x="3" y="4" width="18" height="18" rx="2" />
+                                <line x1="16" y1="2" x2="16" y2="6" />
+                                <line x1="8" y1="2" x2="8" y2="6" />
+                                <line x1="3" y1="10" x2="21" y2="10" />
+                            </svg>
+                            <span
+                                class="text-[10px] text-text-secondary font-medium uppercase tracking-wide">Vencimento</span>
+                        </div>
+                        <div class="text-xs font-bold font-mono"
+                            [ngClass]="getDaysUntilDue(card) <= 5 ? 'text-accent-red' : 'text-accent-emerald'">
+                            dia {{ card.dueDay }}
+                        </div>
+                        <div class="text-[10px] font-mono"
+                            [ngClass]="getDaysUntilDue(card) <= 5 ? 'text-accent-red/70' : 'text-text-secondary'">
+                            {{ getNextDueDate(card) | date:'dd/MM/yyyy' }}
+                            <span *ngIf="getDaysUntilDue(card) <= 5" class="ml-1">({{ getDaysUntilDue(card) }}d)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Purchase Routing Indicator -->
+                <div class="mb-3 pb-3 border-b border-dark-border/50">
+                    <ng-container *ngIf="getPurchaseRoutingInfo(card) as routing">
+                        <div class="flex items-center gap-2 px-2.5 py-2 rounded-md text-[11px]" [ngClass]="routing.goesToNext
+                                ? 'bg-accent-gold/5 border border-accent-gold/20'
+                                : 'bg-accent-emerald/5 border border-accent-emerald/20'">
+                            <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                stroke-width="2"
+                                [ngClass]="routing.goesToNext ? 'text-accent-gold' : 'text-accent-emerald'">
+                                <path stroke-linecap="round"
+                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span [ngClass]="routing.goesToNext ? 'text-accent-gold/90' : 'text-accent-emerald/90'">
+                                Compra hoje →
+                                <strong>fatura de {{ routing.label }}</strong>
+                                <span *ngIf="routing.goesToNext" class="text-text-secondary"> (pós-fechamento)</span>
+                            </span>
+                        </div>
+                    </ng-container>
+                </div>
+            </ng-container>
+
             <!-- Limit Used -->
             <div class="flex justify-between items-center mb-2">
                 <span class="text-xs text-text-secondary">Limite utilizado</span>
@@ -172,12 +282,22 @@
     </div>
 
     <!-- Empty State -->
-    <div *ngIf="cards.length === 0" class="col-span-full fd-card p-16 text-center border-dashed">
+    <div *ngIf="filteredCards.length === 0" class="col-span-full fd-card p-16 text-center border-dashed">
         <div class="fd-empty">
             <div class="fd-empty-icon">💳</div>
-            <p class="fd-empty-text">Nenhum cartão cadastrado.</p>
-            <button (click)="openNewCardModal()" class="mt-4 text-accent-emerald hover:underline text-sm">
+            <p class="fd-empty-text">
+                <ng-container *ngIf="cardFilter === 'all'">Nenhum cartão cadastrado.</ng-container>
+                <ng-container *ngIf="cardFilter === 'pending'">Nenhum cartão com fatura a pagar este mês.</ng-container>
+                <ng-container *ngIf="cardFilter === 'paid'">Nenhum cartão com fatura paga este mês.</ng-container>
+                <ng-container *ngIf="cardFilter === 'cancelled'">Nenhum cartão cancelado.</ng-container>
+            </p>
+            <button *ngIf="cardFilter === 'all'" (click)="openNewCardModal()"
+                class="mt-4 text-accent-emerald hover:underline text-sm">
                 Adicionar primeiro cartão
+            </button>
+            <button *ngIf="cardFilter !== 'all'" (click)="cardFilter = 'all'"
+                class="mt-4 text-text-secondary hover:text-text-primary text-sm">
+                Ver todos os cartões
             </button>
         </div>
     </div>

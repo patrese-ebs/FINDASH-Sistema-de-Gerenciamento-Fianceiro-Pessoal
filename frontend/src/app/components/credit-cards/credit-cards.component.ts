@@ -5,11 +5,12 @@ import { CreditCardService } from '../../services/credit-card';
 import { CreditCard } from '../../models/credit-card.model';
 import { TransactionService } from '../../services/transaction';
 import { Transaction } from '../../models/transaction.model';
+import { FilterCardsPipe } from '../../pipes/filter-cards.pipe';
 
 @Component({
     selector: 'app-credit-cards',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, FormsModule],
+    imports: [CommonModule, ReactiveFormsModule, FormsModule, FilterCardsPipe],
     templateUrl: './credit-cards.component.html',
 })
 export class CreditCardsComponent implements OnInit {
@@ -54,6 +55,9 @@ export class CreditCardsComponent implements OnInit {
     // Payment UI state
     paymentAmount: number = 0;
     viewingCard: CreditCard | null = null;
+
+    // Filter
+    cardFilter: 'all' | 'pending' | 'paid' | 'cancelled' = 'all';
     months = [
         { val: 1, label: 'Janeiro' }, { val: 2, label: 'Fevereiro' }, { val: 3, label: 'Março' },
         { val: 4, label: 'Abril' }, { val: 5, label: 'Maio' }, { val: 6, label: 'Junho' },
@@ -152,6 +156,101 @@ export class CreditCardsComponent implements OnInit {
                 this.loading = false;
             }
         });
+    }
+
+    // --- Filter ---
+
+    get filteredCards(): CreditCard[] {
+        switch (this.cardFilter) {
+            case 'pending':
+                return this.cards.filter(c =>
+                    c.enabled !== false &&
+                    !c.currentInvoiceIsPaid &&
+                    (c.currentInvoiceAmount || 0) > 0
+                );
+            case 'paid':
+                return this.cards.filter(c =>
+                    c.enabled !== false &&
+                    c.currentInvoiceIsPaid &&
+                    (c.currentInvoiceAmount || 0) > 0
+                );
+            case 'cancelled':
+                return this.cards.filter(c => c.enabled === false);
+            default:
+                return this.cards;
+        }
+    }
+
+    // --- Invoice Date Helpers ---
+
+    /**
+     * Returns the next closing date for the card.
+     * If today is past the closing day, the closing date is next month.
+     */
+    getNextClosingDate(card: CreditCard): Date {
+        const today = new Date();
+        const day = today.getDate();
+        const closing = card.closingDay;
+        let month = today.getMonth();
+        let year = today.getFullYear();
+
+        if (day >= closing) {
+            // Already past closing — next closing is next month
+            month += 1;
+            if (month > 11) { month = 0; year += 1; }
+        }
+        // Clamp to last day of month
+        const lastDay = new Date(year, month + 1, 0).getDate();
+        return new Date(year, month, Math.min(closing, lastDay));
+    }
+
+    /**
+     * Returns the next due date for the card.
+     * Due date is always after the closing date.
+     */
+    getNextDueDate(card: CreditCard): Date {
+        const closingDate = this.getNextClosingDate(card);
+        let month = closingDate.getMonth();
+        let year = closingDate.getFullYear();
+
+        // Due date is typically in the month after closing
+        month += 1;
+        if (month > 11) { month = 0; year += 1; }
+
+        const lastDay = new Date(year, month + 1, 0).getDate();
+        return new Date(year, month, Math.min(card.dueDay, lastDay));
+    }
+
+    /**
+     * Returns how many days until the next due date.
+     */
+    getDaysUntilDue(card: CreditCard): number {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const due = this.getNextDueDate(card);
+        due.setHours(0, 0, 0, 0);
+        return Math.ceil((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    }
+
+    /**
+     * Tells if a purchase made TODAY goes to the current invoice or the next one.
+     * Returns: { goesToNext: boolean, invoiceMonth: string, closingDate: Date }
+     */
+    getPurchaseRoutingInfo(card: CreditCard): { goesToNext: boolean; label: string; closingDate: Date } {
+        const today = new Date();
+        const day = today.getDate();
+        const closing = card.closingDay;
+        const goesToNext = day >= closing;
+
+        const closingDate = this.getNextClosingDate(card);
+        const targetMonth = goesToNext
+            ? new Date(closingDate.getFullYear(), closingDate.getMonth() + 1, 1)
+            : new Date(today.getFullYear(), today.getMonth() + 1, 1);
+
+        const monthName = this.months[targetMonth.getMonth()]?.label || '';
+        const label = `${monthName}/${targetMonth.getFullYear()}`;
+
+        return { goesToNext, label, closingDate };
     }
 
     // --- Card Create/Edit ---
