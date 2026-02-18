@@ -47,6 +47,8 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     projectedBalance: number = 0;
     monthlyIncome: number = 0;
     monthlyExpenses: number = 0;
+    paidIncome: number = 0;
+    paidExpenses: number = 0;
 
     @ViewChild('cashFlowChart') cashFlowChartRef!: ElementRef;
     @ViewChild('expenseChart') expenseChartRef!: ElementRef;
@@ -163,13 +165,13 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
         this.monthlyIncome = income.reduce((acc, t) => acc + Math.abs(Number(t.amount)), 0);
         this.monthlyExpenses = expense.reduce((acc, t) => acc + Math.abs(Number(t.amount)), 0);
+        this.paidIncome = income.filter(t => t.isPaid).reduce((acc, t) => acc + Math.abs(Number(t.amount)), 0);
+        this.paidExpenses = expense.filter(t => t.isPaid).reduce((acc, t) => acc + Math.abs(Number(t.amount)), 0);
 
-        this.totalBalance = this.monthlyIncome - this.monthlyExpenses;
-
-        // Projected logic could be: All income - All expense (including pending)
-        // For now, let's assume totalBalance IS the projected if we include pending.
-        // If we want "Paid only" vs "Projected", we'd filter by isPaid.
-        // Let's stick to simple Total for now.
+        // totalBalance = paid income - paid expenses (actual cash flow)
+        this.totalBalance = this.paidIncome - this.paidExpenses;
+        // projectedBalance = all income - all expenses (including pending)
+        this.projectedBalance = this.monthlyIncome - this.monthlyExpenses;
 
         this.initCharts(thisMonthTx);
     }
@@ -194,8 +196,9 @@ export class DashboardComponent implements OnInit, AfterViewInit {
                 labels: Object.keys(categories),
                 datasets: [{
                     data: Object.values(categories),
-                    backgroundColor: ['#818cf8', '#3b82f6', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6'],
-                    borderWidth: 0
+                    backgroundColor: ['#10b981', '#f59e0b', '#3b82f6', '#06b6d4', '#ef4444', '#f97316', '#a3e635', '#e879f9'],
+                    borderWidth: 2,
+                    borderColor: '#111827'
                 }]
             },
             options: {
@@ -246,10 +249,10 @@ export class DashboardComponent implements OnInit, AfterViewInit {
                 responsive: true,
                 maintainAspectRatio: false,
                 scales: {
-                    y: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
-                    x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+                    y: { grid: { color: '#1e2d45' }, ticks: { color: '#64748b', font: { size: 11 } }, border: { display: false } },
+                    x: { grid: { display: false }, ticks: { color: '#64748b', font: { size: 11 } }, border: { display: false } }
                 },
-                plugins: { legend: { labels: { color: '#94a3b8' } } }
+                plugins: { legend: { labels: { color: '#94a3b8', boxWidth: 12, padding: 16 } } }
             }
         });
     }

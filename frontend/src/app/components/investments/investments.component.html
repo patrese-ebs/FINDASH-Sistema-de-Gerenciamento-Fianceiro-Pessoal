@@ -1,83 +1,139 @@
 <!-- Header -->
-<div class="flex items-center justify-between mb-8">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 animate-enter">
     <div>
-        <h2 class="text-3xl font-bold">Investimentos</h2>
-        <p class="text-text-secondary mt-1">Acompanhe a evolução do seu patrimônio.</p>
+        <h1 class="fd-section-title">Investimentos</h1>
+        <p class="fd-section-subtitle">Acompanhe a evolução do seu patrimônio</p>
     </div>
-    <button (click)="openModal()"
-        class="btn-primary bg-gradient-to-r from-accent-purple to-accent-blue text-white px-4 py-2 rounded-lg font-bold hover:opacity-90 transition-opacity">
-        + Novo Investimento
+    <button (click)="openModal()" id="new-investment-btn" class="fd-btn-primary text-sm">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" d="M12 5v14M5 12h14" />
+        </svg>
+        Novo Investimento
     </button>
 </div>
 
 <!-- Summary Cards -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-    <div class="bg-dark-card p-4 rounded-xl border border-dark-border shadow-lg">
-        <div class="text-sm text-text-secondary mb-1">Total Investido</div>
-        <div class="text-2xl font-bold text-white">{{ totalInvested | currency:'BRL' }}</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+    <div class="fd-stat-card fd-stat-blue animate-enter hover-lift">
+        <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-semibold text-text-secondary uppercase tracking-wider">Total Investido</span>
+            <div class="w-8 h-8 rounded bg-accent-blue/10 flex items-center justify-center">
+                <svg class="w-4 h-4 text-accent-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    stroke-width="2">
+                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
+                </svg>
+            </div>
+        </div>
+        <div class="text-2xl font-bold text-text-primary font-mono">{{ totalInvested | currency:'BRL' }}</div>
     </div>
-    <div class="bg-dark-card p-4 rounded-xl border border-dark-border shadow-lg">
-        <div class="text-sm text-text-secondary mb-1">Valor Atual</div>
-        <div class="text-2xl font-bold text-cyan-400">{{ currentTotal | currency:'BRL' }}</div>
+
+    <div class="fd-stat-card fd-stat-cyan animate-enter animate-enter-delay-1 hover-lift">
+        <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-semibold text-text-secondary uppercase tracking-wider">Valor Atual</span>
+            <div class="w-8 h-8 rounded bg-accent-cyan/10 flex items-center justify-center">
+                <svg class="w-4 h-4 text-accent-cyan" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    stroke-width="2">
+                    <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+                </svg>
+            </div>
+        </div>
+        <div class="text-2xl font-bold text-accent-cyan font-mono">{{ currentTotal | currency:'BRL' }}</div>
     </div>
-    <div class="bg-dark-card p-4 rounded-xl border border-dark-border shadow-lg">
-        <div class="text-sm text-text-secondary mb-1">Rendimento Total</div>
-        <div class="text-2xl font-bold" [ngClass]="totalYield >= 0 ? 'text-green-400' : 'text-red-400'">
+
+    <div class="fd-stat-card animate-enter animate-enter-delay-2 hover-lift"
+        [ngClass]="totalYield >= 0 ? 'fd-stat-emerald' : 'fd-stat-red'">
+        <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-semibold text-text-secondary uppercase tracking-wider">Rendimento</span>
+            <div class="w-8 h-8 rounded flex items-center justify-center"
+                [ngClass]="totalYield >= 0 ? 'bg-accent-emerald/10' : 'bg-accent-red/10'">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                    [ngClass]="totalYield >= 0 ? 'text-accent-emerald' : 'text-accent-red'">
+                    <path stroke-linecap="round"
+                        [attr.d]="totalYield >= 0 ? 'M7 11l5-5m0 0l5 5m-5-5v12' : 'M17 13l-5 5m0 0l-5-5m5 5V6'" />
+                </svg>
+            </div>
+        </div>
+        <div class="text-2xl font-bold font-mono"
+            [ngClass]="totalYield >= 0 ? 'text-accent-emerald' : 'text-accent-red'">
             {{ totalYield > 0 ? '+' : '' }}{{ totalYield | currency:'BRL' }}
-            <span class="text-sm font-normal">({{ yieldPercent | number:'1.2-2' }}%)</span>
+        </div>
+        <div class="text-xs mt-1" [ngClass]="totalYield >= 0 ? 'text-accent-emerald/70' : 'text-accent-red/70'">
+            {{ yieldPercent | number:'1.2-2' }}% de rendimento
         </div>
     </div>
 </div>
 
+<!-- Loading -->
 <div *ngIf="loading" class="flex justify-center p-12">
-    <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-accent-purple"></div>
+    <div class="fd-spinner w-8 h-8"></div>
 </div>
 
-<!-- Investments List -->
-<div *ngIf="!loading" class="bg-dark-card rounded-xl border border-dark-border overflow-hidden">
+<!-- Investments Table -->
+<div *ngIf="!loading" class="fd-card overflow-hidden animate-enter">
     <div class="overflow-x-auto">
-        <table class="w-full">
+        <table class="fd-table">
             <thead>
-                <tr class="border-b border-dark-border">
-                    <th class="text-left py-3 px-4 text-sm font-medium text-text-secondary">NOME</th>
-                    <th class="text-left py-3 px-4 text-sm font-medium text-text-secondary">TIPO</th>
-                    <th class="text-right py-3 px-4 text-sm font-medium text-text-secondary">VALOR INVESTIDO
-                    </th>
-                    <th class="text-right py-3 px-4 text-sm font-medium text-text-secondary">VALOR ATUAL</th>
-                    <th class="text-right py-3 px-4 text-sm font-medium text-text-secondary">RENTABILIDADE</th>
-                    <th class="text-right py-3 px-4 text-sm font-medium text-text-secondary">AÇÕES</th>
+                <tr>
+                    <th>Nome</th>
+                    <th>Tipo</th>
+                    <th class="text-right">Investido</th>
+                    <th class="text-right">Valor Atual</th>
+                    <th class="text-right">Rentabilidade</th>
+                    <th class="text-right">Ações</th>
                 </tr>
             </thead>
             <tbody>
-                <tr *ngFor="let inv of investments"
-                    class="border-b border-dark-border hover:bg-dark-bg transition-colors">
-                    <td class="py-3 px-4 text-white font-medium">{{ inv.name }}</td>
-                    <td class="py-3 px-4">
-                        <span
-                            class="bg-dark-bg px-2 py-1 rounded text-xs border border-dark-border text-text-secondary">{{
-                            inv.type }}</span>
+                <tr *ngFor="let inv of investments">
+                    <td class="font-medium text-text-primary">{{ inv.name }}</td>
+                    <td>
+                        <span class="fd-badge fd-badge-gray">{{ inv.type }}</span>
                     </td>
-                    <td class="py-3 px-4 text-right text-text-secondary">{{ inv.amountInvested | currency:'BRL'
+                    <td class="text-right text-text-secondary font-mono text-sm">{{ inv.amountInvested | currency:'BRL'
                         }}</td>
-                    <td class="py-3 px-4 text-right text-white font-bold">{{ inv.currentValue | currency:'BRL'
-                        }}</td>
-                    <td class="py-3 px-4 text-right">
-                        <div class="font-bold" [ngClass]="getProfit(inv) >= 0 ? 'text-green-400' : 'text-red-400'">
+                    <td class="text-right font-bold text-text-primary font-mono text-sm">{{ inv.currentValue |
+                        currency:'BRL' }}</td>
+                    <td class="text-right">
+                        <div class="font-bold font-mono text-sm"
+                            [ngClass]="getProfit(inv) >= 0 ? 'text-accent-emerald' : 'text-accent-red'">
                             {{ getProfit(inv) > 0 ? '+' : '' }}{{ getProfit(inv) | currency:'BRL' }}
                         </div>
-                        <div class="text-xs" [ngClass]="getProfit(inv) >= 0 ? 'text-green-500' : 'text-red-500'">
+                        <div class="text-xs font-mono"
+                            [ngClass]="getProfit(inv) >= 0 ? 'text-accent-emerald/70' : 'text-accent-red/70'">
                             {{ getProfitPercent(inv) | number:'1.2-2' }}%
                         </div>
                     </td>
-                    <td class="py-3 px-4 text-right">
-                        <button (click)="openModal(inv)"
-                            class="text-text-secondary hover:text-accent-purple mr-3">✎</button>
-                        <button (click)="deleteInvestment(inv.id!)"
-                            class="text-text-secondary hover:text-red-400">🗑</button>
+                    <td class="text-right">
+                        <div class="flex items-center justify-end gap-2">
+                            <button (click)="openModal(inv)"
+                                class="p-1.5 text-text-secondary hover:text-accent-emerald hover:bg-accent-emerald/10 rounded transition-colors"
+                                title="Editar">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                    stroke-width="1.75">
+                                    <path stroke-linecap="round"
+                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                            </button>
+                            <button (click)="deleteInvestment(inv.id!)"
+                                class="p-1.5 text-text-secondary hover:text-accent-red hover:bg-accent-red/10 rounded transition-colors"
+                                title="Excluir">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                    stroke-width="1.75">
+                                    <path stroke-linecap="round"
+                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </button>
+                        </div>
                     </td>
                 </tr>
                 <tr *ngIf="investments.length === 0">
-                    <td colspan="6" class="text-center py-8 text-text-secondary">Nenhum investimento encontrado.
+                    <td colspan="6" class="py-16 text-center">
+                        <div class="fd-empty">
+                            <div class="fd-empty-icon">📈</div>
+                            <p class="fd-empty-text">Nenhum investimento encontrado.</p>
+                            <button (click)="openModal()" class="mt-4 text-accent-emerald hover:underline text-sm">
+                                Adicionar primeiro investimento
+                            </button>
+                        </div>
                     </td>
                 </tr>
             </tbody>
@@ -86,26 +142,29 @@
 </div>
 
 <!-- Modal -->
-<div *ngIf="showModal"
-    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-70 backdrop-blur-sm">
-    <div class="bg-dark-card border border-dark-border rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
-        <div class="p-6 border-b border-dark-border flex justify-between items-center">
-            <h3 class="text-xl font-bold">{{ editingId ? 'Editar Investimento' : 'Novo Investimento' }}</h3>
-            <button (click)="closeModal()" class="text-text-secondary hover:text-white">&times;</button>
+<div *ngIf="showModal" class="fd-modal-overlay">
+    <div class="fd-modal max-w-md">
+        <div class="fd-modal-header">
+            <h3 class="text-base font-semibold text-text-primary">
+                {{ editingId ? 'Editar Investimento' : 'Novo Investimento' }}
+            </h3>
+            <button (click)="closeModal()"
+                class="w-7 h-7 flex items-center justify-center rounded text-text-secondary hover:text-text-primary hover:bg-dark-surface transition-colors">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
         </div>
 
-        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="p-6 space-y-4">
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="fd-modal-body space-y-4">
             <div>
-                <label class="block text-sm font-medium text-text-secondary mb-1">Nome do Ativo</label>
-                <input type="text" formControlName="name"
-                    class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 text-white"
-                    placeholder="Ex: Tesouro Selic">
+                <label class="fd-label">Nome do Ativo</label>
+                <input type="text" formControlName="name" class="fd-input" placeholder="Ex: Tesouro Selic">
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-text-secondary mb-1">Tipo</label>
-                <select formControlName="type"
-                    class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 text-white">
+                <label class="fd-label">Tipo</label>
+                <select formControlName="type" class="fd-select">
                     <option value="Renda Fixa">Renda Fixa</option>
                     <option value="Ações">Ações</option>
                     <option value="FIIs">FIIs</option>
@@ -117,34 +176,30 @@
 
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-text-secondary mb-1">Valor Investido</label>
-                    <input type="number" formControlName="amountInvested"
-                        class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 text-white">
+                    <label class="fd-label">Valor Investido</label>
+                    <input type="number" formControlName="amountInvested" class="fd-input" placeholder="0,00">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-text-secondary mb-1">Valor Atual</label>
-                    <input type="number" formControlName="currentValue"
-                        class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 text-white">
+                    <label class="fd-label">Valor Atual</label>
+                    <input type="number" formControlName="currentValue" class="fd-input" placeholder="0,00">
                 </div>
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-text-secondary mb-1">Data da Compra</label>
-                <input type="date" formControlName="purchaseDate"
-                    class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 text-white">
+                <label class="fd-label">Data da Compra</label>
+                <input type="date" formControlName="purchaseDate" class="fd-input">
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-text-secondary mb-1">Notas (Opcional)</label>
-                <textarea formControlName="notes"
-                    class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 text-white h-20"></textarea>
+                <label class="fd-label">Notas (Opcional)</label>
+                <textarea formControlName="notes" class="fd-input h-20 resize-none"
+                    placeholder="Observações..."></textarea>
             </div>
 
-            <div class="pt-4 flex gap-3">
-                <button type="button" (click)="closeModal()"
-                    class="flex-1 py-2 rounded-lg border border-dark-border text-text-secondary hover:bg-dark-bg">Cancelar</button>
+            <div class="flex justify-end gap-3 pt-2">
+                <button type="button" (click)="closeModal()" class="fd-btn-ghost">Cancelar</button>
                 <button type="submit" [disabled]="submitting || form.invalid"
-                    class="flex-1 py-2 rounded-lg bg-gradient-to-r from-accent-purple to-accent-blue text-white font-bold hover:opacity-90">
+                    class="fd-btn-primary disabled:opacity-50 disabled:cursor-not-allowed">
                     {{ submitting ? 'Salvando...' : 'Salvar' }}
                 </button>
             </div>

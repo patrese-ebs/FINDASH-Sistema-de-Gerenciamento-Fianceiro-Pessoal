@@ -5,63 +5,82 @@ import { AuthService } from '../../services/auth';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 @Component({
-    selector: 'app-minha-conta',
-    standalone: true,
-    imports: [CommonModule, ReactiveFormsModule],
-    template: `
-    <div class="max-w-4xl mx-auto">
-      <h2 class="text-3xl font-bold mb-8">Minha Conta</h2>
+  selector: 'app-minha-conta',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule],
+  template: `
+    <div class="max-w-2xl">
+      <div class="mb-8 animate-enter">
+        <h1 class="fd-section-title">Minha Conta</h1>
+        <p class="fd-section-subtitle">Gerencie suas informações pessoais</p>
+      </div>
 
-      <div class="bg-dark-card border border-dark-border rounded-xl p-8 shadow-lg">
-        <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" class="space-y-6">
-          
-          <!-- Name -->
+      <div class="fd-card p-6 animate-enter animate-enter-delay-1">
+        <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" class="space-y-5">
+
+          <!-- Profile Section -->
           <div>
-            <label class="block text-sm font-medium text-text-secondary mb-1">Nome</label>
-            <input type="text" formControlName="name"
-              class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 focus:outline-none focus:border-accent-purple transition-colors text-white">
-          </div>
-
-          <!-- Email -->
-          <div>
-            <label class="block text-sm font-medium text-text-secondary mb-1">Email</label>
-            <input type="email" formControlName="email"
-              class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 focus:outline-none focus:border-accent-purple transition-colors text-white">
-          </div>
-
-          <!-- Password Change -->
-          <div class="pt-4 border-t border-dark-border">
-            <h3 class="text-lg font-medium text-white mb-4">Alterar Senha</h3>
-            <p class="text-sm text-text-secondary mb-4">Deixe em branco se não quiser alterar.</p>
-            
+            <h2 class="text-sm font-semibold text-text-primary mb-4 pb-3 border-b border-dark-border">
+              Informações do Perfil
+            </h2>
             <div class="space-y-4">
               <div>
-                <label class="block text-sm font-medium text-text-secondary mb-1">Nova Senha</label>
-                <input type="password" formControlName="password"
-                  class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 focus:outline-none focus:border-accent-purple transition-colors text-white">
+                <label class="fd-label">Nome</label>
+                <input type="text" formControlName="name" class="fd-input" placeholder="Seu nome completo">
               </div>
-
               <div>
-                <label class="block text-sm font-medium text-text-secondary mb-1">Confirmar Nova Senha</label>
-                <input type="password" formControlName="confirmPassword"
-                  class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-2 focus:outline-none focus:border-accent-purple transition-colors text-white">
-                <p *ngIf="profileForm.errors?.['mismatch'] && profileForm.get('confirmPassword')?.touched" 
-                   class="text-red-400 text-sm mt-1">As senhas não conferem.</p>
+                <label class="fd-label">Email</label>
+                <input type="email" formControlName="email" class="fd-input" placeholder="seu@email.com">
+              </div>
+            </div>
+          </div>
+
+          <!-- Password Section -->
+          <div class="pt-2">
+            <h2 class="text-sm font-semibold text-text-primary mb-1 pb-3 border-b border-dark-border">
+              Alterar Senha
+            </h2>
+            <p class="text-xs text-text-secondary mb-4">Deixe em branco se não quiser alterar.</p>
+
+            <div class="space-y-4">
+              <div>
+                <label class="fd-label">Nova Senha</label>
+                <input type="password" formControlName="password" class="fd-input" placeholder="Mínimo 6 caracteres">
+              </div>
+              <div>
+                <label class="fd-label">Confirmar Nova Senha</label>
+                <input type="password" formControlName="confirmPassword" class="fd-input" placeholder="Repita a nova senha">
+                <p *ngIf="profileForm.errors?.['mismatch'] && profileForm.get('confirmPassword')?.touched"
+                   class="text-accent-red text-xs mt-1.5 flex items-center gap-1">
+                  <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                  As senhas não conferem.
+                </p>
               </div>
             </div>
           </div>
 
           <!-- Actions -->
-          <div class="pt-6 flex items-center justify-between">
-            <div *ngIf="successMessage" class="text-emerald-400 flex items-center gap-2">
-              <span>✅</span> {{ successMessage }}
+          <div class="pt-4 border-t border-dark-border flex items-center justify-between gap-4">
+            <div *ngIf="successMessage"
+              class="flex items-center gap-2 text-accent-emerald text-sm bg-accent-emerald/5 border border-accent-emerald/20 rounded-md px-3 py-2">
+              <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" d="M5 13l4 4L19 7"/>
+              </svg>
+              {{ successMessage }}
             </div>
-            <div *ngIf="errorMessage" class="text-red-400 flex items-center gap-2">
-              <span>❌</span> {{ errorMessage }}
+            <div *ngIf="errorMessage"
+              class="flex items-center gap-2 text-accent-red text-sm bg-accent-red/5 border border-accent-red/20 rounded-md px-3 py-2">
+              <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+              {{ errorMessage }}
             </div>
-            
+            <div *ngIf="!successMessage && !errorMessage" class="flex-1"></div>
+
             <button type="submit" [disabled]="loading || profileForm.invalid"
-              class="ml-auto px-6 py-2 rounded-lg bg-gradient-to-r from-accent-purple to-accent-blue text-white font-bold hover:opacity-90 transition-opacity disabled:opacity-50">
+              class="fd-btn-primary disabled:opacity-50 disabled:cursor-not-allowed">
+              <svg *ngIf="loading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+              </svg>
               {{ loading ? 'Salvando...' : 'Salvar Alterações' }}
             </button>
           </div>
@@ -72,79 +91,79 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
   `
 })
 export class MinhaContaComponent implements OnInit {
-    profileForm: FormGroup;
-    loading = false;
-    successMessage = '';
-    errorMessage = '';
+  profileForm: FormGroup;
+  loading = false;
+  successMessage = '';
+  errorMessage = '';
 
-    constructor(
-        private fb: FormBuilder,
-        private authService: AuthService,
-        private http: HttpClient
-    ) {
-        this.profileForm = this.fb.group({
-            name: ['', Validators.required],
-            email: ['', [Validators.required, Validators.email]],
-            password: [''],
-            confirmPassword: ['']
-        }, { validators: this.passwordMatchValidator });
-    }
+  constructor(
+    private fb: FormBuilder,
+    private authService: AuthService,
+    private http: HttpClient
+  ) {
+    this.profileForm = this.fb.group({
+      name: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      password: [''],
+      confirmPassword: ['']
+    }, { validators: this.passwordMatchValidator });
+  }
 
-    ngOnInit() {
-        this.authService.currentUser$.subscribe(user => {
-            if (user) {
-                this.profileForm.patchValue({
-                    name: user.name,
-                    email: user.email
-                });
-            }
+  ngOnInit() {
+    this.authService.currentUser$.subscribe(user => {
+      if (user) {
+        this.profileForm.patchValue({
+          name: user.name,
+          email: user.email
         });
+      }
+    });
 
-        // Refresh fetch me to be sure
-        this.http.get('/api/auth/me', { headers: this.getHeaders() }).subscribe({
-            next: (user: any) => {
-                this.profileForm.patchValue({
-                    name: user.name,
-                    email: user.email
-                });
-            }
+    // Refresh fetch me to be sure
+    this.http.get('/api/auth/me', { headers: this.getHeaders() }).subscribe({
+      next: (user: any) => {
+        this.profileForm.patchValue({
+          name: user.name,
+          email: user.email
         });
-    }
+      }
+    });
+  }
 
-    private getHeaders(): HttpHeaders {
-        return new HttpHeaders().set('Authorization', `Bearer ${this.authService.getToken()}`);
-    }
+  private getHeaders(): HttpHeaders {
+    return new HttpHeaders().set('Authorization', `Bearer ${this.authService.getToken()}`);
+  }
 
-    passwordMatchValidator(g: FormGroup) {
-        return g.get('password')?.value === g.get('confirmPassword')?.value
-            ? null : { 'mismatch': true };
-    }
+  passwordMatchValidator(g: FormGroup) {
+    return g.get('password')?.value === g.get('confirmPassword')?.value
+      ? null : { 'mismatch': true };
+  }
 
-    onSubmit() {
-        if (this.profileForm.invalid) return;
+  onSubmit() {
+    if (this.profileForm.invalid) return;
 
-        this.loading = true;
-        this.successMessage = '';
-        this.errorMessage = '';
+    this.loading = true;
+    this.successMessage = '';
+    this.errorMessage = '';
 
-        const { name, email, password } = this.profileForm.value;
-        const payload: any = { name, email };
-        if (password) payload.password = password;
+    const { name, email, password } = this.profileForm.value;
+    const payload: any = { name, email };
+    if (password) payload.password = password;
 
-        this.http.put('/api/auth/me', payload, { headers: this.getHeaders() }).subscribe({
-            next: (updatedUser: any) => {
-                this.loading = false;
-                this.successMessage = 'Perfil atualizado com sucesso!';
-                // Force update local storage/session if AuthService doesn't auto-update
-                // Simplest way is to reload or update subject
-                // Let's manually trigger a reload or just assume future requests are fine.
-                // Ideally update AuthService state.
-            },
-            error: (err) => {
-                console.error('Update failed', err);
-                this.loading = false;
-                this.errorMessage = err.error?.error || 'Falha ao atualizar perfil';
-            }
-        });
-    }
+    this.http.put('/api/auth/me', payload, { headers: this.getHeaders() }).subscribe({
+      next: (updatedUser: any) => {
+        this.loading = false;
+        this.successMessage = 'Perfil atualizado com sucesso!';
+        // Force update local storage/session if AuthService doesn't auto-update
+        // Simplest way is to reload or update subject
+        // Let's manually trigger a reload or just assume future requests are fine.
+        // Ideally update AuthService state.
+      },
+      error: (err) => {
+        console.error('Update failed', err);
+        this.loading = false;
+        this.errorMessage = err.error?.error || 'Falha ao atualizar perfil';
+      }
+    });
+  }
 }

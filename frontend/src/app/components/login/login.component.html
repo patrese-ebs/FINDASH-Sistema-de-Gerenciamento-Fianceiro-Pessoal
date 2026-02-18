@@ -1,59 +1,158 @@
-<div class="min-h-screen bg-dark-bg text-text-primary font-sans antialiased flex items-center justify-center">
-    <div class="w-full max-w-md p-8">
-        <!-- Logo -->
-        <div class="text-center mb-8">
-            <h1
-                class="text-4xl font-bold bg-gradient-to-r from-accent-purple to-accent-blue bg-clip-text text-transparent">
-                FinDash</h1>
-            <p class="text-text-secondary mt-2">Seu gerenciador financeiro pessoal</p>
+<div class="min-h-screen bg-dark-bg flex"
+    style="background-image: radial-gradient(ellipse at 30% 60%, rgba(16,185,129,0.06) 0%, transparent 55%), radial-gradient(ellipse at 80% 20%, rgba(245,158,11,0.04) 0%, transparent 50%);">
+
+    <!-- Left Panel — Brand -->
+    <div
+        class="hidden lg:flex flex-col justify-between w-[45%] p-12 border-r border-dark-border relative overflow-hidden">
+        <!-- Decorative grid lines -->
+        <div class="absolute inset-0 opacity-[0.03]"
+            style="background-image: linear-gradient(#10b981 1px, transparent 1px), linear-gradient(90deg, #10b981 1px, transparent 1px); background-size: 40px 40px;">
         </div>
 
-        <!-- Login Card -->
-        <div class="bg-dark-card border border-dark-border rounded-xl p-6 shadow-xl fade-in">
-            <h2 class="text-2xl font-bold mb-6">Entrar</h2>
+        <!-- Top: Logo -->
+        <div class="relative z-10">
+            <div class="flex items-center gap-3 mb-16">
+                <div class="w-10 h-10 rounded-md flex items-center justify-center flex-shrink-0"
+                    style="background: linear-gradient(135deg, #10b981, #059669);">
+                    <svg width="20" height="20" viewBox="0 0 16 16" fill="none">
+                        <path d="M2 12L6 7L9 10L14 4" stroke="#080d1a" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                        <circle cx="14" cy="4" r="1.5" fill="#080d1a" />
+                    </svg>
+                </div>
+                <span class="text-xl font-bold text-text-primary tracking-tight">FinDash</span>
+            </div>
+
+            <h1 class="text-4xl font-bold text-text-primary leading-tight mb-4">
+                Controle total<br>
+                <span class="text-gradient-emerald">das suas finanças.</span>
+            </h1>
+            <p class="text-text-secondary leading-relaxed max-w-sm">
+                Gerencie receitas, despesas, cartões e investimentos com inteligência artificial integrada.
+            </p>
+        </div>
+
+        <!-- Middle: Stats preview -->
+        <div class="relative z-10 space-y-3">
+            <div class="fd-card p-4 flex items-center gap-4 animate-enter">
+                <div class="w-10 h-10 rounded-md bg-accent-emerald/10 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-5 h-5 text-accent-emerald" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        stroke-width="2">
+                        <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+                    </svg>
+                </div>
+                <div>
+                    <div class="text-xs text-text-secondary">Receitas do mês</div>
+                    <div class="text-lg font-bold text-accent-emerald font-mono">R$ 8.400,00</div>
+                </div>
+            </div>
+            <div class="fd-card p-4 flex items-center gap-4 animate-enter animate-enter-delay-1">
+                <div class="w-10 h-10 rounded-md bg-accent-gold/10 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-5 h-5 text-accent-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        stroke-width="2">
+                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
+                    </svg>
+                </div>
+                <div>
+                    <div class="text-xs text-text-secondary">Saldo projetado</div>
+                    <div class="text-lg font-bold text-accent-gold font-mono">R$ 3.200,00</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom: Footer -->
+        <div class="relative z-10">
+            <p class="text-xs text-text-muted">© 2025 FinDash. Seus dados, sua privacidade.</p>
+        </div>
+    </div>
+
+    <!-- Right Panel — Login Form -->
+    <div class="flex-1 flex items-center justify-center p-8">
+        <div class="w-full max-w-sm animate-enter">
+
+            <!-- Mobile logo -->
+            <div class="lg:hidden flex items-center gap-2 mb-8">
+                <div class="w-8 h-8 rounded flex items-center justify-center"
+                    style="background: linear-gradient(135deg, #10b981, #059669);">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path d="M2 12L6 7L9 10L14 4" stroke="#080d1a" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                        <circle cx="14" cy="4" r="1.5" fill="#080d1a" />
+                    </svg>
+                </div>
+                <span class="text-lg font-bold text-text-primary">FinDash</span>
+            </div>
+
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-text-primary mb-1">Bem-vindo de volta</h2>
+                <p class="text-sm text-text-secondary">Entre na sua conta para continuar</p>
+            </div>
 
             <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium mb-2">Email</label>
-                    <input type="email" formControlName="email"
-                        class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-3 text-white focus:outline-none focus:border-accent-purple transition-colors"
+                    <label class="fd-label">Email</label>
+                    <input id="login-email" type="email" formControlName="email" class="fd-input"
                         placeholder="seu@email.com">
                     <div *ngIf="loginForm.get('email')?.touched && loginForm.get('email')?.invalid"
-                        class="text-red-400 text-xs mt-1">
+                        class="text-accent-red text-xs mt-1.5 flex items-center gap-1">
+                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                                clip-rule="evenodd" />
+                        </svg>
                         Email válido é obrigatório.
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium mb-2">Senha</label>
-                    <input type="password" formControlName="password"
-                        class="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-3 text-white focus:outline-none focus:border-accent-purple transition-colors"
+                    <label class="fd-label">Senha</label>
+                    <input id="login-password" type="password" formControlName="password" class="fd-input"
                         placeholder="••••••••">
                     <div *ngIf="loginForm.get('password')?.touched && loginForm.get('password')?.invalid"
-                        class="text-red-400 text-xs mt-1">
+                        class="text-accent-red text-xs mt-1.5 flex items-center gap-1">
+                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                                clip-rule="evenodd" />
+                        </svg>
                         Senha é obrigatória.
                     </div>
                 </div>
 
-                <div *ngIf="errorMessage" class="text-red-400 text-sm bg-red-400/10 p-3 rounded">
+                <div *ngIf="errorMessage"
+                    class="flex items-center gap-2 text-accent-red text-sm bg-accent-red/5 border border-accent-red/20 rounded-md px-4 py-3">
+                    <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                            clip-rule="evenodd" />
+                    </svg>
                     {{ errorMessage }}
                 </div>
 
-                <div class="flex justify-end mb-4">
+                <div class="flex justify-end">
                     <a routerLink="/forgot-password"
-                        class="text-sm text-accent-purple hover:underline cursor-pointer">Esqueci minha senha</a>
+                        class="text-xs text-text-secondary hover:text-accent-emerald transition-colors cursor-pointer">
+                        Esqueci minha senha
+                    </a>
                 </div>
 
-                <button type="submit" [disabled]="loading"
-                    class="w-full bg-gradient-to-r from-accent-purple to-accent-blue hover:from-indigo-400 hover:to-blue-400 text-white font-bold py-3 rounded-lg shadow-lg shadow-purple-500/20 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed">
+                <button id="login-submit" type="submit" [disabled]="loading"
+                    class="fd-btn-primary w-full py-3 text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                    <svg *ngIf="loading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
                     {{ loading ? 'Entrando...' : 'Entrar' }}
                 </button>
             </form>
 
             <div class="mt-6 text-center">
-                <p class="text-text-secondary text-sm">
+                <p class="text-sm text-text-secondary">
                     Não tem uma conta?
-                    <a routerLink="/register" class="text-accent-purple hover:underline cursor-pointer">Registre-se</a>
+                    <a routerLink="/register"
+                        class="text-accent-emerald hover:underline cursor-pointer font-medium ml-1">
+                        Criar conta
+                    </a>
                 </p>
             </div>
         </div>

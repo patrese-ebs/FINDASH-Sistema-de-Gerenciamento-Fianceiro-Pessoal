@@ -1,152 +1,201 @@
 <!-- Loading State -->
-<div *ngIf="loading" class="flex flex-col justify-center items-center h-64">
-    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent-purple mb-4"></div>
-    <p class="text-text-secondary">Carregando dados...</p>
-    <p *ngIf="error" class="text-red-400 mt-2">{{ error }}</p>
+<div *ngIf="loading" class="flex flex-col justify-center items-center h-64 gap-4">
+    <div class="fd-spinner w-10 h-10"></div>
+    <p class="text-text-secondary text-sm">Carregando dados...</p>
+    <p *ngIf="error" class="text-accent-red text-sm">{{ error }}</p>
 </div>
 
-<div *ngIf="!loading">
+<div *ngIf="!loading" class="space-y-8">
+
     <!-- Header -->
-    <div class="flex flex-col md:flex-row justify-between items-end mb-8 gap-4">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 animate-enter">
         <div>
-            <h2 class="text-3xl font-bold">Visão Geral Financeira</h2>
-            <p class="text-text-secondary mt-1">Bem-vindo de volta, aqui está o que está acontecendo com seu
-                dinheiro hoje.</p>
+            <h1 class="fd-section-title">Visão Geral</h1>
+            <p class="fd-section-subtitle">Aqui está o que está acontecendo com seu dinheiro.</p>
         </div>
 
         <!-- Month Selector -->
-        <div class="flex items-center gap-4 bg-dark-card border border-dark-border rounded-lg px-2 py-1">
-            <button (click)="prevMonth()"
-                class="p-2 hover:bg-dark-bg rounded-lg text-text-secondary hover:text-white transition-colors">
-                ◀
+        <div class="fd-month-selector">
+            <button (click)="prevMonth()" class="fd-month-btn" title="Mês anterior">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <polyline points="15 18 9 12 15 6" />
+                </svg>
             </button>
-            <div class="text-lg font-bold min-w-[150px] text-center">
+            <span class="text-sm font-semibold text-text-primary min-w-[130px] text-center px-2">
                 {{ getMonthName(selectedMonth) || 'Mês' }} {{ selectedYear }}
-            </div>
-            <button (click)="nextMonth()"
-                class="p-2 hover:bg-dark-bg rounded-lg text-text-secondary hover:text-white transition-colors">
-                ▶
+            </span>
+            <button (click)="nextMonth()" class="fd-month-btn" title="Próximo mês">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <polyline points="9 18 15 12 9 6" />
+                </svg>
             </button>
         </div>
     </div>
 
     <!-- Stats Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
         <!-- Current Balance -->
-        <div class="bg-dark-card border border-dark-border rounded-xl p-6 shadow-lg">
-            <div class="text-text-secondary text-sm font-medium mb-2">Saldo Atual (Líquido)</div>
-            <div class="text-2xl font-bold text-white">{{ totalBalance | currency:'BRL' }}</div>
-            <div class="text-xs text-text-secondary mt-1">Recebido - Pago</div>
+        <div class="fd-stat-card fd-stat-emerald animate-enter hover-lift">
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-xs font-semibold text-text-secondary uppercase tracking-wider">Saldo Atual</span>
+                <div class="w-8 h-8 rounded bg-accent-emerald/10 flex items-center justify-center">
+                    <svg class="w-4 h-4 text-accent-emerald" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        stroke-width="2">
+                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
+                    </svg>
+                </div>
+            </div>
+            <div class="text-2xl font-bold text-text-primary font-mono">{{ totalBalance | currency:'BRL' }}</div>
+            <div class="text-xs text-text-secondary mt-1">Recebido − Pago</div>
         </div>
 
         <!-- Projected Balance -->
-        <div class="bg-dark-card border border-dark-border rounded-xl p-6 shadow-lg">
-            <div class="text-text-secondary text-sm font-medium mb-2">Saldo Projetado</div>
-            <div class="text-2xl font-bold text-blue-400">{{ projectedBalance | currency:'BRL' }}</div>
+        <div class="fd-stat-card fd-stat-blue animate-enter animate-enter-delay-1 hover-lift">
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-xs font-semibold text-text-secondary uppercase tracking-wider">Saldo Projetado</span>
+                <div class="w-8 h-8 rounded bg-accent-blue/10 flex items-center justify-center">
+                    <svg class="w-4 h-4 text-accent-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        stroke-width="2">
+                        <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+                    </svg>
+                </div>
+            </div>
+            <div class="text-2xl font-bold text-accent-blue font-mono">{{ projectedBalance | currency:'BRL' }}</div>
             <div class="text-xs text-text-secondary mt-1">Ao final do mês</div>
         </div>
 
         <!-- Monthly Income -->
-        <div class="bg-dark-card border border-dark-border rounded-xl p-6 shadow-lg">
-            <div class="text-text-secondary text-sm font-medium mb-2">Receitas (Mês)</div>
-            <div class="text-2xl font-bold text-green-400">{{ monthlyIncome | currency:'BRL' }}</div>
+        <div class="fd-stat-card fd-stat-emerald animate-enter animate-enter-delay-2 hover-lift">
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-xs font-semibold text-text-secondary uppercase tracking-wider">Receitas</span>
+                <div class="w-8 h-8 rounded bg-accent-emerald/10 flex items-center justify-center">
+                    <svg class="w-4 h-4 text-accent-emerald" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        stroke-width="2">
+                        <path stroke-linecap="round" d="M7 11l5-5m0 0l5 5m-5-5v12" />
+                    </svg>
+                </div>
+            </div>
+            <div class="text-2xl font-bold text-accent-emerald font-mono">{{ monthlyIncome | currency:'BRL' }}</div>
+            <div class="text-xs text-text-secondary mt-1">Este mês</div>
         </div>
 
         <!-- Monthly Expense -->
-        <div class="bg-dark-card border border-dark-border rounded-xl p-6 shadow-lg">
-            <div class="text-text-secondary text-sm font-medium mb-2">Despesas (Mês)</div>
-            <div class="text-2xl font-bold text-red-400">{{ monthlyExpenses | currency:'BRL' }}</div>
+        <div class="fd-stat-card fd-stat-red animate-enter animate-enter-delay-3 hover-lift">
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-xs font-semibold text-text-secondary uppercase tracking-wider">Despesas</span>
+                <div class="w-8 h-8 rounded bg-accent-red/10 flex items-center justify-center">
+                    <svg class="w-4 h-4 text-accent-red" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        stroke-width="2">
+                        <path stroke-linecap="round" d="M17 13l-5 5m0 0l-5-5m5 5V6" />
+                    </svg>
+                </div>
+            </div>
+            <div class="text-2xl font-bold text-accent-red font-mono">{{ monthlyExpenses | currency:'BRL' }}</div>
+            <div class="text-xs text-text-secondary mt-1">Este mês</div>
         </div>
     </div>
 
     <!-- AI Insights -->
-    <div
-        class="mb-8 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border border-indigo-500/30 rounded-xl p-6 shadow-lg animate-fade-in relative overflow-hidden">
-        <div class="absolute top-0 right-0 p-4 opacity-10">
-            <span class="text-6xl">🤖</span>
+    <div class="fd-card p-6 animate-enter relative overflow-hidden" style="border-left: 2px solid #10b981;">
+        <div class="absolute top-0 right-0 w-32 h-32 opacity-[0.03]"
+            style="background: radial-gradient(circle, #10b981, transparent 70%); transform: translate(30%, -30%);">
         </div>
 
-        <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
-            <span class="text-2xl">🤖</span> Insights Financeiros IA
-        </h3>
-
-        <div *ngIf="loadingInsights" class="flex items-center gap-3 text-text-secondary animate-pulse">
-            <div class="h-4 w-4 bg-indigo-400 rounded-full animate-bounce"></div>
-            <div class="h-4 w-4 bg-purple-400 rounded-full animate-bounce delay-75"></div>
-            <div class="h-4 w-4 bg-pink-400 rounded-full animate-bounce delay-150"></div>
-            <span>Analisando suas transações...</span>
-        </div>
-
-        <div *ngIf="!loadingInsights && insights" class="prose prose-invert max-w-none">
-            <div class="whitespace-pre-line text-gray-300 leading-relaxed font-medium">
-                {{ insights }}
+        <div class="flex items-center gap-3 mb-4">
+            <div class="w-8 h-8 rounded bg-accent-emerald/10 flex items-center justify-center flex-shrink-0">
+                <svg class="w-4 h-4 text-accent-emerald" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
             </div>
+            <h2 class="text-base font-semibold text-text-primary">Insights Financeiros — IA</h2>
         </div>
 
-        <div *ngIf="!loadingInsights && !insights" class="text-text-secondary italic">
-            Nenhum insight disponível no momento. Continue registrando transações!
+        <div *ngIf="loadingInsights" class="flex items-center gap-3 text-text-secondary">
+            <div class="flex gap-1">
+                <div class="w-2 h-2 rounded-full bg-accent-emerald animate-bounce" style="animation-delay: 0ms"></div>
+                <div class="w-2 h-2 rounded-full bg-accent-emerald animate-bounce" style="animation-delay: 150ms"></div>
+                <div class="w-2 h-2 rounded-full bg-accent-emerald animate-bounce" style="animation-delay: 300ms"></div>
+            </div>
+            <span class="text-sm">Analisando suas transações...</span>
+        </div>
+
+        <div *ngIf="!loadingInsights && insights"
+            class="text-sm text-text-secondary leading-relaxed whitespace-pre-line">
+            {{ insights }}
+        </div>
+
+        <div *ngIf="!loadingInsights && !insights" class="text-sm text-text-secondary italic">
+            Nenhum insight disponível. Continue registrando transações!
         </div>
     </div>
 
     <!-- AI Debt Search -->
-    <div
-        class="mb-8 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-emerald-500/30 rounded-xl p-6 shadow-lg relative overflow-hidden">
-        <div class="absolute top-0 right-0 p-4 opacity-10">
-            <span class="text-6xl">🔍</span>
+    <div class="fd-card p-6 animate-enter relative overflow-hidden" style="border-left: 2px solid #f59e0b;">
+        <div class="absolute top-0 right-0 w-32 h-32 opacity-[0.03]"
+            style="background: radial-gradient(circle, #f59e0b, transparent 70%); transform: translate(30%, -30%);">
         </div>
 
-        <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
-            <span class="text-2xl">🔍</span> Pesquisa de Dívidas com IA
-        </h3>
+        <div class="flex items-center gap-3 mb-4">
+            <div class="w-8 h-8 rounded bg-accent-gold/10 flex items-center justify-center flex-shrink-0">
+                <svg class="w-4 h-4 text-accent-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    stroke-width="2">
+                    <circle cx="11" cy="11" r="8" />
+                    <path stroke-linecap="round" d="M21 21l-4.35-4.35" />
+                </svg>
+            </div>
+            <h2 class="text-base font-semibold text-text-primary">Pesquisa de Dívidas — IA</h2>
+        </div>
 
-        <p class="text-text-secondary text-sm mb-4">
-            Pergunte sobre qualquer dívida ou transação. Exemplo: "Quanto devo na compra do celular?" ou "Quais são
-            minhas despesas com alimentação?"
+        <p class="text-xs text-text-secondary mb-4">
+            Pergunte sobre qualquer dívida ou transação. Ex: "Quanto devo na compra do celular?"
         </p>
 
         <div class="flex gap-3">
             <input type="text" [(ngModel)]="debtSearchQuery" (keyup.enter)="searchDebt()"
-                placeholder="Digite sua pergunta sobre dívidas..."
-                class="flex-1 bg-dark-bg border border-dark-border rounded-lg px-4 py-3 text-white placeholder-text-secondary focus:border-emerald-500 focus:outline-none transition-colors" />
+                placeholder="Digite sua pergunta..." class="fd-input flex-1 text-sm" id="debt-search-input">
             <button (click)="searchDebt()" [disabled]="searchingDebt || !debtSearchQuery"
-                class="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-800 disabled:cursor-not-allowed rounded-lg font-semibold transition-colors flex items-center gap-2">
-                <span *ngIf="searchingDebt" class="animate-spin">⏳</span>
-                <span *ngIf="!searchingDebt">🔍</span>
+                class="fd-btn-gold px-4 py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0">
+                <svg *ngIf="!searchingDebt" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                    stroke-width="2">
+                    <circle cx="11" cy="11" r="8" />
+                    <path stroke-linecap="round" d="M21 21l-4.35-4.35" />
+                </svg>
+                <svg *ngIf="searchingDebt" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
                 Buscar
             </button>
         </div>
 
-        <div *ngIf="searchingDebt" class="mt-4 flex items-center gap-3 text-text-secondary animate-pulse">
-            <div class="h-4 w-4 bg-emerald-400 rounded-full animate-bounce"></div>
-            <div class="h-4 w-4 bg-teal-400 rounded-full animate-bounce delay-75"></div>
-            <div class="h-4 w-4 bg-cyan-400 rounded-full animate-bounce delay-150"></div>
-            <span>Pesquisando suas dívidas...</span>
-        </div>
-
         <div *ngIf="!searchingDebt && debtSearchResult"
-            class="mt-4 bg-dark-bg/50 rounded-lg p-4 border border-emerald-500/20">
-            <div class="whitespace-pre-line text-gray-300 leading-relaxed">
-                {{ debtSearchResult }}
-            </div>
+            class="mt-4 bg-dark-surface rounded-md p-4 border border-dark-border text-sm text-text-secondary leading-relaxed whitespace-pre-line">
+            {{ debtSearchResult }}
         </div>
     </div>
 
     <!-- Charts Row -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-enter">
         <!-- Cash Flow Chart -->
-        <div class="bg-dark-card border border-dark-border rounded-xl p-6 shadow-lg lg:col-span-2">
-            <h3 class="text-xl font-bold mb-4">Análise de Fluxo de Caixa</h3>
+        <div class="fd-card p-6 lg:col-span-2">
+            <h2 class="text-sm font-semibold text-text-primary mb-1">Fluxo de Caixa</h2>
+            <p class="text-xs text-text-secondary mb-4">Receitas vs. Despesas</p>
             <div class="h-64 relative">
                 <canvas #cashFlowChart></canvas>
             </div>
         </div>
 
         <!-- Expense Breakdown -->
-        <div class="bg-dark-card border border-dark-border rounded-xl p-6 shadow-lg">
-            <h3 class="text-xl font-bold mb-4">Breakdown de Despesas</h3>
+        <div class="fd-card p-6">
+            <h2 class="text-sm font-semibold text-text-primary mb-1">Despesas por Categoria</h2>
+            <p class="text-xs text-text-secondary mb-4">Distribuição do mês</p>
             <div class="h-64 relative">
                 <canvas #expenseChart></canvas>
             </div>
         </div>
     </div>
+
 </div>
