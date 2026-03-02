@@ -8,7 +8,10 @@
    GLOBAL BASE STYLES
    ============================================ */
 @layer base {
-    *, *::before, *::after {
+
+    *,
+    *::before,
+    *::after {
         box-sizing: border-box;
     }
 
@@ -18,7 +21,7 @@
 
     body {
         @apply bg-dark-bg text-text-primary font-sans antialiased;
-        background-image: 
+        background-image:
             radial-gradient(ellipse at 20% 50%, rgba(16, 185, 129, 0.03) 0%, transparent 50%),
             radial-gradient(ellipse at 80% 20%, rgba(245, 158, 11, 0.03) 0%, transparent 50%);
         background-attachment: fixed;
@@ -29,19 +32,24 @@
         width: 6px;
         height: 6px;
     }
+
     ::-webkit-scrollbar-track {
         background: #0d1526;
     }
+
     ::-webkit-scrollbar-thumb {
         background: #1e2d45;
         border-radius: 3px;
     }
+
     ::-webkit-scrollbar-thumb:hover {
         background: #10b981;
     }
 
     /* Input/Select base reset */
-    input, select, textarea {
+    input,
+    select,
+    textarea {
         @apply bg-dark-surface border border-dark-border text-text-primary;
         @apply focus:outline-none focus:border-accent-emerald transition-all duration-200;
         @apply placeholder-text-secondary;
@@ -61,12 +69,12 @@
     .fd-card {
         @apply bg-dark-card border border-dark-border rounded-lg shadow-card;
         @apply transition-all duration-300;
-        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.04);
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.04);
     }
 
     .fd-card:hover {
         @apply border-dark-border-light;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255,255,255,0.06);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.06);
     }
 
     .fd-stat-card {
@@ -76,7 +84,7 @@
     .fd-stat-card::before {
         content: '';
         @apply absolute top-0 left-0 w-full h-px;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
     }
 
     /* --- STAT CARD VARIANTS --- */
@@ -219,7 +227,7 @@
     .fd-modal {
         @apply bg-dark-card border border-dark-border rounded-lg shadow-2xl w-full;
         animation: scaleIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        box-shadow: 0 24px 64px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255,255,255,0.05);
+        box-shadow: 0 24px 64px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.05);
     }
 
     .fd-modal-header {
@@ -302,16 +310,28 @@
    UTILITY LAYER
    ============================================ */
 @layer utilities {
+
     /* Entrance animations with stagger support */
     .animate-enter {
         animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         opacity: 0;
     }
 
-    .animate-enter-delay-1 { animation-delay: 0.05s; }
-    .animate-enter-delay-2 { animation-delay: 0.1s; }
-    .animate-enter-delay-3 { animation-delay: 0.15s; }
-    .animate-enter-delay-4 { animation-delay: 0.2s; }
+    .animate-enter-delay-1 {
+        animation-delay: 0.05s;
+    }
+
+    .animate-enter-delay-2 {
+        animation-delay: 0.1s;
+    }
+
+    .animate-enter-delay-3 {
+        animation-delay: 0.15s;
+    }
+
+    .animate-enter-delay-4 {
+        animation-delay: 0.2s;
+    }
 
     /* Gradient text */
     .text-gradient-emerald {
@@ -337,6 +357,7 @@
     .hover-lift {
         @apply transition-transform duration-200;
     }
+
     .hover-lift:hover {
         transform: translateY(-2px);
     }
@@ -353,6 +374,7 @@
 
     /* Reduced motion support */
     @media (prefers-reduced-motion: reduce) {
+
         .animate-enter,
         .animate-enter-delay-1,
         .animate-enter-delay-2,
@@ -368,26 +390,166 @@
    KEYFRAMES (global, not in layer)
    ============================================ */
 @keyframes slideUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 @keyframes slideInLeft {
-    from { opacity: 0; transform: translateX(-16px); }
-    to   { opacity: 1; transform: translateX(0); }
+    from {
+        opacity: 0;
+        transform: translateX(-16px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to   { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 @keyframes scaleIn {
-    from { opacity: 0; transform: scale(0.96); }
-    to   { opacity: 1; transform: scale(1); }
+    from {
+        opacity: 0;
+        transform: scale(0.96);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 
 @keyframes shimmer {
-    0%   { background-position: -200% 0; }
-    100% { background-position: 200% 0; }
+    0% {
+        background-position: -200% 0;
+    }
+
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+/* ============================================
+   MOBILE RESPONSIVE OVERRIDES
+   Only active below 768px — desktop is untouched
+   ============================================ */
+@media (max-width: 767px) {
+
+    /* Tables: horizontal scroll wrapper */
+    .fd-table {
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .fd-table thead th {
+        white-space: nowrap;
+        font-size: 0.65rem;
+        padding: 0.5rem 0.75rem;
+    }
+
+    .fd-table tbody td {
+        white-space: nowrap;
+        font-size: 0.75rem;
+        padding: 0.625rem 0.75rem;
+    }
+
+    /* Modals: full screen on mobile */
+    .fd-modal-overlay {
+        padding: 0;
+        align-items: flex-end;
+    }
+
+    .fd-modal {
+        border-radius: 1rem 1rem 0 0;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .fd-modal-header {
+        padding: 1rem 1.25rem;
+        position: sticky;
+        top: 0;
+        background: inherit;
+        z-index: 10;
+    }
+
+    .fd-modal-body {
+        padding: 1rem 1.25rem;
+    }
+
+    .fd-modal-footer {
+        padding: 1rem 1.25rem;
+        position: sticky;
+        bottom: 0;
+        background: inherit;
+    }
+
+    /* Touch targets: minimum 44px */
+    .fd-btn-primary,
+    .fd-btn-gold,
+    .fd-btn-ghost,
+    .fd-btn-danger {
+        min-height: 44px;
+        min-width: 44px;
+    }
+
+    /* Nav items larger for touch */
+    .fd-nav-item {
+        padding: 0.75rem;
+        min-height: 44px;
+    }
+
+    /* Month selector compact */
+    .fd-month-selector {
+        font-size: 0.8rem;
+    }
+
+    /* Section titles */
+    .fd-section-title {
+        font-size: 1.375rem;
+    }
+
+    /* Stat cards compact */
+    .fd-stat-card {
+        padding: 1rem;
+    }
+
+    .fd-stat-card .text-2xl {
+        font-size: 1.25rem;
+    }
+
+    /* Cards padding */
+    .fd-card {
+        border-radius: 0.5rem;
+    }
+
+    /* Empty state compact */
+    .fd-empty {
+        padding: 3rem 1.5rem;
+    }
+
+    /* Input/select larger touch targets */
+    .fd-input,
+    .fd-select {
+        min-height: 44px;
+        font-size: 16px;
+        /* Prevents iOS zoom on focus */
+    }
 }
