@@ -5,10 +5,12 @@ services:
     image: postgres:14
     container_name: financial_manager_db
     restart: always
+    env_file:
+      - ./backend/.env
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres123
-      POSTGRES_DB: financial_manager
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME:-financial_manager}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -19,18 +21,8 @@ services:
       context: ./backend
     container_name: financial_manager_backend
     restart: always
-    environment:
-      NODE_ENV: production
-      PORT: 3000
-      DB_HOST: db
-      DB_USER: postgres
-      DB_PASSWORD: postgres123
-      DB_NAME: financial_manager
-      JWT_SECRET: patreseLarissaEdinA@14566
-      GEMINI_API_KEY: AIzaSyDFaw3iReq95zXyG9eHNfGozoQ9GTiApbE
-      CLERK_PUBLISHABLE_KEY: pk_live_Y2xlcmsuaXppdGVjbm9sb2dpYS5jb20uYnIk
-      CLERK_SECRET_KEY: sk_live_fSdRiBemXWGcbry4kItnCzo39OakJnidj2rpqpsrYB
-      CORS_ORIGIN: "*"
+    env_file:
+      - ./backend/.env
     ports:
       - "3001:3000"
     depends_on:
@@ -41,11 +33,7 @@ services:
   frontend:
     build:
       context: ./frontend
-      # Pass API URL at build time for Vite
       args:
-        # Note: In Portainer/Compose, build args are static. 
-        # For dynamic runtime config, we'd need a different approach (e.g., config.js).
-        # For now, we assume user will set this or use default.
         VITE_API_URL: ${VITE_API_URL:-http://localhost:3000/api}
     container_name: financial_manager_frontend
     restart: always
@@ -60,3 +48,5 @@ networks:
 
 volumes:
   postgres_data:
+
+

@@ -1,5 +1,6 @@
 import express, { Application } from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import dotenv from 'dotenv';
 import { config } from './config/env';
 import { connectDatabase } from './config/database';
@@ -13,6 +14,9 @@ const app: Application = express();
 
 // Trust proxy (needed for Nginx/Docker)
 app.set('trust proxy', 1);
+
+// Security headers
+app.use(helmet());
 
 // Middleware
 app.use(cors({

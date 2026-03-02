@@ -38,7 +38,6 @@ router.post('/auth/register', authLimiter, authController.register.bind(authCont
 router.post('/auth/login', authLimiter, authController.login.bind(authController));
 router.post('/auth/forgot-password', authLimiter, authController.forgotPassword.bind(authController));
 router.post('/auth/reset-password', authLimiter, authController.resetPassword.bind(authController));
-router.post('/auth/reset-password', authLimiter, authController.resetPassword.bind(authController));
 router.get('/auth/me', authMiddleware, authController.getMe.bind(authController));
 router.put('/auth/me', authMiddleware, authController.updateProfile.bind(authController));
 

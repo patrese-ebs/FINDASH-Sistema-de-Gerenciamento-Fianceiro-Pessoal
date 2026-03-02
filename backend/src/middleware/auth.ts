@@ -26,7 +26,7 @@ export const authMiddleware = (req: AuthRequest, res: Response, next: NextFuncti
             return;
         }
 
-        jwt.verify(token, config.jwt.secret, (err, decoded) => {
+        jwt.verify(token, config.jwt.secret, { algorithms: ['HS256'] }, (err, decoded) => {
             if (err) {
                 res.status(401).json({ error: 'Token invalid' });
                 return;

@@ -76,7 +76,7 @@ export class AuthService {
         return jwt.sign(
             { userId, email },
             config.jwt.secret,
-            { expiresIn: config.jwt.expiresIn } as jwt.SignOptions
+            { algorithm: 'HS256', expiresIn: config.jwt.expiresIn } as jwt.SignOptions
         );
     }
 
