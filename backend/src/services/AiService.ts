@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import fs from 'fs';
+import { sanitizePromptInput } from './sanitize';
 
 interface ExpenseData {
     description: string;
@@ -103,7 +104,7 @@ Retorne APENAS o JSON array, sem explicações nem blocos de código markdown.`;
         let result;
 
         if (typeof input === 'string') {
-            result = await model.generateContent([prompt, `Texto do usuário: "${input}"`]);
+            result = await model.generateContent([prompt, `Texto do usuário: "${sanitizePromptInput(input)}"`]);
         } else {
             const fileData = fs.readFileSync(input.path);
             const imagePart = {
@@ -259,7 +260,7 @@ ${invLines}`;
 REGRA IMPORTANTE: Se a pergunta NÃO for relacionada a finanças, dívidas, gastos, receitas, cartões ou dinheiro, responda:
 "🤖 Desculpe, sou especializado em finanças! Posso te ajudar com dúvidas sobre seus gastos, dívidas, cartões e controle financeiro. Como posso ajudar?"
 
-PERGUNTA DO USUÁRIO: "${query}"
+PERGUNTA DO USUÁRIO: "${sanitizePromptInput(query)}"
 
 DADOS FINANCEIROS DO USUÁRIO:
 
