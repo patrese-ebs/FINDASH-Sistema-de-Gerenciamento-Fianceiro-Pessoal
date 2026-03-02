@@ -5,11 +5,9 @@ services:
     image: postgres:14
     container_name: financial_manager_db
     restart: always
-    env_file:
-      - ./backend/.env
     environment:
       POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres123}
       POSTGRES_DB: ${DB_NAME:-financial_manager}
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -21,8 +19,19 @@ services:
       context: ./backend
     container_name: financial_manager_backend
     restart: always
-    env_file:
-      - ./backend/.env
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: ${PORT:-3000}
+      DB_HOST: db
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres123}
+      DB_NAME: ${DB_NAME:-financial_manager}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      CLERK_PUBLISHABLE_KEY: ${CLERK_PUBLISHABLE_KEY}
+      CLERK_SECRET_KEY: ${CLERK_SECRET_KEY}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:4200,http://localhost:8081}
     ports:
       - "3001:3000"
     depends_on:
