@@ -305,7 +305,87 @@
             </div>
 
             <!-- Recurring Section -->
-            <div class="border-t border-dark-border pt-4">
+            <div class="border-t border-dark-border pt-4" *ngIf="transactionForm.get('type')?.value === 'expense'">
+
+                <!-- Installments Toggle -->
+                <label class="flex items-center gap-3 cursor-pointer group mb-4">
+                    <div class="relative">
+                        <input type="checkbox" formControlName="isInstallment" class="sr-only peer"
+                            (change)="transactionForm.get('isInstallment')?.value ? transactionForm.patchValue({isRecurring: false}) : null">
+                        <div
+                            class="w-9 h-5 bg-dark-surface border border-dark-border rounded-full peer-checked:bg-accent-gold peer-checked:border-accent-gold transition-all">
+                        </div>
+                        <div
+                            class="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-all peer-checked:translate-x-4">
+                        </div>
+                    </div>
+                    <span class="text-sm font-medium text-text-primary">Parcelado</span>
+                </label>
+
+                <div *ngIf="transactionForm.get('isInstallment')?.value"
+                    class="mb-4 space-y-3 pl-4 border-l-2 border-accent-gold/30">
+                    <div>
+                        <label class="fd-label">Número de Parcelas</label>
+                        <input type="number" formControlName="installments" min="2" max="48" class="fd-input w-32"
+                            placeholder="2">
+                    </div>
+                    <p class="text-xs text-text-secondary">
+                        {{ transactionForm.get('installments')?.value || 0 }}x de
+                        <span class="text-accent-gold font-semibold font-mono">
+                            {{ (getAbsoluteAmount(transactionForm.get('amount')?.value || 0) /
+                            (transactionForm.get('installments')?.value || 1)) | currency:'BRL' }}
+                        </span>
+                    </p>
+                </div>
+
+                <!-- Recurring Toggle -->
+                <label class="flex items-center gap-3 cursor-pointer group"
+                    *ngIf="!transactionForm.get('isInstallment')?.value">
+                    <div class="relative">
+                        <input type="checkbox" formControlName="isRecurring" class="sr-only peer">
+                        <div
+                            class="w-9 h-5 bg-dark-surface border border-dark-border rounded-full peer-checked:bg-accent-emerald peer-checked:border-accent-emerald transition-all">
+                        </div>
+                        <div
+                            class="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-all peer-checked:translate-x-4">
+                        </div>
+                    </div>
+                    <span class="text-sm font-medium text-text-primary">Despesa Recorrente</span>
+                </label>
+
+                <div *ngIf="transactionForm.get('isRecurring')?.value && !transactionForm.get('isInstallment')?.value"
+                    class="mt-4 space-y-4 pl-4 border-l-2 border-accent-emerald/30">
+                    <div>
+                        <label class="fd-label">Frequência</label>
+                        <select formControlName="recurrenceFrequency" class="fd-select">
+                            <option value="monthly">Mensal</option>
+                            <option value="weekly">Semanal</option>
+                            <option value="yearly">Anual</option>
+                        </select>
+                    </div>
+
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <div class="relative">
+                            <input type="checkbox" formControlName="repeatIndefinitely" class="sr-only peer">
+                            <div
+                                class="w-9 h-5 bg-dark-surface border border-dark-border rounded-full peer-checked:bg-accent-emerald peer-checked:border-accent-emerald transition-all">
+                            </div>
+                            <div
+                                class="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-all peer-checked:translate-x-4">
+                            </div>
+                        </div>
+                        <span class="text-sm text-text-primary">Repetir Indefinidamente</span>
+                    </label>
+
+                    <div *ngIf="!transactionForm.get('repeatIndefinitely')?.value">
+                        <label class="fd-label">Data Final</label>
+                        <input type="date" formControlName="recurrenceEndDate" class="fd-input">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recurring for income (simpler, no installments) -->
+            <div class="border-t border-dark-border pt-4" *ngIf="transactionForm.get('type')?.value === 'income'">
                 <label class="flex items-center gap-3 cursor-pointer group">
                     <div class="relative">
                         <input type="checkbox" formControlName="isRecurring" class="sr-only peer">
@@ -316,10 +396,7 @@
                             class="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-all peer-checked:translate-x-4">
                         </div>
                     </div>
-                    <span class="text-sm font-medium text-text-primary">
-                        {{ transactionForm.get('type')?.value === 'income' ? 'Receita Recorrente' : 'Despesa Recorrente'
-                        }}
-                    </span>
+                    <span class="text-sm font-medium text-text-primary">Receita Recorrente</span>
                 </label>
 
                 <div *ngIf="transactionForm.get('isRecurring')?.value"

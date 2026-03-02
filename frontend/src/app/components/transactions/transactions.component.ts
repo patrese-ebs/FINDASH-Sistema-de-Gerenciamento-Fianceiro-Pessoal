@@ -39,7 +39,10 @@ export class TransactionsComponent implements OnInit {
             isRecurring: [false],
             recurrenceFrequency: ['monthly'],
             repeatIndefinitely: [true],
-            recurrenceEndDate: ['']
+            recurrenceEndDate: [''],
+            // Installment fields
+            isInstallment: [false],
+            installments: [2, [Validators.min(2), Validators.max(48)]]
         });
     }
 
@@ -278,7 +281,9 @@ export class TransactionsComponent implements OnInit {
             isRecurring: false,
             recurrenceFrequency: 'monthly',
             repeatIndefinitely: true,
-            recurrenceEndDate: ''
+            recurrenceEndDate: '',
+            isInstallment: false,
+            installments: 2
         });
     }
 
@@ -322,19 +327,28 @@ export class TransactionsComponent implements OnInit {
             formValue.amount = -formValue.amount;
         }
 
-        // Handle recurring fields
-        if (formValue.isRecurring) {
-            if (formValue.repeatIndefinitely) {
-                formValue.recurrenceEndDate = null;
-            }
-        } else {
-            // Not recurring, clear these fields
+        // Handle installment fields
+        if (formValue.isInstallment && formValue.installments > 1) {
+            // Installment mode: send installments count, clear recurring
             formValue.isRecurring = false;
             formValue.recurrenceFrequency = null;
             formValue.recurrenceEndDate = null;
+        } else if (formValue.isRecurring) {
+            // Recurring mode: clear installments
+            if (formValue.repeatIndefinitely) {
+                formValue.recurrenceEndDate = null;
+            }
+            delete formValue.installments;
+        } else {
+            // Single expense: clear both
+            formValue.isRecurring = false;
+            formValue.recurrenceFrequency = null;
+            formValue.recurrenceEndDate = null;
+            delete formValue.installments;
         }
-        // Remove UI-only field
+        // Remove UI-only fields
         delete formValue.repeatIndefinitely;
+        delete formValue.isInstallment;
 
         if (this.editingTransactionId) {
             this.transactionService.update(this.editingTransactionId, formValue).subscribe({
