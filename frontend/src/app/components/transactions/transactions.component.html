@@ -261,7 +261,9 @@
 
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label class="fd-label">Valor (R$)</label>
+                    <label class="fd-label">
+                        {{ transactionForm.get('isInstallment')?.value ? 'Valor Total (R$)' : 'Valor (R$)' }}
+                    </label>
                     <input type="number" formControlName="amount" step="0.01" class="fd-input" placeholder="0,00">
                 </div>
                 <div>
@@ -329,13 +331,22 @@
                         <input type="number" formControlName="installments" min="2" max="48" class="fd-input w-32"
                             placeholder="2">
                     </div>
-                    <p class="text-xs text-text-secondary">
-                        {{ transactionForm.get('installments')?.value || 0 }}x de
-                        <span class="text-accent-gold font-semibold font-mono">
-                            {{ (getAbsoluteAmount(transactionForm.get('amount')?.value || 0) /
-                            (transactionForm.get('installments')?.value || 1)) | currency:'BRL' }}
-                        </span>
-                    </p>
+                    <div class="bg-dark-surface rounded-md p-3 border border-accent-gold/20">
+                        <p class="text-xs text-text-secondary mb-1">Resumo do parcelamento:</p>
+                        <p class="text-sm text-text-primary font-medium">
+                            <span class="text-accent-gold font-bold font-mono">
+                                {{ transactionForm.get('installments')?.value || 0 }}x
+                            </span>
+                            de
+                            <span class="text-accent-gold font-bold font-mono">
+                                {{ (getAbsoluteAmount(transactionForm.get('amount')?.value || 0) /
+                                (transactionForm.get('installments')?.value || 1)) | currency:'BRL' }}
+                            </span>
+                        </p>
+                        <p class="text-[10px] text-text-muted mt-1">
+                            Total: {{ getAbsoluteAmount(transactionForm.get('amount')?.value || 0) | currency:'BRL' }}
+                        </p>
+                    </div>
                 </div>
 
                 <!-- Recurring Toggle -->

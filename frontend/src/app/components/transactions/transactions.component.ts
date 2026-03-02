@@ -329,6 +329,8 @@ export class TransactionsComponent implements OnInit {
 
         // Handle installment fields
         if (formValue.isInstallment && formValue.installments > 1) {
+            // User entered TOTAL amount — divide by installments for backend
+            formValue.amount = formValue.amount / formValue.installments;
             // Installment mode: send installments count, clear recurring
             formValue.isRecurring = false;
             formValue.recurrenceFrequency = null;
