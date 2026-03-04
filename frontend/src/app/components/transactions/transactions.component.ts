@@ -321,12 +321,6 @@ export class TransactionsComponent implements OnInit {
         // Convert amount to number if string
         formValue.amount = Number(formValue.amount);
 
-        // Adjust for negative if expense? Backend usually expects positive amount and type field.
-        // But if backend logic requires negative:
-        if (formValue.type === 'expense' && formValue.amount > 0) {
-            formValue.amount = -formValue.amount;
-        }
-
         // Handle installment fields
         if (formValue.isInstallment && formValue.installments > 1) {
             // User entered TOTAL amount — divide by installments for backend
