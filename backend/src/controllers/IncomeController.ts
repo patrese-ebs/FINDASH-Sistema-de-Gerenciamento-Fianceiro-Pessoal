@@ -1,5 +1,6 @@
 import { Response } from 'express';
 import { Income } from '../models';
+import redisService from '../services/RedisService';
 import { AuthRequest } from '../types';
 
 export class IncomeController {
@@ -115,6 +116,9 @@ export class IncomeController {
 
             const createdIncomes = await Income.bulkCreate(incomesToCreate);
 
+            // Invalidate AI insights cache
+            await redisService.del(`insight:${userId}`);
+
             res.status(201).json(createdIncomes[0]);
         } catch (error) {
             console.error('Error creating income:', error);
@@ -152,8 +156,10 @@ export class IncomeController {
                 month,
                 year,
                 isRecurring: isRecurring !== undefined ? isRecurring : income.isRecurring,
-                isPaid: isPaid !== undefined ? isPaid : income.isPaid,
             });
+
+            // Invalidate AI insights cache
+            await redisService.del(`insight:${userId}`);
 
             res.status(200).json(income);
         } catch (error) {
@@ -194,6 +200,9 @@ export class IncomeController {
             } else {
                 await income.destroy();
             }
+
+            // Invalidate AI insights cache
+            await redisService.del(`insight:${userId}`);
 
             res.status(204).send();
         } catch (error) {

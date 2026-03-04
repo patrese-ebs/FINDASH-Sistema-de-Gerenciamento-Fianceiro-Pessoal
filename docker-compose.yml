@@ -14,6 +14,17 @@ services:
     networks:
       - app_network
 
+  redis:
+    image: redis:alpine
+    container_name: financial_manager_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - app_network
+
   backend:
     build:
       context: ./backend
@@ -26,6 +37,7 @@ services:
       DB_USER: ${DB_USER:-postgres}
       DB_PASSWORD: ${DB_PASSWORD:-postgres123}
       DB_NAME: ${DB_NAME:-financial_manager}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
       GEMINI_API_KEY: ${GEMINI_API_KEY}
@@ -36,6 +48,7 @@ services:
       - "3001:3000"
     depends_on:
       - db
+      - redis
     networks:
       - app_network
 
@@ -57,5 +70,6 @@ networks:
 
 volumes:
   postgres_data:
+  redis_data:
 
 

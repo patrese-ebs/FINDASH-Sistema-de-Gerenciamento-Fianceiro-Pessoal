@@ -1,5 +1,6 @@
 import { Response } from 'express';
 import { Expense, CreditCardTransaction } from '../models';
+import redisService from '../services/RedisService';
 import { AuthRequest } from '../types';
 
 export class ExpenseController {
@@ -175,6 +176,9 @@ export class ExpenseController {
 
             const createdExpenses = await Expense.bulkCreate(expensesToCreate);
 
+            // Invalidate AI insights cache
+            await redisService.del(`insight:${userId}`);
+
             res.status(201).json(createdExpenses[0]);
         } catch (error) {
             console.error('Error creating expense:', error);
@@ -214,8 +218,10 @@ export class ExpenseController {
                 paymentMethod: paymentMethod || expense.paymentMethod,
                 creditCardId: creditCardId !== undefined ? creditCardId : expense.creditCardId,
                 isRecurring: isRecurring !== undefined ? isRecurring : expense.isRecurring,
-                isPaid: isPaid !== undefined ? isPaid : expense.isPaid,
             });
+
+            // Invalidate AI insights cache
+            await redisService.del(`insight:${userId}`);
 
             res.status(200).json(expense);
         } catch (error) {
@@ -256,6 +262,9 @@ export class ExpenseController {
             } else {
                 await expense.destroy();
             }
+
+            // Invalidate AI insights cache
+            await redisService.del(`insight:${userId}`);
 
             res.status(204).send();
         } catch (error) {

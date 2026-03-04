@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import aiService from '../services/AiService';
+import redisService from '../services/RedisService';
 
 export const parseExpense = async (req: Request, res: Response) => {
     try {
@@ -44,17 +45,35 @@ export const getInsights = async (req: Request, res: Response) => {
             return;
         }
 
+        // 1. Verificar Cache no Redis (evita consultas ao banco e API)
+        const cacheKey = `insight:${userId}`;
+        const cachedInsights = await redisService.get(cacheKey);
+
+        if (cachedInsights) {
+            // Se existir no cache, retorna imediatamente
+            res.json({ insights: cachedInsights });
+            return;
+        }
+
+        // 2. Se não estiver no cache, busca no banco de dados e gera com a IA
         const { Expense, Income } = await import('../models');
 
         const expenses = await Expense.findAll({ where: { userId }, limit: 50, order: [['date', 'DESC']] });
         const incomes = await Income.findAll({ where: { userId }, limit: 50, order: [['date', 'DESC']] });
 
         const allTx = [
-            ...expenses.map(e => ({ ...e.dataValues, type: 'expense' })),
-            ...incomes.map(i => ({ ...i.dataValues, type: 'income' }))
+            ...expenses.map((e: any) => ({ ...e.dataValues, type: 'expense' })),
+            ...incomes.map((i: any) => ({ ...i.dataValues, type: 'income' }))
         ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
         const insights = await aiService.generateInsights(allTx);
+
+        // 3. Salva no Redis com TTL de 24 horas (86400 segundos) como fallback
+        // (O cache será invalidado manualmente nas operações de CRUD)
+        if (insights && !insights.startsWith('Erro')) {
+            await redisService.set(cacheKey, insights, 86400);
+        }
+
         res.json({ insights });
     } catch (error: any) {
         console.error('AI Insight Controller Error:', error);
