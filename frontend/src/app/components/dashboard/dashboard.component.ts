@@ -178,7 +178,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
         // projectedBalance = all income - all expenses (including pending)
         this.projectedBalance = this.monthlyIncome - this.monthlyExpenses;
 
-        this.initCharts(thisMonthTx);
+        setTimeout(() => this.initCharts(thisMonthTx), 0);
     }
 
     initCharts(data: any[]) {
