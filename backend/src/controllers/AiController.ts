@@ -137,8 +137,16 @@ export const getInsights = async (req: Request, res: Response) => {
         }
 
         const allTx = [
-            ...allExpenses.map((e: any) => ({ ...e.dataValues, type: 'expense' })),
-            ...allIncomes.map((i: any) => ({ ...i.dataValues, type: 'income' })),
+            ...allExpenses.map((e: any) => {
+                const dateStr = e.date ? e.date.toString() : '';
+                const [year, month] = dateStr.includes('T') ? dateStr.split('T')[0].split('-').map(Number) : dateStr.split('-').map(Number);
+                return { ...e.dataValues, type: 'expense', month, year };
+            }),
+            ...allIncomes.map((i: any) => {
+                const dateStr = i.date ? i.date.toString() : '';
+                const [year, month] = dateStr.includes('T') ? dateStr.split('T')[0].split('-').map(Number) : dateStr.split('-').map(Number);
+                return { ...i.dataValues, type: 'income', month, year };
+            }),
             ...allInvoices.map((inv: any) => {
                 const dueDay = inv.creditCard?.dueDay || 10;
                 const dueDate = new Date(inv.year, inv.month - 1, dueDay).toISOString().split('T')[0];
