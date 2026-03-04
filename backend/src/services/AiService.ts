@@ -129,17 +129,29 @@ Retorne APENAS o JSON array, sem explicações nem blocos de código markdown.`;
             return "Ainda não há transações suficientes para gerar insights.";
         }
 
-        // Separar receitas e despesas
-        const expenses = transactions.filter(t => t.type === 'expense');
-        const incomes = transactions.filter(t => t.type === 'income');
+        // Determinar o mês/ano base a partir das transações mais recentes, caso não tenha sido filtrado perfeitamente (para controle)
+        const currentDate = new Date();
+        const firstTx = transactions[0];
+        const baseMonth = firstTx && firstTx.month ? firstTx.month : currentDate.getMonth() + 1;
+        const baseYear = firstTx && firstTx.year ? firstTx.year : currentDate.getFullYear();
 
-        const totalExpenses = expenses.reduce((sum, t) => sum + Number(t.amount || 0), 0);
-        const totalIncomes = incomes.reduce((sum, t) => sum + Number(t.amount || 0), 0);
+        // Separar mês atual dos meses futuros
+        const currentMonthTx = transactions.filter(t => t.month === baseMonth && t.year === baseYear);
+        const futureTx = transactions.filter(t => t.month !== baseMonth || t.year !== baseYear);
+
+        const currentExpenses = currentMonthTx.filter(t => t.type === 'expense');
+        const currentIncomes = currentMonthTx.filter(t => t.type === 'income');
+
+        const futureExpenses = futureTx.filter(t => t.type === 'expense');
+
+        const totalIncomes = currentIncomes.reduce((sum, t) => sum + Number(t.amount || 0), 0);
+        const totalExpenses = currentExpenses.reduce((sum, t) => sum + Number(t.amount || 0), 0);
+        const totalFutureExpenses = futureExpenses.reduce((sum, t) => sum + Number(t.amount || 0), 0);
         const balance = totalIncomes - totalExpenses;
 
-        // Agregar por categoria (envia resumo, não dados brutos)
+        // Agregar categorias do mês atual
         const categoryMap: Record<string, { total: number; count: number }> = {};
-        expenses.forEach(t => {
+        currentExpenses.forEach(t => {
             const cat = t.category || 'Outros';
             if (!categoryMap[cat]) categoryMap[cat] = { total: 0, count: 0 };
             categoryMap[cat].total += Number(t.amount || 0);
@@ -148,43 +160,54 @@ Retorne APENAS o JSON array, sem explicações nem blocos de código markdown.`;
 
         const categoryBreakdown = Object.entries(categoryMap)
             .sort(([, a], [, b]) => b.total - a.total)
-            .map(([cat, data]) => `- ${cat}: ${this.formatCurrency(data.total)} (${data.count} transações)`)
+            .map(([cat, data]) => `- ${cat}: ${this.formatCurrency(data.total)} (${data.count} transições)`)
             .join('\n');
 
-        // Top 5 maiores gastos
-        const topExpenses = expenses
+        // Top 5 maiores gastos do mês atual
+        const topExpenses = currentExpenses
             .sort((a, b) => Number(b.amount) - Number(a.amount))
             .slice(0, 5)
             .map(t => `- ${t.description}: ${this.formatCurrency(Number(t.amount))} (${t.category || 'Outros'})`)
             .join('\n');
 
+        // Agregar meses futuros (Resumo das Faturas e Parcelas Futuras)
+        const futureSummary = futureExpenses
+            .sort((a, b) => Number(b.amount) - Number(a.amount))
+            .slice(0, 10) // Top 10 grandes boletos/faturas futuros
+            .map(t => `- [Mês ${t.month}/${t.year}] ${t.description}: ${this.formatCurrency(Number(t.amount))}`)
+            .join('\n');
+
         const prompt = `Você é um consultor financeiro brasileiro, amigável e direto. Fale como se estivesse conversando com um amigo próximo.
 
-DADOS FINANCEIROS DO PERÍODO:
-📊 Receita total: ${this.formatCurrency(totalIncomes)}
-💸 Despesa total: ${this.formatCurrency(totalExpenses)}
-💰 Saldo: ${this.formatCurrency(balance)} ${balance >= 0 ? '(positivo ✅)' : '(negativo ⚠️)'}
-📈 Percentual gasto da renda: ${totalIncomes > 0 ? ((totalExpenses / totalIncomes) * 100).toFixed(1) : '0'}%
+DADOS DO MÊS ATUAL:
+📊 Receita: ${this.formatCurrency(totalIncomes)}
+💸 Despesa: ${this.formatCurrency(totalExpenses)}
+💰 Saldo Total: ${this.formatCurrency(balance)} ${balance >= 0 ? '(positivo ✅)' : '(negativo ⚠️)'}
+📈 Comprometimento da renda: ${totalIncomes > 0 ? ((totalExpenses / totalIncomes) * 100).toFixed(1) : '0'}%
 
-GASTOS POR CATEGORIA:
+GASTOS POR CATEGORIA (MÊS ATUAL):
 ${categoryBreakdown || 'Nenhum gasto registrado.'}
 
-TOP 5 MAIORES GASTOS:
-${topExpenses || 'Nenhum gasto registrado.'}
+PREVISÃO: PRÓXIMOS 2 MESES (Dívidas, Faturas e Recorrências já provisionadas):
+🔮 Total já comprometido no futuro: ${this.formatCurrency(totalFutureExpenses)}
+Principais contas futuras:
+${futureSummary || 'Nenhuma dívida futura encontrada.'}
 
 INSTRUÇÕES:
 Gere exatamente 3 insights numerados sobre a situação financeira acima.
+
+Regra de Ouro da Distribuição dos Insights:
+O Insight 1 e 2 devem analisar o "Mês Atual" (padrões de gastos, economias possíveis, alertas de saldo).
+O Insight 3 DEVE ser uma previsão/alerta FUTURISTA baseado na seção "Previsão", ajudando o usuário a se preparar para as "Principais contas futuras" ou alertando sobre o montante comprometido nos próximos meses.
 
 Formato obrigatório para cada insight:
 [número]. [emoji] [Título curto em negrito]
 [Análise de 1-2 linhas com dica prática e valores específicos]
 
-Regras:
+Regras gerais:
 - Use os valores reais fornecidos acima (não invente números)
-- Foque em: padrões de gastos, economia possível e alertas importantes
-- Se o saldo estiver negativo, o primeiro insight DEVE ser um alerta sobre isso
-- Seja específico: em vez de "gaste menos", diga "reduzir Alimentação de R$ X para R$ Y economizaria Z por mês"
-- Use emojis relevantes
+- Seja ultraconsultivo e específico.
+- Emojis relevantes
 - Máximo de 3 linhas por insight`;
 
         try {

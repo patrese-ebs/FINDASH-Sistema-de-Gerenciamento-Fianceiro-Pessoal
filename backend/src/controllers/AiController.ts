@@ -45,7 +45,7 @@ export const getInsights = async (req: Request, res: Response) => {
             return;
         }
 
-        const { month, year } = req.query;
+        const { month, year, force } = req.query;
 
         // 1. Verificar Cache no Redis (evita consultas ao banco e API)
         let cacheKey = `insight:${userId}`;
@@ -53,55 +53,56 @@ export const getInsights = async (req: Request, res: Response) => {
             cacheKey = `insight:${userId}:${year}:${month}`;
         }
 
-        const cachedInsights = await redisService.get(cacheKey);
-
-        if (cachedInsights) {
-            // Se existir no cache, retorna imediatamente
-            res.json({ insights: cachedInsights });
-            return;
+        // Se force=true, ignoramos o cache para gerar um novo
+        if (force !== 'true') {
+            const cachedInsights = await redisService.get(cacheKey);
+            if (cachedInsights) {
+                res.json({ insights: cachedInsights });
+                return;
+            }
         }
 
-        // 2. Se não estiver no cache, busca no banco de dados e gera com a IA
+        // 2. Busca no banco de dados e gera com a IA (Mes Atual + 2 Meses Futuros para Previsão)
         const { Expense, Income, CreditCard, CreditCardInvoice } = await import('../models');
 
-        const expenseWhere: any = { userId };
-        const incomeWhere: any = { userId };
-        const cardWhere: any = { userId };
+        const baseMonth = month ? parseInt(month as string) : new Date().getMonth() + 1;
+        const baseYear = year ? parseInt(year as string) : new Date().getFullYear();
 
-        if (month) {
-            expenseWhere.month = parseInt(month as string);
-            incomeWhere.month = parseInt(month as string);
-        }
+        // Calcular os 3 meses que queremos buscar
+        const targetMonths = [
+            { month: baseMonth, year: baseYear },
+            { month: baseMonth === 12 ? 1 : baseMonth + 1, year: baseMonth === 12 ? baseYear + 1 : baseYear },
+            { month: baseMonth >= 11 ? baseMonth - 10 : baseMonth + 2, year: baseMonth >= 11 ? baseYear + 1 : baseYear }
+        ];
 
-        if (year) {
-            expenseWhere.year = parseInt(year as string);
-            incomeWhere.year = parseInt(year as string);
-        }
+        let allExpenses: any[] = [];
+        let allIncomes: any[] = [];
+        let allInvoices: any[] = [];
 
-        const expenses = await Expense.findAll({ where: expenseWhere, order: [['date', 'DESC']] });
-        const incomes = await Income.findAll({ where: incomeWhere, order: [['date', 'DESC']] });
-
-        // Buscar cartões de crédito para incluir as faturas no cálculo da IA
-        const creditCards = await CreditCard.findAll({ where: cardWhere });
+        // Buscar cartões de crédito para incluir as faturas no cálculo
+        const creditCards = await CreditCard.findAll({ where: { userId } });
         const creditCardIds = creditCards.map((c: any) => c.id);
 
-        let invoices: any[] = [];
-        if (creditCardIds.length > 0) {
-            const invoiceWhere: any = { creditCardId: creditCardIds };
-            if (month) invoiceWhere.month = parseInt(month as string);
-            if (year) invoiceWhere.year = parseInt(year as string);
+        for (const target of targetMonths) {
+            const expenses = await Expense.findAll({ where: { userId, month: target.month, year: target.year } });
+            allExpenses = [...allExpenses, ...expenses];
 
-            invoices = await CreditCardInvoice.findAll({
-                where: invoiceWhere,
-                include: [{ model: CreditCard, as: 'creditCard', attributes: ['name', 'dueDay'] }]
-            });
+            const incomes = await Income.findAll({ where: { userId, month: target.month, year: target.year } });
+            allIncomes = [...allIncomes, ...incomes];
+
+            if (creditCardIds.length > 0) {
+                const invoices = await CreditCardInvoice.findAll({
+                    where: { creditCardId: creditCardIds, month: target.month, year: target.year },
+                    include: [{ model: CreditCard, as: 'creditCard', attributes: ['name', 'dueDay'] }]
+                });
+                allInvoices = [...allInvoices, ...invoices];
+            }
         }
 
         const allTx = [
-            ...expenses.map((e: any) => ({ ...e.dataValues, type: 'expense' })),
-            ...incomes.map((i: any) => ({ ...i.dataValues, type: 'income' })),
-            ...invoices.map((inv: any) => {
-                // Montar data fictícia do vencimento da fatura para ordenação da IA
+            ...allExpenses.map((e: any) => ({ ...e.dataValues, type: 'expense' })),
+            ...allIncomes.map((i: any) => ({ ...i.dataValues, type: 'income' })),
+            ...allInvoices.map((inv: any) => {
                 const dueDay = inv.creditCard?.dueDay || 10;
                 const dueDate = new Date(inv.year, inv.month - 1, dueDay).toISOString().split('T')[0];
                 return {
@@ -110,6 +111,8 @@ export const getInsights = async (req: Request, res: Response) => {
                     amount: inv.amount,
                     category: 'Cartão de Crédito',
                     date: dueDate,
+                    month: inv.month,
+                    year: inv.year,
                     type: 'expense'
                 };
             })
