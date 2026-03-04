@@ -292,7 +292,15 @@ export class CreditCardsComponent implements OnInit {
         if (this.cardForm.invalid) return;
         this.submitting = true;
 
-        const cardData = this.cardForm.value;
+        const raw = this.cardForm.value;
+        const cardData = {
+            ...raw,
+            imageUrl: raw.imageUrl?.trim() || null,
+            creditLimit: raw.creditLimit != null ? Number(raw.creditLimit) : undefined,
+            closingDay: raw.closingDay != null ? Number(raw.closingDay) : undefined,
+            dueDay: raw.dueDay != null ? Number(raw.dueDay) : undefined,
+            sharedLimitCardId: raw.sharedLimitCardId || null,
+        };
 
         if (this.editingCardId) {
             this.cardService.update(this.editingCardId, cardData).subscribe({
