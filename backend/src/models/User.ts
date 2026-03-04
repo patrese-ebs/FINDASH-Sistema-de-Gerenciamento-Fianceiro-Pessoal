@@ -6,17 +6,21 @@ interface UserAttributes {
     email: string;
     password: string;
     name: string;
+    role: 'user' | 'admin';
+    isActive: boolean;
     createdAt?: Date;
     updatedAt?: Date;
 }
 
-interface UserCreationAttributes extends Optional<UserAttributes, 'id'> { }
+interface UserCreationAttributes extends Optional<UserAttributes, 'id' | 'role' | 'isActive'> { }
 
 class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
     public id!: string;
     public email!: string;
     public password!: string;
     public name!: string;
+    public role!: 'user' | 'admin';
+    public isActive!: boolean;
     public readonly createdAt!: Date;
     public readonly updatedAt!: Date;
 }
@@ -43,6 +47,16 @@ User.init(
         name: {
             type: DataTypes.STRING,
             allowNull: false,
+        },
+        role: {
+            type: DataTypes.ENUM('user', 'admin'),
+            allowNull: false,
+            defaultValue: 'user',
+        },
+        isActive: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: true,
         },
     },
     {

@@ -1,0 +1,245 @@
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <div class="flex items-center gap-3 mb-1">
+                <a routerLink="/admin" class="text-text-secondary hover:text-text-primary transition-colors">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                    </svg>
+                </a>
+                <h1 class="text-2xl font-bold text-text-primary">Gerenciar Usuários</h1>
+            </div>
+            <p class="text-sm text-text-secondary ml-8">{{ users.length }} usuário(s) cadastrado(s)</p>
+        </div>
+        <button (click)="openCreateModal()" class="fd-btn-primary px-4 py-2.5 text-sm flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+            Novo Usuário
+        </button>
+    </div>
+
+    <!-- Success Message -->
+    <div *ngIf="successMessage"
+        class="flex items-center gap-2 text-accent-emerald text-sm bg-accent-emerald/5 border border-accent-emerald/20 rounded-md px-4 py-3 animate-enter">
+        <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                clip-rule="evenodd" />
+        </svg>
+        {{ successMessage }}
+    </div>
+
+    <!-- Error -->
+    <div *ngIf="error"
+        class="flex items-center gap-2 text-accent-red text-sm bg-accent-red/5 border border-accent-red/20 rounded-md px-4 py-3">
+        <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd"
+                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                clip-rule="evenodd" />
+        </svg>
+        {{ error }}
+    </div>
+
+    <!-- Loading -->
+    <div *ngIf="loading" class="flex items-center justify-center py-20">
+        <svg class="w-8 h-8 animate-spin text-accent-emerald" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+        </svg>
+    </div>
+
+    <!-- Users Table -->
+    <div *ngIf="!loading" class="fd-card overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b border-dark-border">
+                        <th
+                            class="text-left px-5 py-3.5 text-xs font-semibold text-text-muted uppercase tracking-wider">
+                            Nome</th>
+                        <th
+                            class="text-left px-5 py-3.5 text-xs font-semibold text-text-muted uppercase tracking-wider">
+                            Email</th>
+                        <th
+                            class="text-left px-5 py-3.5 text-xs font-semibold text-text-muted uppercase tracking-wider">
+                            Role</th>
+                        <th
+                            class="text-left px-5 py-3.5 text-xs font-semibold text-text-muted uppercase tracking-wider">
+                            Status</th>
+                        <th
+                            class="text-left px-5 py-3.5 text-xs font-semibold text-text-muted uppercase tracking-wider">
+                            Criado em</th>
+                        <th
+                            class="text-right px-5 py-3.5 text-xs font-semibold text-text-muted uppercase tracking-wider">
+                            Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let user of users"
+                        class="border-b border-dark-border/50 hover:bg-white/[0.02] transition-colors">
+                        <td class="px-5 py-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
+                                    [style.background]="user.role === 'admin' ? 'linear-gradient(135deg, #f59e0b, #d97706)' : 'linear-gradient(135deg, #10b981, #059669)'"
+                                    style="color: #080d1a;">
+                                    {{ user.name.charAt(0).toUpperCase() }}
+                                </div>
+                                <span class="text-sm font-medium text-text-primary">{{ user.name }}</span>
+                            </div>
+                        </td>
+                        <td class="px-5 py-4 text-sm text-text-secondary">{{ user.email }}</td>
+                        <td class="px-5 py-4">
+                            <span
+                                class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wider"
+                                [class]="user.role === 'admin' ? 'bg-accent-gold/10 text-accent-gold' : 'bg-blue-500/10 text-blue-400'">
+                                {{ user.role }}
+                            </span>
+                        </td>
+                        <td class="px-5 py-4">
+                            <span
+                                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold"
+                                [class]="user.isActive ? 'bg-accent-emerald/10 text-accent-emerald' : 'bg-accent-red/10 text-accent-red'">
+                                <span class="w-1.5 h-1.5 rounded-full"
+                                    [class]="user.isActive ? 'bg-accent-emerald' : 'bg-accent-red'"></span>
+                                {{ user.isActive ? 'Ativo' : 'Inativo' }}
+                            </span>
+                        </td>
+                        <td class="px-5 py-4 text-sm text-text-secondary">{{ formatDate(user.createdAt) }}</td>
+                        <td class="px-5 py-4">
+                            <div class="flex items-center justify-end gap-1">
+                                <!-- Edit -->
+                                <button (click)="openEditModal(user)" title="Editar"
+                                    class="p-2 rounded-md text-text-secondary hover:text-accent-emerald hover:bg-accent-emerald/5 transition-colors">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                        stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                </button>
+                                <!-- Reset Password -->
+                                <button (click)="openResetPasswordModal(user)" title="Resetar Senha"
+                                    class="p-2 rounded-md text-text-secondary hover:text-accent-gold hover:bg-accent-gold/5 transition-colors">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                        stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                                    </svg>
+                                </button>
+                                <!-- Toggle Status -->
+                                <button (click)="toggleStatus(user)" [title]="user.isActive ? 'Desativar' : 'Ativar'"
+                                    class="p-2 rounded-md transition-colors"
+                                    [class]="user.isActive ? 'text-text-secondary hover:text-accent-red hover:bg-accent-red/5' : 'text-text-secondary hover:text-accent-emerald hover:bg-accent-emerald/5'">
+                                    <svg *ngIf="user.isActive" class="w-4 h-4" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                                    </svg>
+                                    <svg *ngIf="!user.isActive" class="w-4 h-4" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="users.length === 0" class="text-center py-12">
+            <svg class="w-12 h-12 text-text-muted mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+            <p class="text-text-secondary text-sm">Nenhum usuário cadastrado</p>
+            <button (click)="openCreateModal()" class="fd-btn-primary px-4 py-2 text-sm mt-4">
+                Criar Primeiro Usuário
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div *ngIf="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4" (click)="closeModal()">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+    <div class="relative w-full max-w-md fd-card p-6 animate-enter" (click)="$event.stopPropagation()">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-lg font-bold text-text-primary">{{ modalTitle }}</h3>
+            <button (click)="closeModal()" class="text-text-secondary hover:text-text-primary transition-colors">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <form (ngSubmit)="submitForm()" class="space-y-4">
+            <!-- Name (create/edit) -->
+            <div *ngIf="modalMode !== 'reset-password'">
+                <label class="fd-label">Nome</label>
+                <input type="text" [(ngModel)]="formData.name" name="name" class="fd-input" placeholder="Nome completo"
+                    required>
+            </div>
+
+            <!-- Email (create/edit) -->
+            <div *ngIf="modalMode !== 'reset-password'">
+                <label class="fd-label">Email</label>
+                <input type="email" [(ngModel)]="formData.email" name="email" class="fd-input"
+                    placeholder="usuario@email.com" required>
+            </div>
+
+            <!-- Password (create/reset) -->
+            <div *ngIf="modalMode !== 'edit'">
+                <label class="fd-label">{{ modalMode === 'reset-password' ? 'Nova Senha' : 'Senha' }}</label>
+                <input type="password" [(ngModel)]="formData.password" name="password" class="fd-input"
+                    placeholder="Mín. 8 caracteres, 1 maiúscula, 1 número, 1 especial" required>
+                <p *ngIf="modalMode === 'reset-password'" class="text-xs text-text-muted mt-1.5">
+                    Resetando senha de: <span class="text-text-primary font-medium">{{ formData.email }}</span>
+                </p>
+            </div>
+
+            <!-- Role (create/edit) -->
+            <div *ngIf="modalMode !== 'reset-password'">
+                <label class="fd-label">Permissão</label>
+                <select [(ngModel)]="formData.role" name="role" class="fd-input">
+                    <option value="user">Usuário</option>
+                    <option value="admin">Administrador</option>
+                </select>
+            </div>
+
+            <!-- Error -->
+            <div *ngIf="formError"
+                class="flex items-center gap-2 text-accent-red text-sm bg-accent-red/5 border border-accent-red/20 rounded-md px-4 py-3">
+                <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd"
+                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                        clip-rule="evenodd" />
+                </svg>
+                {{ formError }}
+            </div>
+
+            <!-- Actions -->
+            <div class="flex gap-3 pt-2">
+                <button type="button" (click)="closeModal()"
+                    class="flex-1 px-4 py-2.5 text-sm rounded-lg border border-dark-border text-text-secondary hover:text-text-primary hover:bg-white/[0.03] transition-colors">
+                    Cancelar
+                </button>
+                <button type="submit" [disabled]="formLoading"
+                    class="fd-btn-primary flex-1 py-2.5 text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                    <svg *ngIf="formLoading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                        </circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z">
+                        </path>
+                    </svg>
+                    {{ formLoading ? 'Salvando...' : (modalMode === 'create' ? 'Criar Usuário' : modalMode === 'edit' ?
+                    'Salvar Alterações' : 'Resetar Senha') }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

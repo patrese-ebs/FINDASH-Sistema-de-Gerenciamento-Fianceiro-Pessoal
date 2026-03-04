@@ -4,7 +4,7 @@ import { User } from '../models';
 import { config } from '../config/env';
 
 export class AuthService {
-    async register(email: string, password: string, name: string) {
+    async register(email: string, password: string, name: string, role: 'user' | 'admin' = 'user') {
         // Check if user already exists
         const existingUser = await User.findOne({ where: { email } });
         if (existingUser) {
@@ -19,16 +19,18 @@ export class AuthService {
             email,
             password: hashedPassword,
             name,
+            role,
         });
 
         // Generate token
-        const token = this.generateToken(user.id, user.email);
+        const token = this.generateToken(user.id, user.email, user.role);
 
         return {
             user: {
                 id: user.id,
                 email: user.email,
                 name: user.name,
+                role: user.role,
             },
             token,
         };
@@ -41,6 +43,11 @@ export class AuthService {
             throw new Error('Invalid credentials');
         }
 
+        // Check if user is active
+        if (!user.isActive) {
+            throw new Error('Account is deactivated. Contact an administrator.');
+        }
+
         // Verify password
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
@@ -48,13 +55,14 @@ export class AuthService {
         }
 
         // Generate token
-        const token = this.generateToken(user.id, user.email);
+        const token = this.generateToken(user.id, user.email, user.role);
 
         return {
             user: {
                 id: user.id,
                 email: user.email,
                 name: user.name,
+                role: user.role,
             },
             token,
         };
@@ -62,7 +70,7 @@ export class AuthService {
 
     async getMe(userId: string) {
         const user = await User.findByPk(userId, {
-            attributes: ['id', 'email', 'name', 'createdAt'],
+            attributes: ['id', 'email', 'name', 'role', 'isActive', 'createdAt'],
         });
 
         if (!user) {
@@ -72,9 +80,9 @@ export class AuthService {
         return user;
     }
 
-    private generateToken(userId: string, email: string): string {
+    private generateToken(userId: string, email: string, role: 'user' | 'admin'): string {
         return jwt.sign(
-            { userId, email },
+            { userId, email, role },
             config.jwt.secret,
             { algorithm: 'HS256', expiresIn: config.jwt.expiresIn } as jwt.SignOptions
         );

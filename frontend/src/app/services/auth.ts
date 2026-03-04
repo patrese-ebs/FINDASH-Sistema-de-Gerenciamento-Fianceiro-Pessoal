@@ -14,15 +14,6 @@ export class AuthService {
 
   constructor(private http: HttpClient, private router: Router) { }
 
-  register(email: string, password: string, name: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/register`, { email, password, name }).pipe(
-      tap((response: any) => {
-        this.setSession(response);
-      }),
-      catchError(this.handleError)
-    );
-  }
-
   login(email: string, password: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/login`, { email, password }).pipe(
       tap((response: any) => {
@@ -54,6 +45,11 @@ export class AuthService {
     return !!localStorage.getItem('token');
   }
 
+  isAdmin(): boolean {
+    const user = this.getUser();
+    return user?.role === 'admin';
+  }
+
   getToken(): string | null {
     return localStorage.getItem('token');
   }
@@ -63,3 +59,4 @@ export class AuthService {
     return throwError(() => new Error(error.error?.error || 'Authentication failed'));
   }
 }
+

@@ -34,6 +34,7 @@ export const authMiddleware = (req: AuthRequest, res: Response, next: NextFuncti
 
             const payload = decoded as JWTPayload;
             req.userId = payload.userId;
+            req.userRole = payload.role;
             return next();
         });
     } catch (error) {

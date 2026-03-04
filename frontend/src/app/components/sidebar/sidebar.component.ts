@@ -12,7 +12,12 @@ import { AuthService } from '../../services/auth';
 export class SidebarComponent {
     constructor(private authService: AuthService) { }
 
+    get isAdmin(): boolean {
+        return this.authService.isAdmin();
+    }
+
     logout() {
         this.authService.logout();
     }
 }
+

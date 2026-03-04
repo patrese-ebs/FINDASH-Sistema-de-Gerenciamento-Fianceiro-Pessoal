@@ -2,11 +2,13 @@ import { Request } from 'express';
 
 export interface AuthRequest extends Request {
     userId?: string;
+    userRole?: 'user' | 'admin';
 }
 
 export interface JWTPayload {
     userId: string;
     email: string;
+    role: 'user' | 'admin';
 }
 
 export interface PaginationQuery {

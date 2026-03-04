@@ -4,15 +4,18 @@ import { IncomeController } from '../controllers/IncomeController';
 import { ExpenseController } from '../controllers/ExpenseController';
 import { CreditCardController } from '../controllers/CreditCardController';
 import { InvestmentController } from '../controllers/InvestmentController';
+import { AdminController } from '../controllers/AdminController';
 import aiRoutes from './aiRoutes';
 import { authMiddleware } from '../middleware/auth';
+import { isAdmin } from '../middleware/adminAuth';
 import { validate } from '../middleware/validation';
 import {
-    registerSchema, loginSchema, forgotPasswordSchema, resetPasswordSchema, updateProfileSchema,
+    loginSchema, forgotPasswordSchema, resetPasswordSchema, updateProfileSchema,
     createExpenseSchema, updateExpenseSchema,
     createIncomeSchema, updateIncomeSchema,
     createCreditCardSchema, updateCreditCardSchema, addTransactionSchema, payInvoiceSchema,
     createInvestmentSchema, updateInvestmentSchema,
+    adminCreateUserSchema, adminUpdateUserSchema, adminResetPasswordSchema,
 } from '../middleware/schemas';
 
 import rateLimit from 'express-rate-limit';
@@ -35,9 +38,9 @@ const incomeController = new IncomeController();
 const expenseController = new ExpenseController();
 const creditCardController = new CreditCardController();
 const investmentController = new InvestmentController();
+const adminController = new AdminController();
 
-// Auth routes
-router.post('/auth/register', authLimiter, validate(registerSchema), authController.register.bind(authController));
+// Auth routes (register removed — only admin can create users)
 router.post('/auth/login', authLimiter, validate(loginSchema), authController.login.bind(authController));
 router.post('/auth/forgot-password', authLimiter, validate(forgotPasswordSchema), authController.forgotPassword.bind(authController));
 router.post('/auth/reset-password', authLimiter, validate(resetPasswordSchema), authController.resetPassword.bind(authController));
@@ -82,4 +85,16 @@ router.delete('/investments/:id', authMiddleware, investmentController.delete.bi
 // AI routes
 router.use('/ai', aiRoutes);
 
+// Admin routes (protected: auth + admin role)
+router.get('/admin/users', authMiddleware, isAdmin, adminController.listUsers.bind(adminController));
+router.post('/admin/users', authMiddleware, isAdmin, validate(adminCreateUserSchema), adminController.createUser.bind(adminController));
+router.put('/admin/users/:id', authMiddleware, isAdmin, validate(adminUpdateUserSchema), adminController.updateUser.bind(adminController));
+router.put('/admin/users/:id/toggle-status', authMiddleware, isAdmin, adminController.toggleUserStatus.bind(adminController));
+router.put('/admin/users/:id/reset-password', authMiddleware, isAdmin, validate(adminResetPasswordSchema), adminController.resetUserPassword.bind(adminController));
+router.get('/admin/stats', authMiddleware, isAdmin, adminController.getStats.bind(adminController));
+
+// Admin seed (one-time, no auth required)
+router.post('/admin/seed', adminController.seedAdmin.bind(adminController));
+
 export default router;
+

@@ -160,6 +160,33 @@ export const aiParseTextSchema = z.object({
     text: z.string().min(1).max(2000).optional(),
 });
 
+// ==================== ADMIN ====================
+
+export const adminCreateUserSchema = z.object({
+    email: z.string().email('Email inválido'),
+    password: z.string()
+        .min(8, 'Senha deve ter no mínimo 8 caracteres')
+        .regex(/[A-Z]/, 'Senha deve conter pelo menos uma letra maiúscula')
+        .regex(/[0-9]/, 'Senha deve conter pelo menos um número')
+        .regex(/[^A-Za-z0-9]/, 'Senha deve conter pelo menos um caractere especial'),
+    name: z.string().min(2, 'Nome deve ter no mínimo 2 caracteres').max(100),
+    role: z.enum(['user', 'admin']).optional(),
+});
+
+export const adminUpdateUserSchema = z.object({
+    name: z.string().min(2).max(100).optional(),
+    email: z.string().email('Email inválido').optional(),
+    role: z.enum(['user', 'admin']).optional(),
+});
+
+export const adminResetPasswordSchema = z.object({
+    newPassword: z.string()
+        .min(8, 'Senha deve ter no mínimo 8 caracteres')
+        .regex(/[A-Z]/, 'Senha deve conter pelo menos uma letra maiúscula')
+        .regex(/[0-9]/, 'Senha deve conter pelo menos um número')
+        .regex(/[^A-Za-z0-9]/, 'Senha deve conter pelo menos um caractere especial'),
+});
+
 // ==================== UUID PARAM ====================
 
 export const uuidParamSchema = z.object({

@@ -1,0 +1,202 @@
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-text-primary">Painel Administrativo</h1>
+            <p class="text-sm text-text-secondary mt-1">Visão geral do sistema</p>
+        </div>
+        <a routerLink="/admin/users" class="fd-btn-primary px-4 py-2.5 text-sm flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+            Gerenciar Usuários
+        </a>
+    </div>
+
+    <!-- Loading -->
+    <div *ngIf="loading" class="flex items-center justify-center py-20">
+        <svg class="w-8 h-8 animate-spin text-accent-emerald" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+        </svg>
+    </div>
+
+    <!-- Error -->
+    <div *ngIf="error"
+        class="flex items-center gap-2 text-accent-red text-sm bg-accent-red/5 border border-accent-red/20 rounded-md px-4 py-3">
+        <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd"
+                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                clip-rule="evenodd" />
+        </svg>
+        {{ error }}
+    </div>
+
+    <!-- Stats Cards -->
+    <div *ngIf="stats && !loading" class="space-y-6">
+
+        <!-- Users Section -->
+        <div>
+            <p class="text-[10px] font-semibold text-text-muted uppercase tracking-widest mb-3">Usuários</p>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <!-- Total Users -->
+                <div class="fd-card p-5">
+                    <div class="flex items-center gap-4">
+                        <div
+                            class="w-11 h-11 rounded-lg bg-accent-emerald/10 flex items-center justify-center flex-shrink-0">
+                            <svg class="w-5 h-5 text-accent-emerald" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="text-xs text-text-secondary">Total de Usuários</div>
+                            <div class="text-2xl font-bold text-text-primary font-mono">{{ stats.users.total }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Users -->
+                <div class="fd-card p-5">
+                    <div class="flex items-center gap-4">
+                        <div class="w-11 h-11 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+                            <svg class="w-5 h-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="text-xs text-text-secondary">Usuários Ativos</div>
+                            <div class="text-2xl font-bold text-blue-400 font-mono">{{ stats.users.active }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Inactive Users -->
+                <div class="fd-card p-5">
+                    <div class="flex items-center gap-4">
+                        <div
+                            class="w-11 h-11 rounded-lg bg-accent-red/10 flex items-center justify-center flex-shrink-0">
+                            <svg class="w-5 h-5 text-accent-red" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="text-xs text-text-secondary">Usuários Inativos</div>
+                            <div class="text-2xl font-bold text-accent-red font-mono">{{ stats.users.inactive }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Financial Section -->
+        <div>
+            <p class="text-[10px] font-semibold text-text-muted uppercase tracking-widest mb-3">Financeiro</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Total Income -->
+                <div class="fd-card p-5">
+                    <div class="flex items-center gap-4">
+                        <div
+                            class="w-11 h-11 rounded-lg bg-accent-emerald/10 flex items-center justify-center flex-shrink-0">
+                            <svg class="w-5 h-5 text-accent-emerald" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="2">
+                                <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="text-xs text-text-secondary">Receitas Totais</div>
+                            <div class="text-lg font-bold text-accent-emerald font-mono">{{
+                                formatCurrency(stats.financial.incomeSum) }}</div>
+                            <div class="text-[10px] text-text-muted">{{ stats.financial.totalIncomes }} registros</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Total Expenses -->
+                <div class="fd-card p-5">
+                    <div class="flex items-center gap-4">
+                        <div
+                            class="w-11 h-11 rounded-lg bg-accent-red/10 flex items-center justify-center flex-shrink-0">
+                            <svg class="w-5 h-5 text-accent-red" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                stroke-width="2">
+                                <polyline points="22 17 13.5 8.5 8.5 13.5 2 7" />
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="text-xs text-text-secondary">Despesas Totais</div>
+                            <div class="text-lg font-bold text-accent-red font-mono">{{
+                                formatCurrency(stats.financial.expenseSum) }}</div>
+                            <div class="text-[10px] text-text-muted">{{ stats.financial.totalExpenses }} registros</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Credit Cards -->
+                <div class="fd-card p-5">
+                    <div class="flex items-center gap-4">
+                        <div
+                            class="w-11 h-11 rounded-lg bg-accent-gold/10 flex items-center justify-center flex-shrink-0">
+                            <svg class="w-5 h-5 text-accent-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                stroke-width="2">
+                                <rect x="2" y="5" width="20" height="14" rx="2" />
+                                <path stroke-linecap="round" d="M2 10h20" />
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="text-xs text-text-secondary">Cartões de Crédito</div>
+                            <div class="text-2xl font-bold text-accent-gold font-mono">{{
+                                stats.financial.totalCreditCards }}</div>
+                            <div class="text-[10px] text-text-muted">{{ stats.financial.totalCreditCardTransactions }}
+                                transações</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Investments -->
+                <div class="fd-card p-5">
+                    <div class="flex items-center gap-4">
+                        <div
+                            class="w-11 h-11 rounded-lg bg-purple-500/10 flex items-center justify-center flex-shrink-0">
+                            <svg class="w-5 h-5 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                stroke-width="2">
+                                <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+                                <polyline points="16 7 22 7 22 13" />
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="text-xs text-text-secondary">Investimentos</div>
+                            <div class="text-2xl font-bold text-purple-400 font-mono">{{
+                                stats.financial.totalInvestments }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Balance Card -->
+        <div class="fd-card p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-text-secondary">Balanço Geral do Sistema</p>
+                    <p class="text-3xl font-bold font-mono mt-1"
+                        [class]="(stats.financial.incomeSum - stats.financial.expenseSum) >= 0 ? 'text-accent-emerald' : 'text-accent-red'">
+                        {{ formatCurrency(stats.financial.incomeSum - stats.financial.expenseSum) }}
+                    </p>
+                </div>
+                <div class="w-14 h-14 rounded-xl flex items-center justify-center"
+                    [class]="(stats.financial.incomeSum - stats.financial.expenseSum) >= 0 ? 'bg-accent-emerald/10' : 'bg-accent-red/10'">
+                    <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                        [class]="(stats.financial.incomeSum - stats.financial.expenseSum) >= 0 ? 'text-accent-emerald' : 'text-accent-red'">
+                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
