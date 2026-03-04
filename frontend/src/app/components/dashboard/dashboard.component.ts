@@ -103,7 +103,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
         this.loadingInsights = true;
         const headers = new HttpHeaders().set('Authorization', `Bearer ${this.authService.getToken()}`);
 
-        let url = `/api/ai/insights?month=${this.selectedMonth}&year=${this.selectedYear}`;
+        let url = `/api/ai/insights?month=${this.selectedMonth}&year=${this.selectedYear}&_t=${new Date().getTime()}`;
         if (force) url += '&force=true';
 
         this.http.get<{ insights: string }>(url, { headers }).subscribe({

@@ -88,24 +88,34 @@ export const getInsights = async (req: Request, res: Response) => {
             allTransactions = await CreditCardTransaction.findAll({ where: { creditCardId: creditCardIds } });
         }
 
-        // Buscar TODAS as despesas e receitas, igual ao Frontend (ignora a coluna "month" do banco para fugir de falhas de fuso horário)
+        // Helper robusto para extrair mês e ano exatamente como o Dashboard faz no frontend
+        const getSafeDate = (dateVal: any) => {
+            if (!dateVal) return { month: 0, year: 0 };
+            const dateStr = dateVal.toString();
+            // Se for string ISO ou YYYY-MM-DD
+            if (dateStr.includes('-')) {
+                const parts = dateStr.split('T')[0].split('-').map(Number);
+                if (parts.length >= 2) return { year: parts[0], month: parts[1] };
+            }
+            // Fallback para Objeto Date
+            const d = new Date(dateVal);
+            return { year: d.getUTCFullYear(), month: d.getUTCMonth() + 1 };
+        };
+
+        // Buscar TODAS as despesas e receitas, igual ao Frontend
         const allExpensesDb = await Expense.findAll({ where: { userId } });
         const allIncomesDb = await Income.findAll({ where: { userId } });
 
         for (const target of targetMonths) {
             // Filtrar na memória igual ao dashboard.component.ts
             const expenses = allExpensesDb.filter((e: any) => {
-                const dateStr = e.date ? e.date.toString() : '';
-                if (!dateStr) return false;
-                const [year, month] = dateStr.includes('T') ? dateStr.split('T')[0].split('-').map(Number) : dateStr.split('-').map(Number);
+                const { year, month } = getSafeDate(e.date);
                 return month === target.month && year === target.year;
             });
             allExpenses = [...allExpenses, ...expenses];
 
             const incomes = allIncomesDb.filter((i: any) => {
-                const dateStr = i.date ? i.date.toString() : '';
-                if (!dateStr) return false;
-                const [year, month] = dateStr.includes('T') ? dateStr.split('T')[0].split('-').map(Number) : dateStr.split('-').map(Number);
+                const { year, month } = getSafeDate(i.date);
                 return month === target.month && year === target.year;
             });
             allIncomes = [...allIncomes, ...incomes];
@@ -114,9 +124,8 @@ export const getInsights = async (req: Request, res: Response) => {
                 creditCards.forEach((card: any) => {
                     const cardTx = allTransactions.filter((t: any) => t.creditCardId === card.id);
                     const items = cardTx.filter((t: any) => {
-                        const dateStr = t.purchaseDate ? t.purchaseDate.toString() : '';
-                        if (!dateStr) return false;
-                        const [pYear, pMonth] = dateStr.includes('T') ? dateStr.split('T')[0].split('-').map(Number) : dateStr.split('-').map(Number);
+                        const { year: pYear, month: pMonth } = getSafeDate(t.purchaseDate);
+                        if (!pYear) return false;
                         const monthsElapsed = (target.year - pYear) * 12 + (target.month - pMonth);
                         return monthsElapsed >= 0 && monthsElapsed < t.installments;
                     });
@@ -138,13 +147,11 @@ export const getInsights = async (req: Request, res: Response) => {
 
         const allTx = [
             ...allExpenses.map((e: any) => {
-                const dateStr = e.date ? e.date.toString() : '';
-                const [year, month] = dateStr.includes('T') ? dateStr.split('T')[0].split('-').map(Number) : dateStr.split('-').map(Number);
+                const { year, month } = getSafeDate(e.date);
                 return { ...e.dataValues, type: 'expense', month, year };
             }),
             ...allIncomes.map((i: any) => {
-                const dateStr = i.date ? i.date.toString() : '';
-                const [year, month] = dateStr.includes('T') ? dateStr.split('T')[0].split('-').map(Number) : dateStr.split('-').map(Number);
+                const { year, month } = getSafeDate(i.date);
                 return { ...i.dataValues, type: 'income', month, year };
             }),
             ...allInvoices.map((inv: any) => {
