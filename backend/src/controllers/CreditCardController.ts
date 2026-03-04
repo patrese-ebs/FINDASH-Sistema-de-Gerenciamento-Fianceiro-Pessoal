@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import { CreditCard, CreditCardTransaction, CreditCardInvoice, Expense } from '../models';
 import { AuthRequest } from '../types';
+import redisService from '../services/RedisService';
 
 export class CreditCardController {
     async getAll(req: AuthRequest, res: Response): Promise<void> {
@@ -327,6 +328,7 @@ export class CreditCardController {
                 enabled: enabled !== undefined ? enabled : true,
             });
 
+            await redisService.delPattern(`insight:${userId}*`);
             res.status(201).json(creditCard);
         } catch (error) {
             res.status(500).json({ error: 'Failed to create credit card' });
@@ -363,6 +365,7 @@ export class CreditCardController {
                 enabled: enabled !== undefined ? enabled : creditCard.enabled,
             });
 
+            await redisService.delPattern(`insight:${userId}*`);
             res.status(200).json(creditCard);
         } catch (error) {
             res.status(500).json({ error: 'Failed to update credit card' });
@@ -387,6 +390,7 @@ export class CreditCardController {
             }
 
             await creditCard.destroy();
+            await redisService.delPattern(`insight:${userId}*`);
             res.status(204).send();
         } catch (error) {
             res.status(500).json({ error: 'Failed to delete credit card' });
@@ -510,6 +514,7 @@ export class CreditCardController {
                 }
             }
 
+            await redisService.delPattern(`insight:${userId}*`);
             res.status(200).json({ message: 'Invoices updated successfully' });
         } catch (error) {
             console.error('Failed to plan invoices:', error);
@@ -549,6 +554,7 @@ export class CreditCardController {
                 category,
             });
 
+            await redisService.delPattern(`insight:${userId}*`);
             res.status(201).json(transaction);
         } catch (error) {
             res.status(500).json({ error: 'Failed to add transaction' });
@@ -597,6 +603,7 @@ export class CreditCardController {
                     purchaseDate: purchaseDate ? new Date(purchaseDate) : transaction.purchaseDate
                 });
 
+                await redisService.delPattern(`insight:${userId}*`);
                 res.status(200).json(transaction);
                 return;
             }
@@ -622,6 +629,7 @@ export class CreditCardController {
                     category: category || transaction.category,
                     purchaseDate: purchaseDate ? new Date(purchaseDate) : transaction.purchaseDate
                 });
+                await redisService.delPattern(`insight:${userId}*`);
                 res.status(200).json(transaction);
                 return;
             }
@@ -653,6 +661,7 @@ export class CreditCardController {
                 category: category || transaction.category
             });
 
+            await redisService.delPattern(`insight:${userId}*`);
             res.status(200).json(newTransaction);
 
         } catch (error) {
@@ -727,6 +736,7 @@ export class CreditCardController {
                 await transaction.destroy();
             }
 
+            await redisService.delPattern(`insight:${userId}*`);
             res.status(200).send();
         } catch (error) {
             console.error(error);
@@ -994,6 +1004,8 @@ export class CreditCardController {
                 paymentMethod: 'transfer',
                 isPaid: true
             });
+
+            await redisService.delPattern(`insight:${userId}*`);
 
             res.status(200).json({
                 ...invoice.toJSON(),

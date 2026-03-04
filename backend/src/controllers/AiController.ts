@@ -62,10 +62,11 @@ export const getInsights = async (req: Request, res: Response) => {
         }
 
         // 2. Se não estiver no cache, busca no banco de dados e gera com a IA
-        const { Expense, Income } = await import('../models');
+        const { Expense, Income, CreditCard, CreditCardInvoice } = await import('../models');
 
         const expenseWhere: any = { userId };
         const incomeWhere: any = { userId };
+        const cardWhere: any = { userId };
 
         if (month) {
             expenseWhere.month = parseInt(month as string);
@@ -80,9 +81,38 @@ export const getInsights = async (req: Request, res: Response) => {
         const expenses = await Expense.findAll({ where: expenseWhere, order: [['date', 'DESC']] });
         const incomes = await Income.findAll({ where: incomeWhere, order: [['date', 'DESC']] });
 
+        // Buscar cartões de crédito para incluir as faturas no cálculo da IA
+        const creditCards = await CreditCard.findAll({ where: cardWhere });
+        const creditCardIds = creditCards.map((c: any) => c.id);
+
+        let invoices: any[] = [];
+        if (creditCardIds.length > 0) {
+            const invoiceWhere: any = { creditCardId: creditCardIds };
+            if (month) invoiceWhere.month = parseInt(month as string);
+            if (year) invoiceWhere.year = parseInt(year as string);
+
+            invoices = await CreditCardInvoice.findAll({
+                where: invoiceWhere,
+                include: [{ model: CreditCard, as: 'creditCard', attributes: ['name', 'dueDay'] }]
+            });
+        }
+
         const allTx = [
             ...expenses.map((e: any) => ({ ...e.dataValues, type: 'expense' })),
-            ...incomes.map((i: any) => ({ ...i.dataValues, type: 'income' }))
+            ...incomes.map((i: any) => ({ ...i.dataValues, type: 'income' })),
+            ...invoices.map((inv: any) => {
+                // Montar data fictícia do vencimento da fatura para ordenação da IA
+                const dueDay = inv.creditCard?.dueDay || 10;
+                const dueDate = new Date(inv.year, inv.month - 1, dueDay).toISOString().split('T')[0];
+                return {
+                    id: inv.id,
+                    description: `Fatura Cartão ${inv.creditCard?.name || ''}`.trim(),
+                    amount: inv.amount,
+                    category: 'Cartão de Crédito',
+                    date: dueDate,
+                    type: 'expense'
+                };
+            })
         ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
         const insights = await aiService.generateInsights(allTx);
