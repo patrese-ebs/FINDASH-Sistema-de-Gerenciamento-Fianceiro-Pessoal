@@ -63,7 +63,7 @@ export const getInsights = async (req: Request, res: Response) => {
         }
 
         // 2. Busca no banco de dados e gera com a IA (Mes Atual + 2 Meses Futuros para Previsão)
-        const { Expense, Income, CreditCard, CreditCardInvoice } = await import('../models');
+        const { Expense, Income, CreditCard, CreditCardTransaction } = await import('../models');
 
         const baseMonth = month ? parseInt(month as string) : new Date().getMonth() + 1;
         const baseYear = year ? parseInt(year as string) : new Date().getFullYear();
@@ -83,6 +83,11 @@ export const getInsights = async (req: Request, res: Response) => {
         const creditCards = await CreditCard.findAll({ where: { userId } });
         const creditCardIds = creditCards.map((c: any) => c.id);
 
+        let allTransactions: any[] = [];
+        if (creditCardIds.length > 0) {
+            allTransactions = await CreditCardTransaction.findAll({ where: { creditCardId: creditCardIds } });
+        }
+
         for (const target of targetMonths) {
             const expenses = await Expense.findAll({ where: { userId, month: target.month, year: target.year } });
             allExpenses = [...allExpenses, ...expenses];
@@ -91,11 +96,27 @@ export const getInsights = async (req: Request, res: Response) => {
             allIncomes = [...allIncomes, ...incomes];
 
             if (creditCardIds.length > 0) {
-                const invoices = await CreditCardInvoice.findAll({
-                    where: { creditCardId: creditCardIds, month: target.month, year: target.year },
-                    include: [{ model: CreditCard, as: 'creditCard', attributes: ['name', 'dueDay'] }]
+                creditCards.forEach((card: any) => {
+                    const cardTx = allTransactions.filter((t: any) => t.creditCardId === card.id);
+                    const items = cardTx.filter((t: any) => {
+                        const dateStr = t.purchaseDate.toString();
+                        const [pYear, pMonth] = dateStr.includes('T') ? dateStr.split('T')[0].split('-').map(Number) : dateStr.split('-').map(Number);
+                        const monthsElapsed = (target.year - pYear) * 12 + (target.month - pMonth);
+                        return monthsElapsed >= 0 && monthsElapsed < t.installments;
+                    });
+
+                    const total = items.reduce((sum, i) => sum + parseFloat(i.installmentAmount.toString()), 0);
+
+                    if (total > 0) {
+                        allInvoices.push({
+                            id: `virtual-invoice-${card.id}-${target.month}-${target.year}`,
+                            creditCard: card,
+                            amount: total,
+                            month: target.month,
+                            year: target.year
+                        });
+                    }
                 });
-                allInvoices = [...allInvoices, ...invoices];
             }
         }
 
