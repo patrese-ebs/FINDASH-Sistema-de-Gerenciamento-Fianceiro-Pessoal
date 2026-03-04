@@ -333,19 +333,19 @@ export class TransactionsComponent implements OnInit {
             formValue.amount = formValue.amount / formValue.installments;
             // Installment mode: send installments count, clear recurring
             formValue.isRecurring = false;
-            formValue.recurrenceFrequency = null;
-            formValue.recurrenceEndDate = null;
+            delete formValue.recurrenceFrequency;
+            delete formValue.recurrenceEndDate;
         } else if (formValue.isRecurring) {
             // Recurring mode: clear installments
             if (formValue.repeatIndefinitely) {
-                formValue.recurrenceEndDate = null;
+                delete formValue.recurrenceEndDate;
             }
             delete formValue.installments;
         } else {
             // Single expense: clear both
             formValue.isRecurring = false;
-            formValue.recurrenceFrequency = null;
-            formValue.recurrenceEndDate = null;
+            delete formValue.recurrenceFrequency;
+            delete formValue.recurrenceEndDate;
             delete formValue.installments;
         }
         // Remove UI-only fields

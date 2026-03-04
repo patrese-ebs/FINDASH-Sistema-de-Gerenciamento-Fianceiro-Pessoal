@@ -51,7 +51,7 @@ export const createExpenseSchema = z.object({
     paymentMethod: z.string().optional(),
     creditCardId: z.string().uuid().optional().nullable(),
     isRecurring: z.boolean().optional(),
-    recurrenceFrequency: z.string().optional(),
+    recurrenceFrequency: z.string().optional().nullable(),
     recurrenceEndDate: z.string().optional().nullable(),
     isPaid: z.boolean().optional(),
     installments: z.number().int().min(1).optional(),
@@ -76,7 +76,7 @@ export const createIncomeSchema = z.object({
     category: z.string().min(1).max(50),
     date: z.string().min(1, 'Data é obrigatória'),
     isRecurring: z.boolean().optional(),
-    recurrenceFrequency: z.string().optional(),
+    recurrenceFrequency: z.string().optional().nullable(),
     recurrenceEndDate: z.string().optional().nullable(),
     isPaid: z.boolean().optional(),
 });
