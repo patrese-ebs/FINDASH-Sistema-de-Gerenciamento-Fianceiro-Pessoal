@@ -45,8 +45,14 @@ export const getInsights = async (req: Request, res: Response) => {
             return;
         }
 
+        const { month, year } = req.query;
+
         // 1. Verificar Cache no Redis (evita consultas ao banco e API)
-        const cacheKey = `insight:${userId}`;
+        let cacheKey = `insight:${userId}`;
+        if (month && year) {
+            cacheKey = `insight:${userId}:${year}:${month}`;
+        }
+
         const cachedInsights = await redisService.get(cacheKey);
 
         if (cachedInsights) {
@@ -58,8 +64,21 @@ export const getInsights = async (req: Request, res: Response) => {
         // 2. Se não estiver no cache, busca no banco de dados e gera com a IA
         const { Expense, Income } = await import('../models');
 
-        const expenses = await Expense.findAll({ where: { userId }, limit: 50, order: [['date', 'DESC']] });
-        const incomes = await Income.findAll({ where: { userId }, limit: 50, order: [['date', 'DESC']] });
+        const expenseWhere: any = { userId };
+        const incomeWhere: any = { userId };
+
+        if (month) {
+            expenseWhere.month = parseInt(month as string);
+            incomeWhere.month = parseInt(month as string);
+        }
+
+        if (year) {
+            expenseWhere.year = parseInt(year as string);
+            incomeWhere.year = parseInt(year as string);
+        }
+
+        const expenses = await Expense.findAll({ where: expenseWhere, order: [['date', 'DESC']] });
+        const incomes = await Income.findAll({ where: incomeWhere, order: [['date', 'DESC']] });
 
         const allTx = [
             ...expenses.map((e: any) => ({ ...e.dataValues, type: 'expense' })),

@@ -103,7 +103,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
         this.loadingInsights = true;
         const headers = new HttpHeaders().set('Authorization', `Bearer ${this.authService.getToken()}`);
 
-        this.http.get<{ insights: string }>('/api/ai/insights', { headers }).subscribe({
+        this.http.get<{ insights: string }>(`/api/ai/insights?month=${this.selectedMonth}&year=${this.selectedYear}`, { headers }).subscribe({
             next: (data) => {
                 this.insights = data.insights;
                 this.loadingInsights = false;
@@ -123,6 +123,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
             this.selectedMonth--;
         }
         this.calculateStats();
+        this.loadInsights();
     }
 
     nextMonth() {
@@ -133,6 +134,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
             this.selectedMonth++;
         }
         this.calculateStats();
+        this.loadInsights();
     }
 
     getMonthName(monthVal: number): string {

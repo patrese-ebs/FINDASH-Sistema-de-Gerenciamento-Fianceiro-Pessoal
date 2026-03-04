@@ -177,7 +177,7 @@ export class ExpenseController {
             const createdExpenses = await Expense.bulkCreate(expensesToCreate);
 
             // Invalidate AI insights cache
-            await redisService.del(`insight:${userId}`);
+            await redisService.delPattern(`insight:${userId}*`);
 
             res.status(201).json(createdExpenses[0]);
         } catch (error) {
@@ -221,7 +221,7 @@ export class ExpenseController {
             });
 
             // Invalidate AI insights cache
-            await redisService.del(`insight:${userId}`);
+            await redisService.delPattern(`insight:${userId}*`);
 
             res.status(200).json(expense);
         } catch (error) {
@@ -264,7 +264,7 @@ export class ExpenseController {
             }
 
             // Invalidate AI insights cache
-            await redisService.del(`insight:${userId}`);
+            await redisService.delPattern(`insight:${userId}*`);
 
             res.status(204).send();
         } catch (error) {

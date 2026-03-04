@@ -83,6 +83,22 @@ class RedisService {
     }
 
     /**
+     * Delete keys matching a pattern from Redis.
+     */
+    async delPattern(pattern: string): Promise<void> {
+        if (!this.isConnected || !this.client) return;
+
+        try {
+            const keys = await this.client.keys(pattern);
+            if (keys.length > 0) {
+                await this.client.del(keys);
+            }
+        } catch (error: any) {
+            console.error(`Redis DEL pattern error for ${pattern}:`, error.message);
+        }
+    }
+
+    /**
      * Close the Redis connection gracefully.
      */
     async quit(): Promise<void> {

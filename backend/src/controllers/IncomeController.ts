@@ -117,7 +117,7 @@ export class IncomeController {
             const createdIncomes = await Income.bulkCreate(incomesToCreate);
 
             // Invalidate AI insights cache
-            await redisService.del(`insight:${userId}`);
+            await redisService.delPattern(`insight:${userId}*`);
 
             res.status(201).json(createdIncomes[0]);
         } catch (error) {
@@ -159,7 +159,7 @@ export class IncomeController {
             });
 
             // Invalidate AI insights cache
-            await redisService.del(`insight:${userId}`);
+            await redisService.delPattern(`insight:${userId}*`);
 
             res.status(200).json(income);
         } catch (error) {
@@ -202,7 +202,7 @@ export class IncomeController {
             }
 
             // Invalidate AI insights cache
-            await redisService.del(`insight:${userId}`);
+            await redisService.delPattern(`insight:${userId}*`);
 
             res.status(204).send();
         } catch (error) {
