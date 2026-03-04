@@ -219,7 +219,8 @@
 
     /* --- MODAL --- */
     .fd-modal-overlay {
-        @apply fixed inset-0 z-50 flex items-center justify-center p-4;
+        @apply fixed inset-0 flex items-center justify-center p-4;
+        z-index: 60;
         background: rgba(4, 8, 18, 0.85);
         backdrop-filter: blur(8px);
     }
@@ -491,7 +492,7 @@
     }
 
     .fd-modal-body {
-        padding: 1rem 1.25rem;
+        padding: 1rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom)) 1.25rem;
     }
 
     .fd-modal-footer {
