@@ -207,8 +207,8 @@ Regras:
             const [expenses, creditCards] = await Promise.all([
                 Expense.findAll({
                     where: { userId, isPaid: false },
-                    order: [['date', 'DESC']],
-                    limit: 50
+                    order: [['date', 'ASC']], // Prioritize closest upcoming debts instead of far future
+                    limit: 300 // Increased limit so recurring items don't hide other debts
                 }),
                 CreditCard.findAll({
                     where: { userId },
@@ -225,11 +225,30 @@ Regras:
                 ? await CreditCardInvoice.findAll({ where: { creditCardId: cardIds } })
                 : [];
 
-            // Converter dados para texto legível (não JSON bruto)
-            const expenseLines = expenses.length > 0
-                ? expenses.map(e =>
-                    `- ${e.description} | ${this.formatCurrency(Number(e.amount))} | Categoria: ${e.category} | Data: ${e.date} | Status: Pendente`
-                ).join('\n')
+            // Group expenses by description to provide a concise summary to the AI
+            // This prevents the AI from receiving 50 individual lines for the same recurring "House" expense
+            const groupedExpenses: Record<string, { amount: number; count: number; nextDate: string; category: string }> = {};
+            expenses.forEach((e: any) => {
+                const key = e.description;
+                if (!groupedExpenses[key]) {
+                    groupedExpenses[key] = { amount: 0, count: 0, nextDate: e.date, category: e.category };
+                }
+                groupedExpenses[key].amount += Number(e.amount);
+                groupedExpenses[key].count += 1;
+                // Update to earliest date
+                if (new Date(e.date) < new Date(groupedExpenses[key].nextDate)) {
+                    groupedExpenses[key].nextDate = e.date;
+                }
+            });
+
+            // Converter dados para texto legível
+            const expenseLines = Object.keys(groupedExpenses).length > 0
+                ? Object.entries(groupedExpenses).map(([desc, data]) => {
+                    if (data.count > 1) {
+                        return `- ${desc} | Total Restante: ${this.formatCurrency(data.amount)} (${data.count} pendências) | Próx. Vencimento: ${data.nextDate} | Categoria: ${data.category}`;
+                    }
+                    return `- ${desc} | Valor: ${this.formatCurrency(data.amount)} | Vencimento: ${data.nextDate} | Categoria: ${data.category}`;
+                }).join('\n')
                 : 'Nenhuma despesa pendente encontrada.';
 
             const cardLines = creditCards.map(card => {
