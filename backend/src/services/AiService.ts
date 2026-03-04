@@ -124,20 +124,14 @@ Retorne APENAS o JSON array, sem explicações nem blocos de código markdown.`;
         return Array.isArray(parsed) ? parsed : [parsed];
     }
 
-    async generateInsights(transactions: any[]): Promise<string> {
+    async generateInsights(transactions: any[], baseMonth: number, baseYear: number): Promise<string> {
         if (!transactions || transactions.length === 0) {
             return "Ainda não há transações suficientes para gerar insights.";
         }
 
-        // Determinar o mês/ano base a partir das transações mais recentes, caso não tenha sido filtrado perfeitamente (para controle)
-        const currentDate = new Date();
-        const firstTx = transactions[0];
-        const baseMonth = firstTx && firstTx.month ? firstTx.month : currentDate.getMonth() + 1;
-        const baseYear = firstTx && firstTx.year ? firstTx.year : currentDate.getFullYear();
-
-        // Separar mês atual dos meses futuros
+        // Separar mês atual dos meses futuros (baseado no mês/ano passados pelo controller)
         const currentMonthTx = transactions.filter(t => t.month === baseMonth && t.year === baseYear);
-        const futureTx = transactions.filter(t => t.month !== baseMonth || t.year !== baseYear);
+        const futureTx = transactions.filter(t => (t.year > baseYear) || (t.year === baseYear && t.month > baseMonth));
 
         const currentExpenses = currentMonthTx.filter(t => t.type === 'expense');
         const currentIncomes = currentMonthTx.filter(t => t.type === 'income');
@@ -179,7 +173,7 @@ Retorne APENAS o JSON array, sem explicações nem blocos de código markdown.`;
 
         const prompt = `Você é um consultor financeiro brasileiro, amigável e direto. Fale como se estivesse conversando com um amigo próximo.
 
-DADOS DO MÊS ATUAL:
+DADOS DO MÊS DE REFERÊNCIA (${this.getMonthName(baseMonth)} / ${baseYear}):
 📊 Receita: ${this.formatCurrency(totalIncomes)}
 💸 Despesa: ${this.formatCurrency(totalExpenses)}
 💰 Saldo Total: ${this.formatCurrency(balance)} ${balance >= 0 ? '(positivo ✅)' : '(negativo ⚠️)'}
@@ -220,6 +214,14 @@ Regras gerais:
             console.error('AI Insight Error:', error);
             return `Erro ao gerar insights: ${error.message || 'Erro desconhecido'}. Verifique a API Key e cotas.`;
         }
+    }
+
+    private getMonthName(month: number): string {
+        const months = [
+            'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+            'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+        ];
+        return months[month - 1] || 'Mês Desconhecido';
     }
 
     async searchDebt(query: string, userId: string): Promise<string> {

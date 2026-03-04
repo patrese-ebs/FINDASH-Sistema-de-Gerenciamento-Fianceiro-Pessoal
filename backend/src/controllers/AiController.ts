@@ -170,7 +170,10 @@ export const getInsights = async (req: Request, res: Response) => {
             })
         ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-        const insights = await aiService.generateInsights(allTx);
+        console.log(`[AI] Gerando insights para ${baseMonth}/${baseYear} para o usuário ${userId}`);
+        console.log(`[AI] Total de transações processadas: ${allTx.length}`);
+
+        const insights = await aiService.generateInsights(allTx, baseMonth, baseYear);
 
         // 3. Salva no Redis com TTL de 24 horas (86400 segundos) como fallback
         // (O cache será invalidado manualmente nas operações de CRUD)
