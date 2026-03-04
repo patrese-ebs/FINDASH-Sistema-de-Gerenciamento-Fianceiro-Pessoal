@@ -88,18 +88,34 @@ export const getInsights = async (req: Request, res: Response) => {
             allTransactions = await CreditCardTransaction.findAll({ where: { creditCardId: creditCardIds } });
         }
 
+        // Buscar TODAS as despesas e receitas, igual ao Frontend (ignora a coluna "month" do banco para fugir de falhas de fuso horário)
+        const allExpensesDb = await Expense.findAll({ where: { userId } });
+        const allIncomesDb = await Income.findAll({ where: { userId } });
+
         for (const target of targetMonths) {
-            const expenses = await Expense.findAll({ where: { userId, month: target.month, year: target.year } });
+            // Filtrar na memória igual ao dashboard.component.ts
+            const expenses = allExpensesDb.filter((e: any) => {
+                const dateStr = e.date ? e.date.toString() : '';
+                if (!dateStr) return false;
+                const [year, month] = dateStr.includes('T') ? dateStr.split('T')[0].split('-').map(Number) : dateStr.split('-').map(Number);
+                return month === target.month && year === target.year;
+            });
             allExpenses = [...allExpenses, ...expenses];
 
-            const incomes = await Income.findAll({ where: { userId, month: target.month, year: target.year } });
+            const incomes = allIncomesDb.filter((i: any) => {
+                const dateStr = i.date ? i.date.toString() : '';
+                if (!dateStr) return false;
+                const [year, month] = dateStr.includes('T') ? dateStr.split('T')[0].split('-').map(Number) : dateStr.split('-').map(Number);
+                return month === target.month && year === target.year;
+            });
             allIncomes = [...allIncomes, ...incomes];
 
             if (creditCardIds.length > 0) {
                 creditCards.forEach((card: any) => {
                     const cardTx = allTransactions.filter((t: any) => t.creditCardId === card.id);
                     const items = cardTx.filter((t: any) => {
-                        const dateStr = t.purchaseDate.toString();
+                        const dateStr = t.purchaseDate ? t.purchaseDate.toString() : '';
+                        if (!dateStr) return false;
                         const [pYear, pMonth] = dateStr.includes('T') ? dateStr.split('T')[0].split('-').map(Number) : dateStr.split('-').map(Number);
                         const monthsElapsed = (target.year - pYear) * 12 + (target.month - pMonth);
                         return monthsElapsed >= 0 && monthsElapsed < t.installments;

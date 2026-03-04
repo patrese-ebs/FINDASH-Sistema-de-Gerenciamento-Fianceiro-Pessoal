@@ -144,9 +144,9 @@ Retorne APENAS o JSON array, sem explicações nem blocos de código markdown.`;
 
         const futureExpenses = futureTx.filter(t => t.type === 'expense');
 
-        const totalIncomes = currentIncomes.reduce((sum, t) => sum + Number(t.amount || 0), 0);
-        const totalExpenses = currentExpenses.reduce((sum, t) => sum + Number(t.amount || 0), 0);
-        const totalFutureExpenses = futureExpenses.reduce((sum, t) => sum + Number(t.amount || 0), 0);
+        const totalIncomes = currentIncomes.reduce((sum, t) => sum + Math.abs(Number(t.amount || 0)), 0);
+        const totalExpenses = currentExpenses.reduce((sum, t) => sum + Math.abs(Number(t.amount || 0)), 0);
+        const totalFutureExpenses = futureExpenses.reduce((sum, t) => sum + Math.abs(Number(t.amount || 0)), 0);
         const balance = totalIncomes - totalExpenses;
 
         // Agregar categorias do mês atual
@@ -154,7 +154,7 @@ Retorne APENAS o JSON array, sem explicações nem blocos de código markdown.`;
         currentExpenses.forEach(t => {
             const cat = t.category || 'Outros';
             if (!categoryMap[cat]) categoryMap[cat] = { total: 0, count: 0 };
-            categoryMap[cat].total += Number(t.amount || 0);
+            categoryMap[cat].total += Math.abs(Number(t.amount || 0));
             categoryMap[cat].count++;
         });
 
