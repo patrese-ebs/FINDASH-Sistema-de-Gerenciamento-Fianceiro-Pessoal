@@ -19,6 +19,12 @@ export class TransactionsComponent implements OnInit {
     submitting: boolean = false;
     editingTransactionId: string | null = null; // Track editing state
 
+    // Predefined categories list
+    predefinedCategories = [
+        'Alimentação', 'Transporte', 'Moradia', 'Lazer',
+        'Saúde', 'Educação', 'Salário', 'Investimentos', 'Outros'
+    ];
+
     // Delete modal state
     showDeleteModal: boolean = false;
     transactionToDelete: Transaction | null = null;
@@ -33,6 +39,7 @@ export class TransactionsComponent implements OnInit {
             amount: [0, [Validators.required, Validators.min(0.01)]],
             type: ['expense', Validators.required],
             category: ['Outros', Validators.required],
+            customCategory: [''],
             paymentMethod: ['pix', Validators.required],
             date: [new Date().toISOString().split('T')[0], Validators.required],
             // Recurring fields
@@ -274,6 +281,7 @@ export class TransactionsComponent implements OnInit {
         this.transactionForm.reset({
             type: 'expense',
             category: 'Outros',
+            customCategory: '',
             paymentMethod: 'pix',
             date: new Date().toISOString().split('T')[0],
             description: '',
@@ -294,11 +302,17 @@ export class TransactionsComponent implements OnInit {
         // Format date to YYYY-MM-DD
         const dateStr = t.date.toString().split('T')[0];
 
+        // Detect custom category (not in predefined list)
+        const isPredefined = this.predefinedCategories.includes(t.category);
+        const displayCategory = isPredefined ? t.category : 'Outros';
+        const customCat = isPredefined ? '' : t.category;
+
         this.transactionForm.patchValue({
             description: t.description,
             amount: Math.abs(t.amount), // Show positive
             type: t.type,
-            category: t.category,
+            category: displayCategory,
+            customCategory: customCat,
             paymentMethod: t.paymentMethod,
             date: dateStr,
             isRecurring: t.isRecurring || false,
@@ -320,6 +334,12 @@ export class TransactionsComponent implements OnInit {
 
         // Convert amount to number if string
         formValue.amount = Number(formValue.amount);
+
+        // Merge custom category
+        if (formValue.category === 'Outros' && formValue.customCategory?.trim()) {
+            formValue.category = formValue.customCategory.trim();
+        }
+        delete formValue.customCategory;
 
         // Handle installment fields
         if (formValue.isInstallment && formValue.installments > 1) {

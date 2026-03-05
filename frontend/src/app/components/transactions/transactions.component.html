@@ -293,6 +293,9 @@
                         <option value="Investimentos">Investimentos</option>
                         <option value="Outros">Outros</option>
                     </select>
+                    <input *ngIf="transactionForm.get('category')?.value === 'Outros'" type="text"
+                        formControlName="customCategory" class="fd-input mt-2"
+                        placeholder="Especifique a categoria (ex: Pet Shop)">
                 </div>
             </div>
 
