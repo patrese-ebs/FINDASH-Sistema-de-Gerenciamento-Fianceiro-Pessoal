@@ -25,6 +25,15 @@ export class TransactionsComponent implements OnInit {
         'Saúde', 'Educação', 'Salário', 'Investimentos', 'Outros'
     ];
 
+    /** Returns today's local date as YYYY-MM-DD (avoids UTC timezone shift) */
+    private getTodayLocal(): string {
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = String(now.getMonth() + 1).padStart(2, '0');
+        const d = String(now.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+    }
+
     // Delete modal state
     showDeleteModal: boolean = false;
     transactionToDelete: Transaction | null = null;
@@ -41,7 +50,7 @@ export class TransactionsComponent implements OnInit {
             category: ['Outros', Validators.required],
             customCategory: [''],
             paymentMethod: ['pix', Validators.required],
-            date: [new Date().toISOString().split('T')[0], Validators.required],
+            date: [this.getTodayLocal(), Validators.required],
             // Recurring fields
             isRecurring: [false],
             recurrenceFrequency: ['monthly'],
@@ -283,7 +292,7 @@ export class TransactionsComponent implements OnInit {
             category: 'Outros',
             customCategory: '',
             paymentMethod: 'pix',
-            date: new Date().toISOString().split('T')[0],
+            date: this.getTodayLocal(),
             description: '',
             amount: 0,
             isRecurring: false,
