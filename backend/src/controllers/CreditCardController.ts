@@ -41,6 +41,7 @@ export class CreditCardController {
 
                 // 1. Total Pending (Liability) - Future + Current
                 const totalLiability = transactions.reduce((sum: number, transaction: any) => {
+                    if (transaction.category === 'Pagamentos' && parseFloat(transaction.installmentAmount.toString()) < 0) return sum;
                     const remainingInstallments = transaction.installments - transaction.currentInstallment + 1;
                     return sum + (parseFloat(transaction.installmentAmount.toString()) * remainingInstallments);
                 }, 0);
@@ -59,6 +60,9 @@ export class CreditCardController {
                         transaction.currentInstallment + monthsElapsed <= transaction.installments;
 
                     if (hasInstallmentThisMonth) {
+                        if (transaction.category === 'Pagamentos' && parseFloat(transaction.installmentAmount.toString()) < 0) {
+                            return sum;
+                        }
                         return sum + parseFloat(transaction.installmentAmount.toString());
                     }
                     return sum;
@@ -183,8 +187,10 @@ export class CreditCardController {
                 let cardDueThisMonth = 0;
 
                 transactions.forEach((transaction: any) => {
-                    const remainingInstallments = transaction.installments - transaction.currentInstallment + 1;
                     const installmentAmount = parseFloat(transaction.installmentAmount.toString());
+                    if (transaction.category === 'Pagamentos' && installmentAmount < 0) return;
+
+                    const remainingInstallments = transaction.installments - transaction.currentInstallment + 1;
                     totalLiability += (installmentAmount * remainingInstallments);
 
                     // Month Check
@@ -276,7 +282,10 @@ export class CreditCardController {
                     };
                 });
 
-                const total = items.reduce((sum, i) => sum + i.installmentAmount, 0);
+                const total = items.reduce((sum, i) => {
+                    if (i.category === 'Pagamentos' && i.installmentAmount < 0) return sum;
+                    return sum + i.installmentAmount;
+                }, 0);
                 const inv = invoices.find(i => i.month === m);
 
                 // Calculate paid amount and remaining
@@ -809,7 +818,10 @@ export class CreditCardController {
                 };
             });
 
-            const totalAmount = invoiceItems.reduce((sum, item) => sum + parseFloat(item.installmentAmount.toString()), 0);
+            const totalAmount = invoiceItems.reduce((sum, item) => {
+                if (item.category === 'Pagamentos' && parseFloat(item.installmentAmount.toString()) < 0) return sum;
+                return sum + parseFloat(item.installmentAmount.toString());
+            }, 0);
 
             res.status(200).json({
                 creditCard,
@@ -872,6 +884,7 @@ export class CreditCardController {
             familyCards.forEach(card => {
                 const transactions = (card as any).transactions || [];
                 const cardLiability = transactions.reduce((sum: number, transaction: any) => {
+                    if (transaction.category === 'Pagamentos' && parseFloat(transaction.installmentAmount.toString()) < 0) return sum;
                     const remainingInstallments = transaction.installments - transaction.currentInstallment + 1;
                     return sum + (parseFloat(transaction.installmentAmount.toString()) * remainingInstallments);
                 }, 0);
@@ -885,6 +898,7 @@ export class CreditCardController {
             // Current Card's Specific Liability (for reference)
             const transactions = (currentCard as any).transactions || [];
             const currentCardLiability = transactions.reduce((sum: number, transaction: any) => {
+                if (transaction.category === 'Pagamentos' && parseFloat(transaction.installmentAmount.toString()) < 0) return sum;
                 const remainingInstallments = transaction.installments - transaction.currentInstallment + 1;
                 return sum + (parseFloat(transaction.installmentAmount.toString()) * remainingInstallments);
             }, 0);
@@ -1048,11 +1062,23 @@ export class CreditCardController {
             }
 
             // Remove any "Pagamento Parcial" transactions created for this month
+            // We use Op from sequelize to check dates
+            const { Op } = require('sequelize');
+            const targetDateStr = `${year}-${String(month).padStart(2, '0')}-`;
+            
             await CreditCardTransaction.destroy({
                 where: {
                     creditCardId: id as string,
-                    description: 'Pagamento Parcial (Abatimento)',
-                    category: 'Pagamentos'
+                    category: 'Pagamentos',
+                    [Op.or]: [
+                        { description: 'Pagamento Parcial (Abatimento)' },
+                        { description: 'Pagamento Parcial' },
+                        { description: 'Pagamento Fatura' }
+                    ],
+                    // Use a string match on the serialized date or specific date range if possible, 
+                    // since we created it as `new Date(year, month - 1, 15)`. We can just check the specific purchaseDate,
+                    // but for safety we'll use a date range or exact match 
+                    purchaseDate: new Date(year, month - 1, 15)
                 }
             });
 

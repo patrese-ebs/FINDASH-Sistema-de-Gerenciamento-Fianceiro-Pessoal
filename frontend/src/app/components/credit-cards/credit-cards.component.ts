@@ -36,6 +36,9 @@ export class CreditCardsComponent implements OnInit {
     showPlanningModal: boolean = false;
     planningForm: FormGroup;
     planningMonths = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+    lastLoadedPlanValues: string | null = null;
+    lastLoadedPlanYear: number | null = null;
+    lastLoadedPlanCardId: string | null = null;
 
     // Invoice View Modal (Yearly Overview)
     showInvoiceModal: boolean = false;
@@ -286,6 +289,9 @@ export class CreditCardsComponent implements OnInit {
         this.recurrenceAction = null;
         this.pendingRecurrenceItem = null;
         this.pendingRecurrenceFormValue = null;
+        this.lastLoadedPlanValues = null;
+        this.lastLoadedPlanYear = null;
+        this.lastLoadedPlanCardId = null;
     }
 
     onCardSubmit() {
@@ -448,6 +454,52 @@ export class CreditCardsComponent implements OnInit {
 
     // --- Planning (12 Months) ---
 
+    private getPlanMonthValues(): number[] {
+        const val = this.planningForm.value;
+        return this.planningMonths.map(m => val[`month_${m}`] || 0);
+    }
+
+    private setPlanCleanState() {
+        this.lastLoadedPlanValues = JSON.stringify(this.getPlanMonthValues());
+        this.lastLoadedPlanYear = this.planningForm.get('year')?.value;
+        this.lastLoadedPlanCardId = this.planningForm.get('cardId')?.value;
+    }
+
+    private isPlanDirty(): boolean {
+        if (!this.lastLoadedPlanValues) return false;
+        return this.lastLoadedPlanValues !== JSON.stringify(this.getPlanMonthValues());
+    }
+
+    private savePlanToPreviousContext(): Promise<boolean> {
+        return new Promise((resolve) => {
+            if (!this.lastLoadedPlanCardId || !this.lastLoadedPlanYear) {
+                resolve(true); 
+                return;
+            }
+            
+            this.submitting = true;
+            const val = this.planningForm.value;
+            const plans = this.planningMonths.map(m => ({
+                month: m,
+                year: this.lastLoadedPlanYear,
+                amount: val[`month_${m}`] || 0
+            }));
+            
+            this.cardService.planInvoices(this.lastLoadedPlanCardId, plans).subscribe({
+                next: () => {
+                    this.submitting = false;
+                    resolve(true);
+                },
+                error: (err) => {
+                    console.error('Save previous context failed', err);
+                    this.submitting = false;
+                    alert('Erro ao salvar planejamento anterior');
+                    resolve(false);
+                }
+            });
+        });
+    }
+
     openPlanningModal() {
         this.showPlanningModal = true;
         const defaultCardId = this.cards.length > 0 ? this.cards[0].id : '';
@@ -465,11 +517,26 @@ export class CreditCardsComponent implements OnInit {
 
         // Auto-load existing data
         if (defaultCardId) {
-            this.loadPlanningData();
+            this.loadPlanningData(true);
         }
     }
 
-    loadPlanningData() {
+    async loadPlanningData(forceSkipCheck = false) {
+        if (!forceSkipCheck && this.isPlanDirty()) {
+            const save = confirm('Existem alterações não salvas no acompanhamento atual. Deseja salvá-las antes de mudar de ano/cartão? \n\n[OK] Salvar e Mudar \n[Cancelar] Descartar e Mudar');
+            if (save) {
+                const success = await this.savePlanToPreviousContext();
+                if (!success) {
+                    // Revert UI dropdowns to previous state to avoid mismatch
+                    this.planningForm.patchValue({
+                        year: this.lastLoadedPlanYear,
+                        cardId: this.lastLoadedPlanCardId
+                    }, { emitEvent: false });
+                    return; 
+                }
+            }
+        }
+
         const cardId = this.planningForm.get('cardId')?.value;
         const year = this.planningForm.get('year')?.value;
 
@@ -477,22 +544,28 @@ export class CreditCardsComponent implements OnInit {
 
         this.cardService.getYearlyOverview(cardId, year).subscribe({
             next: (data) => {
+                const patch: any = {};
+                this.planningMonths.forEach(m => patch[`month_${m}`] = 0); // Reset first
+
                 // Populate form with existing totals
                 data.forEach(monthData => {
-                    const formControlName = `month_${monthData.month}`;
-                    // Use the total from existing transactions
-                    this.planningForm.patchValue({
-                        [formControlName]: monthData.total || 0
-                    });
+                    patch[`month_${monthData.month}`] = monthData.total || 0;
                 });
+
+                this.planningForm.patchValue(patch);
+                this.setPlanCleanState();
             },
             error: (err) => {
                 console.error('Failed to load planning data', err);
+                this.setPlanCleanState(); // treat as clean even if failed, to avoid lock
             }
         });
     }
 
     clearPlanningFields() {
+        if (this.isPlanDirty()) {
+            if (!confirm('Tem certeza que deseja zerar os campos? As alterações atuais não foram salvas ainda.')) return;
+        }
         this.planningMonths.forEach(m => {
             this.planningForm.patchValue({ [`month_${m}`]: 0 });
         });
