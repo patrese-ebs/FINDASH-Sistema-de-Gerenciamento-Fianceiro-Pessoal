@@ -218,6 +218,7 @@ export class ExpenseController {
                 paymentMethod: paymentMethod || expense.paymentMethod,
                 creditCardId: creditCardId !== undefined ? creditCardId : expense.creditCardId,
                 isRecurring: isRecurring !== undefined ? isRecurring : expense.isRecurring,
+                isPaid: isPaid !== undefined ? isPaid : expense.isPaid,
             });
 
             // Invalidate AI insights cache

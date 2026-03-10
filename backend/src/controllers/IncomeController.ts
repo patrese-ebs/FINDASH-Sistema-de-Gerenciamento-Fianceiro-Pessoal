@@ -156,6 +156,7 @@ export class IncomeController {
                 month,
                 year,
                 isRecurring: isRecurring !== undefined ? isRecurring : income.isRecurring,
+                isPaid: isPaid !== undefined ? isPaid : income.isPaid,
             });
 
             // Invalidate AI insights cache
