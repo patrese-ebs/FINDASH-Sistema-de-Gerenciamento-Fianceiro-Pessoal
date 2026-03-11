@@ -92,6 +92,7 @@ router.put('/admin/users/:id', authMiddleware, isAdmin, validate(adminUpdateUser
 router.put('/admin/users/:id/toggle-status', authMiddleware, isAdmin, adminController.toggleUserStatus.bind(adminController));
 router.put('/admin/users/:id/reset-password', authMiddleware, isAdmin, validate(adminResetPasswordSchema), adminController.resetUserPassword.bind(adminController));
 router.get('/admin/stats', authMiddleware, isAdmin, adminController.getStats.bind(adminController));
+router.post('/admin/cleanup-orphans', authMiddleware, isAdmin, adminController.cleanupOrphans.bind(adminController));
 
 // Admin seed (one-time, no auth required)
 router.post('/admin/seed', adminController.seedAdmin.bind(adminController));

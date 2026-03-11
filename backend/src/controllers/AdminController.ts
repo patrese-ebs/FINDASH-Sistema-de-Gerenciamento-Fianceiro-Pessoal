@@ -232,5 +232,73 @@ export class AdminController {
             res.status(500).json({ error: 'Failed to seed admin' });
         }
     }
+    // POST /api/admin/cleanup-orphans — One-time cleanup of orphaned records
+    async cleanupOrphans(req: AuthRequest, res: Response): Promise<void> {
+        try {
+            const userId = req.userId;
+            if (!userId) {
+                res.status(401).json({ error: 'Unauthorized' });
+                return;
+            }
+
+            const { Op } = require('sequelize');
+            const results: any = { deletedExpenses: [], deletedTransactions: [] };
+
+            // 1. Delete orphaned "Pagamento Parcial/Fatura" expenses (from old payInvoice logic)
+            const orphanedPayments = await Expense.findAll({
+                where: {
+                    userId,
+                    [Op.or]: [
+                        { description: { [Op.like]: 'Pagamento Parcial%' } },
+                        { description: { [Op.like]: 'Pagamento Fatura%' } }
+                    ]
+                }
+            });
+
+            for (const exp of orphanedPayments) {
+                results.deletedExpenses.push({ id: exp.id, description: exp.description, amount: exp.amount });
+                await exp.destroy();
+            }
+
+            // 2. Delete all "Fatura Estimada (Planejamento)" CreditCardTransactions and their linked Expenses
+            const plannedTransactions = await CreditCardTransaction.findAll({
+                where: { description: 'Fatura Estimada (Planejamento)' }
+            });
+
+            for (const txn of plannedTransactions) {
+                results.deletedTransactions.push({ id: txn.id, amount: txn.totalAmount });
+                // Delete linked expense
+                await Expense.destroy({ where: { creditCardTransactionId: txn.id } });
+                // Delete the transaction itself
+                await txn.destroy();
+            }
+
+            // Also delete any orphaned "Fatura Estimada" expenses without a valid transaction link
+            const orphanedPlannedExpenses = await Expense.findAll({
+                where: {
+                    userId,
+                    description: 'Fatura Estimada (Planejamento)'
+                }
+            });
+
+            for (const exp of orphanedPlannedExpenses) {
+                results.deletedExpenses.push({ id: exp.id, description: exp.description, amount: exp.amount });
+                await exp.destroy();
+            }
+
+            res.status(200).json({
+                message: 'Cleanup completed successfully',
+                summary: {
+                    deletedPaymentExpenses: orphanedPayments.length,
+                    deletedPlannedTransactions: plannedTransactions.length,
+                    deletedOrphanedPlannedExpenses: orphanedPlannedExpenses.length
+                },
+                details: results
+            });
+        } catch (error) {
+            console.error('Cleanup Error:', error);
+            res.status(500).json({ error: 'Failed to cleanup orphans' });
+        }
+    }
 }
 
