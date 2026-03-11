@@ -495,10 +495,11 @@ export class CreditCardController {
                 // 4. Calculate Difference
                 const neededAmount = Math.max(0, targetTotal - realSum);
 
-                // 5. Delete Existing Planned Transactions for this month
+                // 5. Delete Existing Planned Transactions for this month (and their Expenses)
                 if (plannedTransactions.length > 0) {
                     const idsToDelete = plannedTransactions.map(t => t.id);
                     await CreditCardTransaction.destroy({ where: { id: idsToDelete } });
+                    await Expense.destroy({ where: { creditCardTransactionId: idsToDelete } });
                 }
 
                 // 6. Create New Planned Transaction if needed
@@ -510,7 +511,7 @@ export class CreditCardController {
                     // Ensure purchase date is in the correct month to hit this invoice
                     const purchaseDate = new Date(targetYear, targetMonth - 1, purchaseDay);
 
-                    await CreditCardTransaction.create({
+                    const newPlannedTransaction = await CreditCardTransaction.create({
                         creditCardId: id as string,
                         description: 'Fatura Estimada (Planejamento)',
                         totalAmount: neededAmount,
@@ -519,6 +520,21 @@ export class CreditCardController {
                         installmentAmount: neededAmount,
                         purchaseDate: purchaseDate,
                         category: 'Outros'
+                    });
+
+                    // Sync to Expenses
+                    await Expense.create({
+                        userId,
+                        creditCardTransactionId: newPlannedTransaction.id,
+                        description: 'Fatura Estimada (Planejamento)',
+                        amount: neededAmount,
+                        date: purchaseDate,
+                        month: targetMonth,
+                        year: targetYear,
+                        category: 'Cartão de Crédito',
+                        paymentMethod: 'credit',
+                        creditCardId: id as string,
+                        isPaid: false
                     });
                 }
             }
