@@ -1080,19 +1080,32 @@ export class CreditCardController {
                 category: 'Pagamentos'
             });
 
-            // Create Expense to reflect payment in dashboard balance
-            const paymentDate = new Date();
-            await Expense.create({
-                userId,
-                description: `Pagamento ${isFullyPaid ? 'Fatura' : 'Parcial'} - ${creditCard.name}`,
-                amount: paymentAmount,
-                date: paymentDate,
-                month: paymentDate.getMonth() + 1,
-                year: paymentDate.getFullYear(),
-                category: 'Cartão de Crédito',
-                paymentMethod: 'transfer',
-                isPaid: true
+            // Update associated Expenses instead of creating a new generic one
+            const invoiceTransactions = transactions.filter(transaction => {
+                const dateStr = transaction.purchaseDate.toString();
+                const [pYear, pMonth, pDay] = dateStr.includes('T')
+                    ? dateStr.split('T')[0].split('-').map(Number)
+                    : dateStr.split('-').map(Number);
+                
+                const monthsElapsed = (year - pYear) * 12 + (month - pMonth);
+                return monthsElapsed >= 0 &&
+                    monthsElapsed < transaction.installments &&
+                    transaction.currentInstallment + monthsElapsed <= transaction.installments &&
+                    !(transaction.category === 'Pagamentos' && parseFloat(transaction.installmentAmount.toString()) < 0);
             });
+            
+            const transactionIds = invoiceTransactions.map(t => t.id);
+            if (transactionIds.length > 0) {
+                const { Op } = require('sequelize');
+                await Expense.update(
+                    { isPaid: isFullyPaid },
+                    { 
+                        where: { 
+                            creditCardTransactionId: { [Op.in]: transactionIds }
+                        }
+                    }
+                );
+            }
 
             await redisService.delPattern(`insight:${userId}*`);
 
@@ -1176,6 +1189,36 @@ export class CreditCardController {
                 amount: 0,
                 paymentDate: null
             });
+
+            // Revert all associated Expenses to isPaid = false
+            const allTransactions = await CreditCardTransaction.findAll({
+                where: { creditCardId: id }
+            });
+
+            const invoiceTransactions = allTransactions.filter(transaction => {
+                const dateStr = transaction.purchaseDate.toString();
+                const [pYear, pMonth, pDay] = dateStr.includes('T')
+                    ? dateStr.split('T')[0].split('-').map(Number)
+                    : dateStr.split('-').map(Number);
+                
+                const monthsElapsed = (year - pYear) * 12 + (month - pMonth);
+                return monthsElapsed >= 0 &&
+                    monthsElapsed < transaction.installments &&
+                    transaction.currentInstallment + monthsElapsed <= transaction.installments &&
+                    !(transaction.category === 'Pagamentos' && parseFloat(transaction.installmentAmount.toString()) < 0);
+            });
+            
+            const transactionIds = invoiceTransactions.map(t => t.id);
+            if (transactionIds.length > 0) {
+                await Expense.update(
+                    { isPaid: false },
+                    { 
+                        where: { 
+                            creditCardTransactionId: { [Op.in]: transactionIds } 
+                        }
+                    }
+                );
+            }
 
             res.status(200).json({ message: 'Payment undone successfully', invoice });
         } catch (error) {
