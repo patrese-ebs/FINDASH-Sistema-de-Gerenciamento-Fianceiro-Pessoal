@@ -494,36 +494,19 @@ export class CreditCardController {
                 );
 
                 // 3. Calculate Real Sum from CreditCardTransactions (excluding negative payment transactions)
-                const realSumFromTransactions = realTransactions.reduce((sum, t) => sum + parseFloat(t.installmentAmount.toString()), 0);
-
-                // 3b. Also count Expense records directly linked to this card (via creditCardId)
-                // that DON'T have a creditCardTransactionId (i.e., manually created before sync)
-                const { Op } = require('sequelize');
-                const manualExpenses = await Expense.findAll({
-                    where: {
-                        userId,
-                        creditCardId: id,
-                        month: targetMonth,
-                        year: targetYear,
-                        creditCardTransactionId: { [Op.is]: null },
-                        description: { [Op.ne]: 'Fatura Estimada (Planejamento)' }
-                    }
-                });
-                const manualExpenseSum = manualExpenses.reduce((sum, e) => sum + parseFloat(e.amount.toString()), 0);
-
-                const realSum = realSumFromTransactions + manualExpenseSum;
+                const realSum = realTransactions.reduce((sum, t) => sum + parseFloat(t.installmentAmount.toString()), 0);
 
                 // 4. Calculate Difference
                 const neededAmount = Math.max(0, targetTotal - realSum);
 
-                // 5. Delete Existing Planned Transactions for this month (and their Expenses)
+                // 5. Delete Existing Planned Transactions for this month (and their Expenses if any)
                 if (plannedTransactions.length > 0) {
                     const idsToDelete = plannedTransactions.map(t => t.id);
                     await CreditCardTransaction.destroy({ where: { id: idsToDelete } });
                     await Expense.destroy({ where: { creditCardTransactionId: idsToDelete } });
                 }
 
-                // 6. Create New Planned Transaction if needed
+                // 6. Create New Planned Transaction if needed (CreditCardTransaction only, NOT an Expense)
                 if (neededAmount > 0) {
                     const closingDay = creditCard.closingDay || 10;
                     let purchaseDay = closingDay - 1;
@@ -532,7 +515,7 @@ export class CreditCardController {
                     // Ensure purchase date is in the correct month to hit this invoice
                     const purchaseDate = new Date(targetYear, targetMonth - 1, purchaseDay);
 
-                    const newPlannedTransaction = await CreditCardTransaction.create({
+                    await CreditCardTransaction.create({
                         creditCardId: id as string,
                         description: 'Fatura Estimada (Planejamento)',
                         totalAmount: neededAmount,
@@ -541,21 +524,6 @@ export class CreditCardController {
                         installmentAmount: neededAmount,
                         purchaseDate: purchaseDate,
                         category: 'Outros'
-                    });
-
-                    // Sync to Expenses
-                    await Expense.create({
-                        userId,
-                        creditCardTransactionId: newPlannedTransaction.id,
-                        description: 'Fatura Estimada (Planejamento)',
-                        amount: neededAmount,
-                        date: purchaseDate,
-                        month: targetMonth,
-                        year: targetYear,
-                        category: 'Cartão de Crédito',
-                        paymentMethod: 'credit',
-                        creditCardId: id as string,
-                        isPaid: false
                     });
                 }
             }
