@@ -267,13 +267,15 @@ export class CreditCardController {
             for (let m = 1; m <= 12; m++) {
                 // Filter transactions for this month
                 const items = transactions.filter(t => {
-                    const dateStr = t.purchaseDate.toString();
-                    const [pYear, pMonth] = dateStr.includes('T') ? dateStr.split('T')[0].split('-').map(Number) : dateStr.split('-').map(Number);
+                    const dateObj = new Date(t.purchaseDate);
+                    const pYear = dateObj.getFullYear();
+                    const pMonth = dateObj.getMonth() + 1;
                     const monthsElapsed = (targetYear - pYear) * 12 + (m - pMonth);
                     return monthsElapsed >= 0 && monthsElapsed < t.installments;
                 }).map(t => {
-                    const dateStr = t.purchaseDate.toString();
-                    const [pYear, pMonth] = dateStr.includes('T') ? dateStr.split('T')[0].split('-').map(Number) : dateStr.split('-').map(Number);
+                    const dateObj = new Date(t.purchaseDate);
+                    const pYear = dateObj.getFullYear();
+                    const pMonth = dateObj.getMonth() + 1;
                     const monthsElapsed = (targetYear - pYear) * 12 + (m - pMonth);
                     return {
                         ...t.toJSON(),
@@ -471,10 +473,9 @@ export class CreditCardController {
                 // 1. Identify Existing Transactions for this Invoice Month
                 // Logic mirrors getInvoice/yearOverview: find transactions that have an installment falling in this month
                 const invoiceTransactions = allTransactions.filter(t => {
-                    const dateStr = t.purchaseDate.toString();
-                    const [pYear, pMonth] = dateStr.includes('T')
-                        ? dateStr.split('T')[0].split('-').map(Number)
-                        : dateStr.split('-').map(Number);
+                    const dateObj = new Date(t.purchaseDate);
+                    const pYear = dateObj.getFullYear();
+                    const pMonth = dateObj.getMonth() + 1;
 
                     // Calculate offset
                     const monthsElapsed = (targetYear - pYear) * 12 + (targetMonth - pMonth);
@@ -879,10 +880,10 @@ export class CreditCardController {
 
             // Filter transactions that have an installment due in this month/year
             const invoiceItems = transactions.filter(transaction => {
-                const dateStr = transaction.purchaseDate.toString();
-                const [pYear, pMonth, pDay] = dateStr.includes('T')
-                    ? dateStr.split('T')[0].split('-').map(Number)
-                    : dateStr.split('-').map(Number);
+                const dateObj = new Date(transaction.purchaseDate);
+                const pYear = dateObj.getFullYear();
+                const pMonth = dateObj.getMonth() + 1;
+                const pDay = dateObj.getDate();
 
                 const monthsElapsed = (parseInt(year as string) - pYear) * 12 +
                     (parseInt(month as string) - pMonth);
@@ -1098,10 +1099,9 @@ export class CreditCardController {
 
             // Update associated Expenses instead of creating a new generic one
             const invoiceTransactions = transactions.filter(transaction => {
-                const dateStr = transaction.purchaseDate.toString();
-                const [pYear, pMonth, pDay] = dateStr.includes('T')
-                    ? dateStr.split('T')[0].split('-').map(Number)
-                    : dateStr.split('-').map(Number);
+                const dateObj = new Date(transaction.purchaseDate);
+                const pYear = dateObj.getFullYear();
+                const pMonth = dateObj.getMonth() + 1;
                 
                 const monthsElapsed = (year - pYear) * 12 + (month - pMonth);
                 return monthsElapsed >= 0 &&
@@ -1212,10 +1212,9 @@ export class CreditCardController {
             });
 
             const invoiceTransactions = allTransactions.filter(transaction => {
-                const dateStr = transaction.purchaseDate.toString();
-                const [pYear, pMonth, pDay] = dateStr.includes('T')
-                    ? dateStr.split('T')[0].split('-').map(Number)
-                    : dateStr.split('-').map(Number);
+                const dateObj = new Date(transaction.purchaseDate);
+                const pYear = dateObj.getFullYear();
+                const pMonth = dateObj.getMonth() + 1;
                 
                 const monthsElapsed = (year - pYear) * 12 + (month - pMonth);
                 return monthsElapsed >= 0 &&
