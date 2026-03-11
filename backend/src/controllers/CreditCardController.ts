@@ -493,8 +493,25 @@ export class CreditCardController {
                     !(t.category === 'Pagamentos' && parseFloat(t.installmentAmount.toString()) < 0)
                 );
 
-                // 3. Calculate Real Sum (excluding negative payment transactions)
-                const realSum = realTransactions.reduce((sum, t) => sum + parseFloat(t.installmentAmount.toString()), 0);
+                // 3. Calculate Real Sum from CreditCardTransactions (excluding negative payment transactions)
+                const realSumFromTransactions = realTransactions.reduce((sum, t) => sum + parseFloat(t.installmentAmount.toString()), 0);
+
+                // 3b. Also count Expense records directly linked to this card (via creditCardId)
+                // that DON'T have a creditCardTransactionId (i.e., manually created before sync)
+                const { Op } = require('sequelize');
+                const manualExpenses = await Expense.findAll({
+                    where: {
+                        userId,
+                        creditCardId: id,
+                        month: targetMonth,
+                        year: targetYear,
+                        creditCardTransactionId: { [Op.is]: null },
+                        description: { [Op.ne]: 'Fatura Estimada (Planejamento)' }
+                    }
+                });
+                const manualExpenseSum = manualExpenses.reduce((sum, e) => sum + parseFloat(e.amount.toString()), 0);
+
+                const realSum = realSumFromTransactions + manualExpenseSum;
 
                 // 4. Calculate Difference
                 const neededAmount = Math.max(0, targetTotal - realSum);
