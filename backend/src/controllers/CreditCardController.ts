@@ -488,9 +488,12 @@ export class CreditCardController {
                 // 2. Separate into Real vs Planned
                 // We identify "Planned" by specific description or flag.
                 const plannedTransactions = invoiceTransactions.filter(t => t.description === 'Fatura Estimada (Planejamento)');
-                const realTransactions = invoiceTransactions.filter(t => t.description !== 'Fatura Estimada (Planejamento)');
+                const realTransactions = invoiceTransactions.filter(t =>
+                    t.description !== 'Fatura Estimada (Planejamento)' &&
+                    !(t.category === 'Pagamentos' && parseFloat(t.installmentAmount.toString()) < 0)
+                );
 
-                // 3. Calculate Real Sum
+                // 3. Calculate Real Sum (excluding negative payment transactions)
                 const realSum = realTransactions.reduce((sum, t) => sum + parseFloat(t.installmentAmount.toString()), 0);
 
                 // 4. Calculate Difference
