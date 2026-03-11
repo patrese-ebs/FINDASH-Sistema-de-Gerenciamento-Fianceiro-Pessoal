@@ -13,6 +13,7 @@ interface ExpenseAttributes {
     year: number;
     paymentMethod: 'cash' | 'debit' | 'credit' | 'transfer' | 'pix';
     creditCardId?: string;
+    creditCardTransactionId?: string;
     isRecurring: boolean;
     recurrenceFrequency?: string;
     recurrenceEndDate?: Date;
@@ -22,7 +23,7 @@ interface ExpenseAttributes {
     updatedAt?: Date;
 }
 
-interface ExpenseCreationAttributes extends Optional<ExpenseAttributes, 'id' | 'creditCardId' | 'isRecurring' | 'recurrenceFrequency' | 'recurrenceEndDate' | 'recurrenceId'> { }
+interface ExpenseCreationAttributes extends Optional<ExpenseAttributes, 'id' | 'creditCardId' | 'creditCardTransactionId' | 'isRecurring' | 'recurrenceFrequency' | 'recurrenceEndDate' | 'recurrenceId'> { }
 
 class Expense extends Model<ExpenseAttributes, ExpenseCreationAttributes> implements ExpenseAttributes {
     public id!: string;
@@ -35,6 +36,7 @@ class Expense extends Model<ExpenseAttributes, ExpenseCreationAttributes> implem
     public year!: number;
     public paymentMethod!: 'cash' | 'debit' | 'credit' | 'transfer' | 'pix';
     public creditCardId?: string;
+    public creditCardTransactionId?: string;
     public isRecurring!: boolean;
     public recurrenceFrequency?: string;
     public recurrenceEndDate?: Date;
@@ -93,6 +95,15 @@ Expense.init(
             allowNull: true,
             references: {
                 model: 'credit_cards',
+                key: 'id',
+            },
+            onDelete: 'SET NULL',
+        },
+        creditCardTransactionId: {
+            type: DataTypes.UUID,
+            allowNull: true,
+            references: {
+                model: 'credit_card_transactions',
                 key: 'id',
             },
             onDelete: 'SET NULL',

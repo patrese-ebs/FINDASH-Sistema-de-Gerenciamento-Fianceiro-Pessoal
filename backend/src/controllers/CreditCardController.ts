@@ -612,6 +612,19 @@ export class CreditCardController {
                     purchaseDate: purchaseDate ? new Date(purchaseDate) : transaction.purchaseDate
                 });
 
+                // Update associated expenses
+                const expenses = await Expense.findAll({
+                    where: { creditCardTransactionId: transactionId }
+                });
+                
+                for (const exp of expenses) {
+                    await exp.update({
+                        description: newInstallments > 1 ? `${description || transaction.description} (${exp.description.match(/\(\d+\/\d+\)$/)?.[0] || '1/1'})` : (description || transaction.description),
+                        amount: installmentAmount,
+                        category: category || transaction.category
+                    });
+                }
+
                 await redisService.delPattern(`insight:${userId}*`);
                 res.status(200).json(transaction);
                 return;
@@ -638,6 +651,20 @@ export class CreditCardController {
                     category: category || transaction.category,
                     purchaseDate: purchaseDate ? new Date(purchaseDate) : transaction.purchaseDate
                 });
+
+                // Update associated expenses
+                const expenses = await Expense.findAll({
+                    where: { creditCardTransactionId: transactionId }
+                });
+
+                for (const exp of expenses) {
+                    await exp.update({
+                        description: newInstallments > 1 ? `${description || transaction.description} (${exp.description.match(/\(\d+\/\d+\)$/)?.[0] || '1/1'})` : (description || transaction.description),
+                        amount: installmentAmount,
+                        category: category || transaction.category
+                    });
+                }
+
                 await redisService.delPattern(`insight:${userId}*`);
                 res.status(200).json(transaction);
                 return;
@@ -669,6 +696,36 @@ export class CreditCardController {
                 purchaseDate: newPurchaseDate,
                 category: category || transaction.category
             });
+
+            // Update remaining expenses to point to the new transaction and have the new info
+            const expensesToMove = await Expense.findAll({
+                where: { creditCardTransactionId: transactionId },
+                order: [['date', 'ASC']]
+            });
+            
+            if (expensesToMove.length > oldInstallments) {
+                const expensesToUpdate = expensesToMove.slice(oldInstallments);
+                let count = 1;
+                for (const exp of expensesToUpdate) {
+                    await exp.update({
+                        creditCardTransactionId: newTransaction.id,
+                        description: nextInstallments > 1 ? `${newTransaction.description} (${count}/${nextInstallments})` : newTransaction.description,
+                        amount: nextInstallmentAmount,
+                        category: newTransaction.category
+                    });
+                    count++;
+                }
+
+                // Also update the remaining old expenses to have the correct denominator
+                const expensesToKeep = expensesToMove.slice(0, oldInstallments);
+                count = 1;
+                for (const exp of expensesToKeep) {
+                     await exp.update({
+                         description: oldInstallments > 1 ? `${transaction.description} (${count}/${oldInstallments})` : transaction.description
+                     });
+                     count++;
+                }
+            }
 
             await redisService.delPattern(`insight:${userId}*`);
             res.status(200).json(newTransaction);
@@ -720,6 +777,7 @@ export class CreditCardController {
                 // If monthsElapsed <= 0, it means we are deleting from the start (or before), so delete all.
                 if (monthsElapsed <= 0) {
                     await transaction.destroy();
+                    await Expense.destroy({ where: { creditCardTransactionId: transactionId } });
                 } else {
                     // Update installments to stop before the reference month
                     // The new number of installments is equal to monthsElapsed
@@ -738,11 +796,28 @@ export class CreditCardController {
                             installments: newInstallments,
                             totalAmount: newTotal
                         });
+
+                        // Delete only future occurrences of the expense that occur after the updated end date
+                        // It's a bit tricky because 'Expense' saves installments one per month.
+                        // For simplicity, we can fetch them all ordered by date and leave the first `newInstallments` 
+                        // and delete the rest. Or delete where date > last valid date.
+                        const expenses = await Expense.findAll({
+                            where: { creditCardTransactionId: transactionId },
+                            order: [['date', 'ASC']]
+                        });
+
+                        if (expenses.length > newInstallments) {
+                            const expensesToDelete = expenses.slice(newInstallments).map(e => e.id);
+                            if (expensesToDelete.length > 0) {
+                                await Expense.destroy({ where: { id: expensesToDelete } });
+                            }
+                        }
                     }
                 }
             } else {
                 // Default: Delete all
                 await transaction.destroy();
+                await Expense.destroy({ where: { creditCardTransactionId: transactionId } });
             }
 
             await redisService.delPattern(`insight:${userId}*`);

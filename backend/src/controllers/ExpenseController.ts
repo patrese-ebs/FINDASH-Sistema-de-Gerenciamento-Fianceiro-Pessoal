@@ -60,6 +60,26 @@ export class ExpenseController {
                 return d;
             };
 
+            let createdTransactionId: string | undefined = undefined;
+
+            // Sync with Credit Card System FIRST to get its ID
+            if (paymentMethod === 'credit' && creditCardId) {
+                const totalAmt = parseFloat(amount.toString());
+                const numInst = installments ? parseInt(installments.toString()) : 1;
+
+                const transaction = await CreditCardTransaction.create({
+                    creditCardId,
+                    description,
+                    totalAmount: totalAmt,
+                    installments: numInst,
+                    currentInstallment: 1,
+                    installmentAmount: totalAmt / numInst,
+                    purchaseDate: initialDate,
+                    category
+                });
+                createdTransactionId = transaction.id;
+            }
+
             // Handle Installments (Fixed number of payments)
             if (installments && parseInt(installments.toString()) > 1) {
                 const numInstallments = parseInt(installments.toString());
@@ -82,6 +102,7 @@ export class ExpenseController {
                         // but let's link them with recurrenceId for easier management if desired
                         recurrenceId,
                         isPaid: i === 0 ? (isPaid ?? false) : false, // Only first one adopts the paid status
+                        creditCardTransactionId: createdTransactionId,
                     });
                 }
             }
@@ -103,6 +124,7 @@ export class ExpenseController {
                     recurrenceEndDate,
                     recurrenceId,
                     isPaid: isPaid ?? false,
+                    creditCardTransactionId: createdTransactionId,
                 });
 
                 let endDate: Date;
@@ -133,6 +155,7 @@ export class ExpenseController {
                         recurrenceEndDate: recurrenceEndDate || null,
                         recurrenceId,
                         isPaid: false, // Future recurring items default to unpaid
+                        creditCardTransactionId: createdTransactionId,
                     });
 
                     // Advance to next month
@@ -154,23 +177,7 @@ export class ExpenseController {
                     creditCardId: creditCardId || null,
                     isRecurring: false,
                     isPaid: isPaid ?? false,
-                });
-            }
-
-            // Sync with Credit Card System
-            if (paymentMethod === 'credit' && creditCardId) {
-                const totalAmt = parseFloat(amount.toString());
-                const numInst = installments ? parseInt(installments.toString()) : 1;
-
-                await CreditCardTransaction.create({
-                    creditCardId,
-                    description,
-                    totalAmount: totalAmt,
-                    installments: numInst,
-                    currentInstallment: 1,
-                    installmentAmount: totalAmt / numInst,
-                    purchaseDate: initialDate,
-                    category
+                    creditCardTransactionId: createdTransactionId,
                 });
             }
 
@@ -221,6 +228,24 @@ export class ExpenseController {
                 isPaid: isPaid !== undefined ? isPaid : expense.isPaid,
             });
 
+            // Sync update to associated CreditCardTransaction if it exists
+            if (expense.creditCardTransactionId) {
+                const transaction = await CreditCardTransaction.findByPk(expense.creditCardTransactionId);
+                if (transaction) {
+                    // Update only if relevant fields changed
+                    const newTotal = amount !== undefined ? amount : transaction.totalAmount;
+                    const newInstallmentAmount = Number(newTotal) / transaction.installments;
+
+                    await transaction.update({
+                        description: description || transaction.description,
+                        totalAmount: newTotal,
+                        installmentAmount: newInstallmentAmount,
+                        category: category || transaction.category,
+                        purchaseDate: date ? new Date(date) : transaction.purchaseDate
+                    });
+                }
+            }
+
             // Invalidate AI insights cache
             await redisService.delPattern(`insight:${userId}*`);
 
@@ -248,8 +273,25 @@ export class ExpenseController {
                 return;
             }
 
+            const transactionIdToDelete = expense.creditCardTransactionId;
+
             if (deleteRecurring === 'true' && expense.recurrenceId) {
                 const { Op } = require('sequelize');
+                // First get all expenses to find their transaction IDs
+                const expensesToDelete = await Expense.findAll({
+                    where: {
+                        userId,
+                        recurrenceId: expense.recurrenceId,
+                        date: {
+                            [Op.gte]: expense.date
+                        }
+                    }
+                });
+
+                const transactionIds: string[] = expensesToDelete
+                    .map(e => e.creditCardTransactionId)
+                    .filter((id): id is string => id !== null && id !== undefined);
+                
                 // Delete all future occurrences (including this one)
                 await Expense.destroy({
                     where: {
@@ -260,8 +302,22 @@ export class ExpenseController {
                         }
                     }
                 });
+
+                // Also delete associated transactions if they exist
+                if (transactionIds.length > 0) {
+                     await CreditCardTransaction.destroy({
+                         where: {
+                             id: {
+                                 [Op.in]: transactionIds
+                             }
+                         }
+                     });
+                }
             } else {
                 await expense.destroy();
+                if (transactionIdToDelete) {
+                    await CreditCardTransaction.destroy({ where: { id: transactionIdToDelete } });
+                }
             }
 
             // Invalidate AI insights cache
