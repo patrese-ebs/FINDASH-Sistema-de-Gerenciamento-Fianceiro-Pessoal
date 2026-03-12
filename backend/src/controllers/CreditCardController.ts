@@ -41,7 +41,6 @@ export class CreditCardController {
 
                 // 1. Total Pending (Liability) - Future + Current
                 const totalLiability = transactions.reduce((sum: number, transaction: any) => {
-                    if (transaction.category === 'Pagamentos' && parseFloat(transaction.installmentAmount.toString()) < 0) return sum;
                     const remainingInstallments = transaction.installments - transaction.currentInstallment + 1;
                     return sum + (parseFloat(transaction.installmentAmount.toString()) * remainingInstallments);
                 }, 0);
@@ -190,12 +189,13 @@ export class CreditCardController {
 
                 transactions.forEach((transaction: any) => {
                     const installmentAmount = parseFloat(transaction.installmentAmount.toString());
-                    if (transaction.category === 'Pagamentos' && installmentAmount < 0) return;
 
                     const remainingInstallments = transaction.installments - transaction.currentInstallment + 1;
                     totalLiability += (installmentAmount * remainingInstallments);
 
                     // Month Check
+                    if (transaction.category === 'Pagamentos' && installmentAmount < 0) return;
+                    
                     const dateStr = transaction.purchaseDate.toString();
                     const [pYear, pMonth] = dateStr.includes('T') ? dateStr.split('T')[0].split('-').map(Number) : dateStr.split('-').map(Number);
                     const monthsElapsed = (currentYear - pYear) * 12 + (currentMonth - pMonth);
@@ -966,7 +966,6 @@ export class CreditCardController {
             familyCards.forEach(card => {
                 const transactions = (card as any).transactions || [];
                 const cardLiability = transactions.reduce((sum: number, transaction: any) => {
-                    if (transaction.category === 'Pagamentos' && parseFloat(transaction.installmentAmount.toString()) < 0) return sum;
                     const remainingInstallments = transaction.installments - transaction.currentInstallment + 1;
                     return sum + (parseFloat(transaction.installmentAmount.toString()) * remainingInstallments);
                 }, 0);
@@ -980,7 +979,6 @@ export class CreditCardController {
             // Current Card's Specific Liability (for reference)
             const transactions = (currentCard as any).transactions || [];
             const currentCardLiability = transactions.reduce((sum: number, transaction: any) => {
-                if (transaction.category === 'Pagamentos' && parseFloat(transaction.installmentAmount.toString()) < 0) return sum;
                 const remainingInstallments = transaction.installments - transaction.currentInstallment + 1;
                 return sum + (parseFloat(transaction.installmentAmount.toString()) * remainingInstallments);
             }, 0);
