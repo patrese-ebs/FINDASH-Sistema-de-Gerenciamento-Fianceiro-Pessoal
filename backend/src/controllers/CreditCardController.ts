@@ -112,20 +112,21 @@ export class CreditCardController {
                         const siblingsLiability = siblings.reduce((sum, s) => sum + s.totalLiability, 0);
 
                         // Family Liability = Parent + Me + Siblings
-                        const familyLiability = parentLiability + calc.totalLiability + siblingsLiability;
+                        var familyLiability = parentLiability + calc.totalLiability + siblingsLiability;
 
                         // Available Credit is based on the shared pool
                         var availableCredit = creditLimit - familyLiability;
                     } else {
                         // Orphaned child (shouldn't happen with integrity checks but safe fallback)
-                        var availableCredit = creditLimit - totalLiability;
+                        var familyLiability = totalLiability;
+                        var availableCredit = creditLimit - familyLiability;
                     }
                 } else {
                     // Parent Card: Need to sum up all its children's liabilities
                     const children = childCards.filter(c => c.instance.sharedLimitCardId === card.id);
                     const childrenLiability = children.reduce((sum, c) => sum + c.totalLiability, 0);
 
-                    const familyLiability = totalLiability + childrenLiability;
+                    var familyLiability = totalLiability + childrenLiability;
                     var availableCredit = creditLimit - familyLiability;
                 }
 
@@ -135,6 +136,7 @@ export class CreditCardController {
                     ...card.toJSON(),
                     currentInvoiceAmount: calc.currentInvoiceAmount,
                     totalLiability: calc.totalLiability, // Keeping individual liability for display
+                    familyLiability, // Exposing family liability
                     currentBalance: calc.totalLiability,
                     availableCredit, // This is the shared available credit
                     usagePercentage: parseFloat(usagePercentage.toFixed(2)),

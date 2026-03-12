@@ -12,6 +12,7 @@ export interface CreditCard {
     // Computed fields
     currentInvoiceAmount?: number;
     totalLiability?: number;
+    familyLiability?: number;
     currentBalance?: number;
     availableCredit?: number;
     usagePercentage?: number; // "50.00"

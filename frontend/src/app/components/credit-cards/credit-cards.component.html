@@ -244,10 +244,18 @@
             </ng-container>
 
             <!-- Limit Used -->
-            <div class="flex justify-between items-center mb-2">
-                <span class="text-xs text-text-secondary">Limite utilizado</span>
-                <span class="text-sm font-bold text-text-primary font-mono">{{ (card.totalLiability || 0) |
-                    currency:'BRL' }}</span>
+            <div class="flex flex-col gap-1 mb-2">
+                <div class="flex justify-between items-center">
+                    <span class="text-xs text-text-secondary">
+                        Limite utilizado <span *ngIf="card.familyLiability && card.familyLiability !== card.totalLiability">(Neste cartão)</span>
+                    </span>
+                    <span class="text-sm font-bold text-text-primary font-mono">{{ (card.totalLiability || 0) | currency:'BRL' }}</span>
+                </div>
+                <!-- Show Family Liability if Shared -->
+                <div *ngIf="card.familyLiability && card.familyLiability !== card.totalLiability" class="flex justify-between items-center pl-2 border-l-2 border-accent-blue/50">
+                    <span class="text-[11px] text-text-secondary">Total Conta (Todos cartões)</span>
+                    <span class="text-xs font-bold text-accent-blue font-mono">{{ card.familyLiability | currency:'BRL' }}</span>
+                </div>
             </div>
 
             <!-- Progress Bar -->
