@@ -170,6 +170,11 @@ export class TransactionsComponent implements OnInit {
         return this.receivedIncome - this.paidExpense;
     }
 
+    get leftoverBalance() {
+        // Amount leftover after all remaining expenses are paid from predicted income
+        return this.predictedIncome - this.toPayExpense;
+    }
+
     toggleStatus(t: Transaction) {
         const newStatus = !t.isPaid;
         // Optimistic update
