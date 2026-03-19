@@ -99,11 +99,22 @@
                 </svg>
             </div>
         </div>
-        <div class="text-3xl font-bold font-mono"
-            [ngClass]="{'text-accent-emerald': balance >= 0, 'text-accent-red': balance < 0}">
-            {{ balance | currency:'BRL' }}
+        <div class="space-y-2">
+            <div class="flex justify-between items-center pb-2 border-b border-dark-border">
+                <span class="text-xs text-text-secondary" title="Receitas Totais − Despesas Totais">Previsto</span>
+                <span class="text-sm font-semibold font-mono"
+                    [ngClass]="{'text-text-primary': balance >= 0, 'text-accent-red': balance < 0}">
+                    {{ balance | currency:'BRL' }}
+                </span>
+            </div>
+            <div class="flex justify-between items-center">
+                <span class="text-xs text-accent-cyan" title="Receitas Recebidas − Despesas Pagas">Atual (Em Conta)</span>
+                <span class="text-lg font-bold font-mono"
+                    [ngClass]="{'text-accent-emerald': currentBalance >= 0, 'text-accent-red': currentBalance < 0}">
+                    {{ currentBalance | currency:'BRL' }}
+                </span>
+            </div>
         </div>
-        <div class="text-xs text-text-secondary mt-2">Receitas − Despesas previstas</div>
     </div>
 </div>
 

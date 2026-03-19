@@ -165,6 +165,11 @@ export class TransactionsComponent implements OnInit {
         return this.totalIncome - this.totalExpense;
     }
 
+    get currentBalance() {
+        // Current balance for the selected month: Received Income - Paid Expense
+        return this.receivedIncome - this.paidExpense;
+    }
+
     toggleStatus(t: Transaction) {
         const newStatus = !t.isPaid;
         // Optimistic update
