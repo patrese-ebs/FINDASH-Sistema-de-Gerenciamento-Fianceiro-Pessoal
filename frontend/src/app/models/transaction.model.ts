@@ -10,6 +10,8 @@ export interface Transaction {
     creditCardId?: string;
     userId?: string;
     installments?: number;
+    owner?: string | null;
+    detailOnly?: boolean;
     // Recurring expense fields
     isRecurring?: boolean;
     recurrenceFrequency?: 'monthly' | 'weekly' | 'yearly';

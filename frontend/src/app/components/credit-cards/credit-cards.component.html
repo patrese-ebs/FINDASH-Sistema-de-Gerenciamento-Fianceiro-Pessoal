@@ -452,6 +452,11 @@
                         <option value="Alimentação">Alimentação</option>
                         <option value="Transporte">Transporte</option>
                         <option value="Casa">Casa</option>
+                        <option value="Saúde">Saúde</option>
+                        <option value="Lazer">Lazer</option>
+                        <option value="Educação">Educação</option>
+                        <option value="Compras">Compras</option>
+                        <option value="Assinaturas">Assinaturas</option>
                         <option value="Outros">Outros</option>
                     </select>
                 </div>
@@ -460,6 +465,36 @@
                     <input type="date" formControlName="date" class="fd-input">
                 </div>
             </div>
+
+            <!-- Titular -->
+            <div>
+                <label class="fd-label">Titular (opcional)</label>
+                <input type="text" formControlName="owner" class="fd-input" placeholder="De quem é esta despesa?"
+                    list="ownerSuggestionsTx">
+                <datalist id="ownerSuggestionsTx">
+                    <option *ngFor="let o of knownOwners" [value]="o">
+                </datalist>
+            </div>
+
+            <!-- Modo -->
+            <div class="bg-dark-surface rounded-lg p-3 border border-dark-border">
+                <label class="fd-label mb-2">Modo</label>
+                <div class="flex flex-col gap-2">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" [value]="false" formControlName="detailOnly"
+                            class="text-accent-emerald focus:ring-accent-emerald">
+                        <span class="text-sm text-text-primary">💰 Contabilizar na fatura</span>
+                        <span class="text-[10px] text-text-secondary ml-auto">Soma no total</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" [value]="true" formControlName="detailOnly"
+                            class="text-accent-blue focus:ring-accent-blue">
+                        <span class="text-sm text-text-primary">📝 Apenas registrar</span>
+                        <span class="text-[10px] text-text-secondary ml-auto">Não soma no total</span>
+                    </label>
+                </div>
+            </div>
+
             <div class="flex gap-3 pt-2">
                 <button type="button" (click)="closeModal()" class="fd-btn-ghost flex-1">Cancelar</button>
                 <button type="submit" class="fd-btn-primary flex-1">Salvar</button>
@@ -685,25 +720,39 @@
                             <tr>
                                 <th>Data</th>
                                 <th>Descrição</th>
+                                <th>Titular</th>
                                 <th>Categoria</th>
                                 <th class="text-right">Valor</th>
                                 <th></th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr *ngFor="let item of monthData.items" class="group">
+                            <tr *ngFor="let item of monthData.items" class="group"
+                                [ngClass]="item.detailOnly ? 'opacity-60' : ''">
                                 <td class="text-text-secondary text-xs font-mono">{{ item.purchaseDate | date:'dd/MM' }}
                                 </td>
                                 <td>
-                                    <div class="font-medium text-sm text-text-primary">{{ item.description }}</div>
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="font-medium text-sm text-text-primary">{{ item.description }}</span>
+                                        <span *ngIf="item.detailOnly"
+                                            class="text-[9px] bg-accent-blue/15 text-accent-blue px-1.5 py-0.5 rounded">📝 Registro</span>
+                                    </div>
                                     <div class="text-[10px] text-text-secondary" *ngIf="item.installments > 1">
                                         Parcela {{ item.installmentNumber }}/{{ item.installments }}
                                     </div>
                                 </td>
                                 <td>
+                                    <span *ngIf="item.owner"
+                                        class="text-xs font-medium text-accent-blue bg-accent-blue/10 px-2 py-0.5 rounded whitespace-nowrap">
+                                        {{ item.owner }}
+                                    </span>
+                                    <span *ngIf="!item.owner" class="text-xs text-text-secondary/50">—</span>
+                                </td>
+                                <td>
                                     <span class="fd-badge fd-badge-gray text-[10px]">{{ item.category }}</span>
                                 </td>
-                                <td class="text-right font-bold text-text-primary text-sm font-mono">
+                                <td class="text-right font-bold text-sm font-mono"
+                                    [ngClass]="item.detailOnly ? 'text-text-secondary' : 'text-text-primary'">
                                     {{ item.installmentAmount | currency:'BRL' }}
                                 </td>
                                 <td class="text-right">
@@ -731,179 +780,26 @@
                                 </td>
                             </tr>
                             <tr *ngIf="monthData.items.length === 0">
-                                <td colspan="5" class="py-6 text-center text-text-secondary text-sm">Nenhuma despesa.
+                                <td colspan="6" class="py-6 text-center text-text-secondary text-sm">Nenhuma despesa.
                                 </td>
                             </tr>
                         </tbody>
                     </table>
 
-                    <!-- ===== INVOICE DETAIL (Owner Breakdown) Section ===== -->
-                    <div class="border-t border-dark-border">
-                        <!-- Toggle Button -->
-                        <button (click)="$event.stopPropagation(); toggleDetailSection(i)"
-                            class="w-full px-4 py-3 flex items-center justify-between text-sm hover:bg-dark-surface/50 transition-colors"
-                            [ngClass]="showDetailSection ? 'bg-accent-blue/5' : ''">
-                            <span class="flex items-center gap-2 font-medium"
-                                [ngClass]="showDetailSection ? 'text-accent-blue' : 'text-text-secondary'">
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2" />
-                                    <circle cx="9" cy="7" r="4" />
-                                    <path stroke-linecap="round" d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
-                                </svg>
-                                Detalhamento por Titular
-                            </span>
-                            <svg class="w-4 h-4 text-text-secondary transition-transform duration-300"
-                                [ngClass]="{'rotate-180': showDetailSection}" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor" stroke-width="2">
-                                <polyline points="6 9 12 15 18 9" />
-                            </svg>
-                        </button>
-
-                        <!-- Detail Content -->
-                        <div *ngIf="showDetailSection && invoiceDetails" class="px-4 pb-4 space-y-3">
-
-                            <!-- Owner Totals Summary Bar -->
-                            <div *ngIf="invoiceDetails.items.length > 0"
-                                class="bg-dark-surface rounded-lg p-3 space-y-2">
-                                <div class="flex flex-wrap gap-3 items-center">
-                                    <div *ngFor="let ownerKey of getOwnerKeys(invoiceDetails.byOwner)"
-                                        class="flex items-center gap-1.5">
-                                        <span
-                                            class="w-2.5 h-2.5 rounded-full bg-accent-blue flex-shrink-0"></span>
-                                        <span class="text-xs text-text-secondary">{{ ownerKey }}:</span>
-                                        <span class="text-xs font-bold text-text-primary font-mono">
-                                            {{ invoiceDetails.byOwner[ownerKey] | currency:'BRL' }}
-                                        </span>
-                                    </div>
-                                    <span class="text-dark-border">|</span>
-                                    <div class="flex items-center gap-1.5">
-                                        <span class="text-xs text-text-secondary">Detalhado:</span>
-                                        <span class="text-xs font-bold text-accent-emerald font-mono">
-                                            {{ invoiceDetails.totalDetailed | currency:'BRL' }}
-                                        </span>
-                                        <span class="text-xs text-text-secondary">
-                                            de {{ invoiceDetails.invoiceTotal | currency:'BRL' }}
-                                        </span>
-                                    </div>
-                                    <div *ngIf="invoiceDetails.undetailed > 0" class="flex items-center gap-1.5">
-                                        <span class="text-dark-border">|</span>
-                                        <span class="text-xs text-accent-gold">
-                                            Sem detalhe: {{ invoiceDetails.undetailed | currency:'BRL' }}
-                                        </span>
-                                    </div>
-                                </div>
+                    <!-- Owner Summary Bar (auto-aggregated from transactions) -->
+                    <div *ngIf="getOwnerKeys(monthData.byOwner).length > 0 && !(getOwnerKeys(monthData.byOwner).length === 1 && getOwnerKeys(monthData.byOwner)[0] === 'Sem titular')"
+                        class="border-t border-dark-border px-4 py-3 bg-dark-surface/30">
+                        <div class="flex flex-wrap gap-3 items-center">
+                            <span class="text-xs text-text-secondary font-medium">Por titular:</span>
+                            <div *ngFor="let ownerKey of getOwnerKeys(monthData.byOwner)"
+                                class="flex items-center gap-1.5">
+                                <span
+                                    class="w-2 h-2 rounded-full bg-accent-blue flex-shrink-0"></span>
+                                <span class="text-xs text-text-secondary">{{ ownerKey }}:</span>
+                                <span class="text-xs font-bold text-text-primary font-mono">
+                                    {{ monthData.byOwner[ownerKey] | currency:'BRL' }}
+                                </span>
                             </div>
-
-                            <!-- Detail Items List -->
-                            <div *ngIf="invoiceDetails.items.length > 0" class="space-y-1">
-                                <div *ngFor="let detail of invoiceDetails.items"
-                                    class="flex items-center justify-between px-3 py-2 rounded-md bg-dark-surface/40 hover:bg-dark-surface/70 transition-colors group">
-                                    <div class="flex items-center gap-3 flex-1 min-w-0">
-                                        <span
-                                            class="text-xs font-medium text-accent-blue bg-accent-blue/10 px-2 py-0.5 rounded whitespace-nowrap">
-                                            {{ detail.owner }}
-                                        </span>
-                                        <div class="flex flex-col min-w-0">
-                                            <span class="text-sm text-text-primary truncate">{{ detail.description }}</span>
-                                            <div class="flex items-center gap-2">
-                                                <span *ngIf="detail.installmentInfo"
-                                                    class="text-[10px] text-text-secondary">
-                                                    Parcela {{ detail.installmentInfo }}
-                                                </span>
-                                                <span *ngIf="detail.category"
-                                                    class="fd-badge fd-badge-gray text-[10px]">{{ detail.category }}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        <span class="font-bold text-sm text-text-primary font-mono whitespace-nowrap">
-                                            {{ detail.amount | currency:'BRL' }}
-                                        </span>
-                                        <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <button
-                                                (click)="$event.stopPropagation(); editDetail(detail)"
-                                                class="p-1 text-text-secondary hover:text-accent-emerald rounded transition-colors"
-                                                title="Editar">
-                                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"
-                                                    stroke="currentColor" stroke-width="2">
-                                                    <path stroke-linecap="round"
-                                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                </svg>
-                                            </button>
-                                            <button
-                                                (click)="$event.stopPropagation(); deleteDetail(detail.id, monthData.month, monthData.year)"
-                                                class="p-1 text-text-secondary hover:text-accent-red rounded transition-colors"
-                                                title="Excluir">
-                                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"
-                                                    stroke="currentColor" stroke-width="2">
-                                                    <path stroke-linecap="round"
-                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div *ngIf="invoiceDetails.items.length === 0"
-                                class="py-4 text-center text-text-secondary text-xs">
-                                Nenhum detalhamento adicionado para este mês.
-                            </div>
-
-                            <!-- Add/Edit Detail Form -->
-                            <form [formGroup]="detailForm"
-                                (ngSubmit)="onDetailSubmit(monthData.month, monthData.year)"
-                                class="bg-dark-surface rounded-lg p-3 space-y-3 border border-dark-border">
-                                <div class="text-xs font-medium text-text-secondary mb-1">
-                                    {{ editingDetailId ? '✏️ Editar Item' : '➕ Novo Item' }}
-                                </div>
-                                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                                    <div class="sm:col-span-2">
-                                        <input type="text" formControlName="description" class="fd-input text-sm py-1.5"
-                                            placeholder="Descrição (ex: Netflix)">
-                                    </div>
-                                    <div>
-                                        <input type="number" formControlName="amount"
-                                            class="fd-input text-sm font-mono py-1.5" placeholder="Valor" step="0.01">
-                                    </div>
-                                    <div class="relative">
-                                        <input type="text" formControlName="owner" class="fd-input text-sm py-1.5"
-                                            placeholder="Titular" list="ownerSuggestions">
-                                        <datalist id="ownerSuggestions">
-                                            <option *ngFor="let o of knownOwners" [value]="o">
-                                        </datalist>
-                                    </div>
-                                </div>
-                                <div class="grid grid-cols-3 gap-2">
-                                    <div>
-                                        <input type="text" formControlName="installmentInfo"
-                                            class="fd-input text-sm py-1.5" placeholder="Parcela (ex: 3/12)">
-                                    </div>
-                                    <div>
-                                        <select formControlName="category" class="fd-select text-sm py-1.5">
-                                            <option value="Alimentação">Alimentação</option>
-                                            <option value="Transporte">Transporte</option>
-                                            <option value="Casa">Casa</option>
-                                            <option value="Saúde">Saúde</option>
-                                            <option value="Lazer">Lazer</option>
-                                            <option value="Educação">Educação</option>
-                                            <option value="Compras">Compras</option>
-                                            <option value="Assinaturas">Assinaturas</option>
-                                            <option value="Outros">Outros</option>
-                                        </select>
-                                    </div>
-                                    <div class="flex gap-2">
-                                        <button type="submit" [disabled]="detailSubmitting || detailForm.invalid"
-                                            class="fd-btn-primary text-xs py-1.5 px-3 flex-1 disabled:opacity-50">
-                                            {{ detailSubmitting ? '...' : (editingDetailId ? 'Salvar' : 'Adicionar') }}
-                                        </button>
-                                        <button *ngIf="editingDetailId" type="button" (click)="resetDetailForm()"
-                                            class="fd-btn-ghost text-xs py-1.5 px-2">
-                                            Cancelar
-                                        </button>
-                                    </div>
-                                </div>
-                            </form>
                         </div>
                     </div>
                 </div>
@@ -918,7 +814,7 @@
                 class="flex flex-col items-center justify-center py-16 text-center">
                 <div class="text-4xl mb-3">👥</div>
                 <p class="text-text-secondary text-sm">Nenhum detalhamento por titular encontrado para {{ invoiceYear }}.</p>
-                <p class="text-text-secondary text-xs mt-1">Adicione detalhes na aba "Faturas" expanda um mês e clique em "Detalhamento por Titular".</p>
+                <p class="text-text-secondary text-xs mt-1">Adicione despesas com a "Nova Despesa" e preencha o campo "Titular" para ver os dados aqui.</p>
             </div>
 
             <!-- Owner Cards -->

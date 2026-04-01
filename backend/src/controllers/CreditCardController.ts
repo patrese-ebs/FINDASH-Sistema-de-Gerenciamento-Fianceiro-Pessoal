@@ -190,6 +190,9 @@ export class CreditCardController {
                 transactions.forEach((transaction: any) => {
                     const installmentAmount = parseFloat(transaction.installmentAmount.toString());
 
+                    // Skip detailOnly transactions from financial calculations
+                    if (transaction.detailOnly) return;
+
                     const remainingInstallments = transaction.installments - transaction.currentInstallment + 1;
                     totalLiability += (installmentAmount * remainingInstallments);
 
@@ -288,6 +291,7 @@ export class CreditCardController {
 
                 const total = items.reduce((sum, i) => {
                     if (i.category === 'Pagamentos' && i.installmentAmount < 0) return sum;
+                    if (i.detailOnly) return sum; // detailOnly items don't count in total
                     return sum + i.installmentAmount;
                 }, 0);
                 const inv = invoices.find(i => i.month === m);
@@ -298,6 +302,14 @@ export class CreditCardController {
                 const isPartiallyPaid = paidAmount > 0 && paidAmount < total;
                 const isFullyPaid = inv ? inv.isPaid && remainingAmount <= 0 : false;
 
+                // Aggregate by owner (includes both normal and detailOnly items for tracking)
+                const byOwner: { [owner: string]: number } = {};
+                items.forEach(i => {
+                    if (i.category === 'Pagamentos' && i.installmentAmount < 0) return;
+                    const ownerName = i.owner || 'Sem titular';
+                    byOwner[ownerName] = (byOwner[ownerName] || 0) + i.installmentAmount;
+                });
+
                 overview.push({
                     month: m,
                     year: targetYear,
@@ -306,6 +318,7 @@ export class CreditCardController {
                     remainingAmount,
                     isPaid: isFullyPaid,
                     isPartiallyPaid,
+                    byOwner,
                     items // Include items for accordion View
                 });
             }
@@ -541,7 +554,7 @@ export class CreditCardController {
     async addTransaction(req: AuthRequest, res: Response): Promise<void> {
         try {
             const { id } = req.params;
-            const { description, totalAmount, installments, category, purchaseDate } = req.body;
+            const { description, totalAmount, installments, category, purchaseDate, owner, detailOnly } = req.body;
             const userId = req.userId;
 
             if (!userId) {
@@ -568,6 +581,8 @@ export class CreditCardController {
                 installmentAmount,
                 purchaseDate: new Date(purchaseDate),
                 category,
+                owner: owner || null,
+                detailOnly: detailOnly || false,
             });
 
             await redisService.delPattern(`insight:${userId}*`);
@@ -580,7 +595,7 @@ export class CreditCardController {
     async updateTransaction(req: AuthRequest, res: Response): Promise<void> {
         try {
             const { id, transactionId } = req.params;
-            const { description, totalAmount, installments, category, purchaseDate, updateMode, refMonth, refYear } = req.body;
+            const { description, totalAmount, installments, category, purchaseDate, updateMode, refMonth, refYear, owner, detailOnly } = req.body;
             const userId = req.userId;
 
             if (!userId) {
@@ -616,7 +631,9 @@ export class CreditCardController {
                     installments: newInstallments,
                     installmentAmount: installmentAmount,
                     category: category || transaction.category,
-                    purchaseDate: purchaseDate ? new Date(purchaseDate) : transaction.purchaseDate
+                    purchaseDate: purchaseDate ? new Date(purchaseDate) : transaction.purchaseDate,
+                    owner: owner !== undefined ? (owner || null) : transaction.owner,
+                    detailOnly: detailOnly !== undefined ? detailOnly : transaction.detailOnly
                 });
 
                 // Update associated expenses
@@ -1423,34 +1440,51 @@ export class CreditCardController {
                 return;
             }
 
-            // Get all details for this card/year
-            const details = await InvoiceDetail.findAll({
-                where: { creditCardId: id, year: targetYear },
-                order: [['month', 'ASC']]
+            // Get all transactions for this card
+            const transactions = await CreditCardTransaction.findAll({
+                where: { creditCardId: id }
             });
 
-            // Also get all unique owners across all years for this card (for autocomplete)
-            const allOwners = await InvoiceDetail.findAll({
+            // Build summary by owner using installment logic (same as yearlyOverview)
+            const summary: { [owner: string]: { total: number; months: number[] } } = {};
+            const ownerSet = new Set<string>();
+
+            for (let m = 1; m <= 12; m++) {
+                transactions.forEach(t => {
+                    const dateObj = new Date(t.purchaseDate);
+                    const pYear = dateObj.getFullYear();
+                    const pMonth = dateObj.getMonth() + 1;
+                    const monthsElapsed = (targetYear - pYear) * 12 + (m - pMonth);
+
+                    if (monthsElapsed >= 0 && monthsElapsed < t.installments) {
+                        const amount = parseFloat(t.installmentAmount.toString());
+                        if (t.category === 'Pagamentos' && amount < 0) return;
+
+                        const ownerName = t.owner || 'Sem titular';
+                        ownerSet.add(ownerName);
+
+                        if (!summary[ownerName]) {
+                            summary[ownerName] = { total: 0, months: new Array(12).fill(0) };
+                        }
+                        summary[ownerName].total += amount;
+                        summary[ownerName].months[m - 1] += amount;
+                    }
+                });
+            }
+
+            // Get all unique owners across all transactions for autocomplete
+            const allOwners = await CreditCardTransaction.findAll({
                 where: { creditCardId: id },
                 attributes: ['owner'],
                 group: ['owner']
             });
-
-            // Build summary by owner
-            const summary: { [owner: string]: { total: number; months: number[] } } = {};
-
-            details.forEach(d => {
-                const amount = parseFloat(d.amount.toString());
-                if (!summary[d.owner]) {
-                    summary[d.owner] = { total: 0, months: new Array(12).fill(0) };
-                }
-                summary[d.owner].total += amount;
-                summary[d.owner].months[d.month - 1] += amount;
-            });
+            const knownOwners = allOwners
+                .map(o => o.owner)
+                .filter((o): o is string => o !== null && o !== undefined && o !== '');
 
             res.status(200).json({
                 summary,
-                knownOwners: allOwners.map(o => o.owner)
+                knownOwners
             });
 
         } catch (error) {

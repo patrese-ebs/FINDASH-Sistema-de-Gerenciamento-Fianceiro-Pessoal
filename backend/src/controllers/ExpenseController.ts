@@ -37,7 +37,7 @@ export class ExpenseController {
 
     async create(req: AuthRequest, res: Response): Promise<void> {
         try {
-            const { description, amount, category, date, paymentMethod, creditCardId, isRecurring, recurrenceFrequency, recurrenceEndDate, isPaid, installments } = req.body;
+            const { description, amount, category, date, paymentMethod, creditCardId, isRecurring, recurrenceFrequency, recurrenceEndDate, isPaid, installments, owner, detailOnly } = req.body;
             const userId = req.userId;
 
             if (!userId) {
@@ -75,7 +75,9 @@ export class ExpenseController {
                     currentInstallment: 1,
                     installmentAmount: totalAmt / numInst,
                     purchaseDate: initialDate,
-                    category
+                    category,
+                    owner: owner || null,
+                    detailOnly: detailOnly || false
                 });
                 createdTransactionId = transaction.id;
             }

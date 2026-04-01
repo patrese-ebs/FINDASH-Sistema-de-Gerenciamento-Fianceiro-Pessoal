@@ -12,11 +12,13 @@ interface CreditCardTransactionAttributes {
     installmentAmount: number;
     purchaseDate: Date;
     category: string;
+    owner?: string | null;
+    detailOnly?: boolean;
     createdAt?: Date;
     updatedAt?: Date;
 }
 
-interface CreditCardTransactionCreationAttributes extends Optional<CreditCardTransactionAttributes, 'id' | 'currentInstallment'> { }
+interface CreditCardTransactionCreationAttributes extends Optional<CreditCardTransactionAttributes, 'id' | 'currentInstallment' | 'owner' | 'detailOnly'> { }
 
 class CreditCardTransaction extends Model<CreditCardTransactionAttributes, CreditCardTransactionCreationAttributes> implements CreditCardTransactionAttributes {
     public id!: string;
@@ -28,6 +30,8 @@ class CreditCardTransaction extends Model<CreditCardTransactionAttributes, Credi
     public installmentAmount!: number;
     public purchaseDate!: Date;
     public category!: string;
+    public owner!: string | null;
+    public detailOnly!: boolean;
     public readonly createdAt!: Date;
     public readonly updatedAt!: Date;
 }
@@ -83,6 +87,15 @@ CreditCardTransaction.init(
         category: {
             type: DataTypes.STRING,
             allowNull: false,
+        },
+        owner: {
+            type: DataTypes.STRING(50),
+            allowNull: true,
+        },
+        detailOnly: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: false,
         },
     },
     {

@@ -118,7 +118,9 @@ export class CreditCardsComponent implements OnInit {
             totalValue: [0], // Used if not detailed
             description: ['', Validators.required],
             category: ['Outros'],
-            date: [new Date().toISOString().split('T')[0], Validators.required]
+            date: [new Date().toISOString().split('T')[0], Validators.required],
+            owner: [''],
+            detailOnly: [false]
         });
 
         // Planning Form
@@ -396,8 +398,17 @@ export class CreditCardsComponent implements OnInit {
             installments: 1,
             totalValue: 0,
             category: 'Outros',
-            date: new Date().toISOString().split('T')[0]
+            date: new Date().toISOString().split('T')[0],
+            owner: '',
+            detailOnly: false
         });
+        // Load known owners for autocomplete
+        if (this.selectedCard?.id) {
+            this.cardService.getOwnerSummary(this.selectedCard.id, new Date().getFullYear()).subscribe({
+                next: (data: any) => this.knownOwners = data.knownOwners || [],
+                error: () => this.knownOwners = []
+            });
+        }
     }
 
     onTransactionSubmit() {
@@ -422,7 +433,9 @@ export class CreditCardsComponent implements OnInit {
                 totalAmount: val.totalValue,
                 installments: val.installments,
                 category: val.category,
-                purchaseDate: val.date
+                purchaseDate: val.date,
+                owner: val.owner || null,
+                detailOnly: val.detailOnly || false
             };
 
             this.cardService.updateTransaction(val.cardId, this.editingTransactionId, updateData).subscribe({
@@ -454,7 +467,9 @@ export class CreditCardsComponent implements OnInit {
                 paymentMethod: 'credit',
                 creditCardId: val.cardId,
                 isPaid: false,
-                installments: val.installments
+                installments: val.installments,
+                owner: val.owner || null,
+                detailOnly: val.detailOnly || false
             };
 
             this.transactionService.create(tx).subscribe({
@@ -735,7 +750,9 @@ export class CreditCardsComponent implements OnInit {
             paymentMethod: 'credit',
             creditCardId: item.creditCardId,
             isPaid: false,
-            installments: item.installments
+            installments: item.installments,
+            owner: item.owner || '',
+            detailOnly: item.detailOnly || false
         };
         this.openEditTransactionModal(tx);
     }
@@ -791,7 +808,9 @@ export class CreditCardsComponent implements OnInit {
             totalValue: t.amount,
             installments: t.installments,
             category: t.category,
-            date: t.date.toString().split('T')[0]
+            date: t.date.toString().split('T')[0],
+            owner: t.owner || '',
+            detailOnly: t.detailOnly || false
         });
     }
 
