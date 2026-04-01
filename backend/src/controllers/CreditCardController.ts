@@ -276,7 +276,8 @@ export class CreditCardController {
                     const pYear = dateObj.getFullYear();
                     const pMonth = dateObj.getMonth() + 1;
                     const monthsElapsed = (targetYear - pYear) * 12 + (m - pMonth);
-                    return monthsElapsed >= 0 && monthsElapsed < t.installments;
+                    const startOffset = (t.currentInstallment || 1) - 1; // e.g. currentInstallment=4 means skip first 3
+                    return monthsElapsed >= startOffset && monthsElapsed < t.installments;
                 }).map(t => {
                     const dateObj = new Date(t.purchaseDate);
                     const pYear = dateObj.getFullYear();
@@ -302,12 +303,17 @@ export class CreditCardController {
                 const isPartiallyPaid = paidAmount > 0 && paidAmount < total;
                 const isFullyPaid = inv ? inv.isPaid && remainingAmount <= 0 : false;
 
-                // Aggregate by owner (includes both normal and detailOnly items for tracking)
+                // Aggregate by owner (only non-detailOnly for financial matching with total)
                 const byOwner: { [owner: string]: number } = {};
+                // Also track all items including detailOnly for informational display
+                const byOwnerAll: { [owner: string]: number } = {};
                 items.forEach(i => {
                     if (i.category === 'Pagamentos' && i.installmentAmount < 0) return;
                     const ownerName = i.owner || 'Sem titular';
-                    byOwner[ownerName] = (byOwner[ownerName] || 0) + i.installmentAmount;
+                    byOwnerAll[ownerName] = (byOwnerAll[ownerName] || 0) + i.installmentAmount;
+                    if (!i.detailOnly) {
+                        byOwner[ownerName] = (byOwner[ownerName] || 0) + i.installmentAmount;
+                    }
                 });
 
                 overview.push({
@@ -319,6 +325,7 @@ export class CreditCardController {
                     isPaid: isFullyPaid,
                     isPartiallyPaid,
                     byOwner,
+                    byOwnerAll,
                     items // Include items for accordion View
                 });
             }
@@ -1455,8 +1462,9 @@ export class CreditCardController {
                     const pYear = dateObj.getFullYear();
                     const pMonth = dateObj.getMonth() + 1;
                     const monthsElapsed = (targetYear - pYear) * 12 + (m - pMonth);
+                    const startOffset = (t.currentInstallment || 1) - 1;
 
-                    if (monthsElapsed >= 0 && monthsElapsed < t.installments) {
+                    if (monthsElapsed >= startOffset && monthsElapsed < t.installments) {
                         const amount = parseFloat(t.installmentAmount.toString());
                         if (t.category === 'Pagamentos' && amount < 0) return;
 
