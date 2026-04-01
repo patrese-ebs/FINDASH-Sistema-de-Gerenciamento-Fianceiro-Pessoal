@@ -807,16 +807,29 @@
                     <!-- Owner Summary Bar (auto-aggregated from transactions) -->
                     <div *ngIf="getOwnerKeys(monthData.byOwner).length > 0 && !(getOwnerKeys(monthData.byOwner).length === 1 && getOwnerKeys(monthData.byOwner)[0] === 'Sem titular')"
                         class="border-t border-dark-border px-4 py-3 bg-dark-surface/30">
-                        <div class="flex flex-wrap gap-3 items-center">
-                            <span class="text-xs text-text-secondary font-medium">Por titular:</span>
-                            <div *ngFor="let ownerKey of getOwnerKeys(monthData.byOwner)"
-                                class="flex items-center gap-1.5">
-                                <span
-                                    class="w-2 h-2 rounded-full bg-accent-blue flex-shrink-0"></span>
-                                <span class="text-xs text-text-secondary">{{ ownerKey }}:</span>
-                                <span class="text-xs font-bold text-text-primary font-mono">
-                                    {{ monthData.byOwner[ownerKey] | currency:'BRL' }}
-                                </span>
+                        <span class="text-xs text-text-secondary font-medium block mb-2">Resumo por titular:</span>
+                        <div class="space-y-2">
+                            <div *ngFor="let ownerKey of getOwnerKeys(monthData.byOwner); let i = index"
+                                class="flex items-center justify-between gap-3">
+                                <div class="flex items-center gap-1.5 min-w-0">
+                                    <span class="w-2 h-2 rounded-full flex-shrink-0"
+                                        [style.background]="i === 0 ? '#8b5cf6' : i === 1 ? '#06b6d4' : '#f59e0b'"></span>
+                                    <span class="text-xs font-medium text-text-primary truncate">{{ ownerKey }}</span>
+                                </div>
+                                <div class="flex items-center gap-3 flex-shrink-0">
+                                    <span class="text-xs font-bold text-text-primary font-mono">
+                                        {{ monthData.byOwner[ownerKey] | currency:'BRL' }}
+                                    </span>
+                                    <span class="text-[10px] text-accent-emerald font-mono"
+                                        *ngIf="monthData.paidAmount > 0">
+                                        ✓ {{ (monthData.total > 0 ? (monthData.byOwner[ownerKey] / monthData.total) * monthData.paidAmount : 0) | currency:'BRL' }}
+                                    </span>
+                                    <span class="text-[10px] font-mono" *ngIf="monthData.isPaid"
+                                        style="color: #10b981;">✅ Pago</span>
+                                    <span class="text-[10px] text-accent-gold font-mono" *ngIf="!monthData.isPaid">
+                                        ⏳ {{ (monthData.byOwner[ownerKey] - (monthData.total > 0 ? (monthData.byOwner[ownerKey] / monthData.total) * monthData.paidAmount : 0)) | currency:'BRL' }}
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </div>

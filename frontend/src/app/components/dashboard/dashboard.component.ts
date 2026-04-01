@@ -53,8 +53,12 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
     // Owner Breakdown for dashboard
     ownerBreakdown: { [owner: string]: number } = {};
+    ownerBreakdownPaid: { [owner: string]: number } = {};
+    ownerBreakdownRemaining: { [owner: string]: number } = {};
     ownerBreakdownKeys: string[] = [];
     ownerBreakdownTotal: number = 0;
+    ownerBreakdownTotalPaid: number = 0;
+    ownerBreakdownTotalRemaining: number = 0;
 
     @ViewChild('cashFlowChart') cashFlowChartRef!: ElementRef;
     @ViewChild('expenseChart') expenseChartRef!: ElementRef;
@@ -295,30 +299,45 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
     loadOwnerBreakdown() {
         this.ownerBreakdown = {};
+        this.ownerBreakdownPaid = {};
+        this.ownerBreakdownRemaining = {};
         this.ownerBreakdownKeys = [];
         this.ownerBreakdownTotal = 0;
+        this.ownerBreakdownTotalPaid = 0;
+        this.ownerBreakdownTotalRemaining = 0;
 
         this.cardService.getAll().subscribe({
             next: (cards) => {
                 if (cards.length === 0) return;
                 let pending = cards.length;
                 const aggregate: { [owner: string]: number } = {};
+                const aggregatePaid: { [owner: string]: number } = {};
 
                 cards.forEach(card => {
                     this.cardService.getYearlyOverview(card.id!, this.selectedYear).subscribe({
                         next: (overview: any[]) => {
                             const monthData = overview.find((m: any) => m.month === this.selectedMonth);
                             if (monthData && monthData.byOwner) {
+                                const cardTotal = monthData.total || 0;
+                                const cardPaid = monthData.paidAmount || 0;
+
                                 Object.keys(monthData.byOwner).forEach(owner => {
-                                    aggregate[owner] = (aggregate[owner] || 0) + monthData.byOwner[owner];
+                                    const ownerAmount = monthData.byOwner[owner];
+                                    aggregate[owner] = (aggregate[owner] || 0) + ownerAmount;
+
+                                    // Pro-rata paid: owner's share of the paid amount
+                                    const ownerPaidShare = cardTotal > 0
+                                        ? (ownerAmount / cardTotal) * cardPaid
+                                        : 0;
+                                    aggregatePaid[owner] = (aggregatePaid[owner] || 0) + ownerPaidShare;
                                 });
                             }
                             pending--;
-                            if (pending === 0) this.finalizeOwnerBreakdown(aggregate);
+                            if (pending === 0) this.finalizeOwnerBreakdown(aggregate, aggregatePaid);
                         },
                         error: () => {
                             pending--;
-                            if (pending === 0) this.finalizeOwnerBreakdown(aggregate);
+                            if (pending === 0) this.finalizeOwnerBreakdown(aggregate, aggregatePaid);
                         }
                     });
                 });
@@ -327,9 +346,25 @@ export class DashboardComponent implements OnInit, AfterViewInit {
         });
     }
 
-    finalizeOwnerBreakdown(aggregate: { [owner: string]: number }) {
+    finalizeOwnerBreakdown(aggregate: { [owner: string]: number }, aggregatePaid: { [owner: string]: number }) {
         this.ownerBreakdown = aggregate;
         this.ownerBreakdownKeys = Object.keys(aggregate).sort();
         this.ownerBreakdownTotal = Object.values(aggregate).reduce((sum, v) => sum + v, 0);
+
+        // Build paid / remaining per owner
+        this.ownerBreakdownPaid = {};
+        this.ownerBreakdownRemaining = {};
+        this.ownerBreakdownTotalPaid = 0;
+        this.ownerBreakdownTotalRemaining = 0;
+
+        this.ownerBreakdownKeys.forEach(owner => {
+            const total = aggregate[owner] || 0;
+            const paid = Math.min(aggregatePaid[owner] || 0, total);
+            const remaining = Math.max(0, total - paid);
+            this.ownerBreakdownPaid[owner] = paid;
+            this.ownerBreakdownRemaining[owner] = remaining;
+            this.ownerBreakdownTotalPaid += paid;
+            this.ownerBreakdownTotalRemaining += remaining;
+        });
     }
 }
