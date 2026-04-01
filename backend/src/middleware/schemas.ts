@@ -130,6 +130,26 @@ export const payInvoiceSchema = z.object({
     amount: z.number().positive().optional(),
 });
 
+// ==================== INVOICE DETAIL ====================
+
+export const addInvoiceDetailSchema = z.object({
+    month: z.number().int().min(1).max(12),
+    year: z.number().int().min(2000).max(2100),
+    description: z.string().min(1, 'Descrição é obrigatória').max(255),
+    amount: z.number().positive('Valor deve ser positivo'),
+    owner: z.string().min(1, 'Titular é obrigatório').max(50),
+    installmentInfo: z.string().max(20).optional().nullable(),
+    category: z.string().max(50).optional().nullable(),
+});
+
+export const updateInvoiceDetailSchema = z.object({
+    description: z.string().min(1).max(255).optional(),
+    amount: z.number().positive().optional(),
+    owner: z.string().min(1).max(50).optional(),
+    installmentInfo: z.string().max(20).optional().nullable(),
+    category: z.string().max(50).optional().nullable(),
+});
+
 // ==================== INVESTMENT ====================
 
 export const createInvestmentSchema = z.object({

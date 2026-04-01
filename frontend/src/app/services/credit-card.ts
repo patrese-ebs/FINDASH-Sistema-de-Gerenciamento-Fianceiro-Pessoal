@@ -68,4 +68,25 @@ export class CreditCardService {
       body: body
     });
   }
+
+  // Invoice Detail (Owner Breakdown)
+  getInvoiceDetails(cardId: string, month: number, year: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/${cardId}/invoice-details/${month}/${year}`, { headers: this.getHeaders() });
+  }
+
+  addInvoiceDetail(cardId: string, detail: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${cardId}/invoice-details`, detail, { headers: this.getHeaders() });
+  }
+
+  updateInvoiceDetail(cardId: string, detailId: string, detail: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${cardId}/invoice-details/${detailId}`, detail, { headers: this.getHeaders() });
+  }
+
+  deleteInvoiceDetail(cardId: string, detailId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${cardId}/invoice-details/${detailId}`, { headers: this.getHeaders() });
+  }
+
+  getOwnerSummary(cardId: string, year: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/${cardId}/owner-summary/${year}`, { headers: this.getHeaders() });
+  }
 }

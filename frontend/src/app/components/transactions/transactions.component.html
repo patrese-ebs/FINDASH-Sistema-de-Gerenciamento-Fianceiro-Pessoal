@@ -107,18 +107,11 @@
                     {{ balance | currency:'BRL' }}
                 </span>
             </div>
-            <div class="flex justify-between items-center pb-2 border-b border-dark-border">
+            <div class="flex justify-between items-center pb-2">
                 <span class="text-xs text-accent-cyan" title="Receitas Recebidas − Despesas Pagas">Atual (Em Conta)</span>
-                <span class="text-sm font-semibold font-mono"
+                <span class="text-lg font-bold font-mono"
                     [ngClass]="{'text-accent-cyan': currentBalance >= 0, 'text-accent-red': currentBalance < 0}">
                     {{ currentBalance | currency:'BRL' }}
-                </span>
-            </div>
-            <div class="flex justify-between items-center">
-                <span class="text-xs text-accent-emerald" title="Receitas Previstas − Despesas A Pagar">Sobra Prevista</span>
-                <span class="text-lg font-bold font-mono"
-                    [ngClass]="{'text-accent-emerald': leftoverBalance >= 0, 'text-accent-red': leftoverBalance < 0}">
-                    {{ leftoverBalance | currency:'BRL' }}
                 </span>
             </div>
         </div>

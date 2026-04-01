@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { CreditCard, CreditCardTransaction, CreditCardInvoice, Expense } from '../models';
+import { CreditCard, CreditCardTransaction, CreditCardInvoice, Expense, InvoiceDetail } from '../models';
 import { AuthRequest } from '../types';
 import redisService from '../services/RedisService';
 
@@ -1227,6 +1227,235 @@ export class CreditCardController {
         } catch (error) {
             console.error(error);
             res.status(500).json({ error: 'Failed to undo payment' });
+        }
+    }
+
+    // ==================== INVOICE DETAIL (Owner Breakdown) ====================
+
+    async getInvoiceDetails(req: AuthRequest, res: Response): Promise<void> {
+        try {
+            const { id, month, year } = req.params;
+            const userId = req.userId;
+            const targetMonth = parseInt(month as string);
+            const targetYear = parseInt(year as string);
+
+            if (!userId) {
+                res.status(401).json({ error: 'Unauthorized' });
+                return;
+            }
+
+            const creditCard = await CreditCard.findOne({ where: { id, userId } });
+            if (!creditCard) {
+                res.status(404).json({ error: 'Card not found' });
+                return;
+            }
+
+            // Get detail items for this month
+            const items = await InvoiceDetail.findAll({
+                where: { creditCardId: id, month: targetMonth, year: targetYear },
+                order: [['createdAt', 'ASC']]
+            });
+
+            // Get the invoice total from transactions (same logic as yearlyOverview)
+            const transactions = await CreditCardTransaction.findAll({ where: { creditCardId: id } });
+            const invoiceTotal = transactions.reduce((sum, t) => {
+                const dateObj = new Date(t.purchaseDate);
+                const pYear = dateObj.getFullYear();
+                const pMonth = dateObj.getMonth() + 1;
+                const monthsElapsed = (targetYear - pYear) * 12 + (targetMonth - pMonth);
+
+                if (monthsElapsed >= 0 && monthsElapsed < t.installments) {
+                    if (t.category === 'Pagamentos' && parseFloat(t.installmentAmount.toString()) < 0) return sum;
+                    return sum + parseFloat(t.installmentAmount.toString());
+                }
+                return sum;
+            }, 0);
+
+            // Calculate totals by owner
+            const byOwner: { [owner: string]: number } = {};
+            let totalDetailed = 0;
+
+            items.forEach(item => {
+                const amount = parseFloat(item.amount.toString());
+                totalDetailed += amount;
+                byOwner[item.owner] = (byOwner[item.owner] || 0) + amount;
+            });
+
+            const undetailed = Math.max(0, invoiceTotal - totalDetailed);
+
+            res.status(200).json({
+                items: items.map(i => i.toJSON()),
+                totalDetailed,
+                invoiceTotal,
+                undetailed,
+                byOwner
+            });
+
+        } catch (error) {
+            console.error('Failed to get invoice details', error);
+            res.status(500).json({ error: 'Failed to get invoice details' });
+        }
+    }
+
+    async addInvoiceDetail(req: AuthRequest, res: Response): Promise<void> {
+        try {
+            const { id } = req.params;
+            const { month, year, description, amount, owner, installmentInfo, category } = req.body;
+            const userId = req.userId;
+
+            if (!userId) {
+                res.status(401).json({ error: 'Unauthorized' });
+                return;
+            }
+
+            const creditCard = await CreditCard.findOne({ where: { id, userId } });
+            if (!creditCard) {
+                res.status(404).json({ error: 'Card not found' });
+                return;
+            }
+
+            const detail = await InvoiceDetail.create({
+                creditCardId: id as string,
+                month,
+                year,
+                description,
+                amount,
+                owner,
+                installmentInfo: installmentInfo || null,
+                category: category || null,
+            });
+
+            res.status(201).json(detail);
+        } catch (error) {
+            console.error('Failed to add invoice detail', error);
+            res.status(500).json({ error: 'Failed to add invoice detail' });
+        }
+    }
+
+    async updateInvoiceDetail(req: AuthRequest, res: Response): Promise<void> {
+        try {
+            const { id, detailId } = req.params;
+            const { description, amount, owner, installmentInfo, category } = req.body;
+            const userId = req.userId;
+
+            if (!userId) {
+                res.status(401).json({ error: 'Unauthorized' });
+                return;
+            }
+
+            const creditCard = await CreditCard.findOne({ where: { id, userId } });
+            if (!creditCard) {
+                res.status(404).json({ error: 'Card not found' });
+                return;
+            }
+
+            const detail = await InvoiceDetail.findOne({
+                where: { id: detailId, creditCardId: id }
+            });
+
+            if (!detail) {
+                res.status(404).json({ error: 'Detail not found' });
+                return;
+            }
+
+            await detail.update({
+                description: description !== undefined ? description : detail.description,
+                amount: amount !== undefined ? amount : detail.amount,
+                owner: owner !== undefined ? owner : detail.owner,
+                installmentInfo: installmentInfo !== undefined ? installmentInfo : detail.installmentInfo,
+                category: category !== undefined ? category : detail.category,
+            });
+
+            res.status(200).json(detail);
+        } catch (error) {
+            console.error('Failed to update invoice detail', error);
+            res.status(500).json({ error: 'Failed to update invoice detail' });
+        }
+    }
+
+    async deleteInvoiceDetail(req: AuthRequest, res: Response): Promise<void> {
+        try {
+            const { id, detailId } = req.params;
+            const userId = req.userId;
+
+            if (!userId) {
+                res.status(401).json({ error: 'Unauthorized' });
+                return;
+            }
+
+            const creditCard = await CreditCard.findOne({ where: { id, userId } });
+            if (!creditCard) {
+                res.status(404).json({ error: 'Card not found' });
+                return;
+            }
+
+            const detail = await InvoiceDetail.findOne({
+                where: { id: detailId, creditCardId: id }
+            });
+
+            if (!detail) {
+                res.status(404).json({ error: 'Detail not found' });
+                return;
+            }
+
+            await detail.destroy();
+            res.status(204).send();
+        } catch (error) {
+            console.error('Failed to delete invoice detail', error);
+            res.status(500).json({ error: 'Failed to delete invoice detail' });
+        }
+    }
+
+    async getOwnerSummary(req: AuthRequest, res: Response): Promise<void> {
+        try {
+            const { id, year } = req.params;
+            const userId = req.userId;
+            const targetYear = parseInt(year as string);
+
+            if (!userId) {
+                res.status(401).json({ error: 'Unauthorized' });
+                return;
+            }
+
+            const creditCard = await CreditCard.findOne({ where: { id, userId } });
+            if (!creditCard) {
+                res.status(404).json({ error: 'Card not found' });
+                return;
+            }
+
+            // Get all details for this card/year
+            const details = await InvoiceDetail.findAll({
+                where: { creditCardId: id, year: targetYear },
+                order: [['month', 'ASC']]
+            });
+
+            // Also get all unique owners across all years for this card (for autocomplete)
+            const allOwners = await InvoiceDetail.findAll({
+                where: { creditCardId: id },
+                attributes: ['owner'],
+                group: ['owner']
+            });
+
+            // Build summary by owner
+            const summary: { [owner: string]: { total: number; months: number[] } } = {};
+
+            details.forEach(d => {
+                const amount = parseFloat(d.amount.toString());
+                if (!summary[d.owner]) {
+                    summary[d.owner] = { total: 0, months: new Array(12).fill(0) };
+                }
+                summary[d.owner].total += amount;
+                summary[d.owner].months[d.month - 1] += amount;
+            });
+
+            res.status(200).json({
+                summary,
+                knownOwners: allOwners.map(o => o.owner)
+            });
+
+        } catch (error) {
+            console.error('Failed to get owner summary', error);
+            res.status(500).json({ error: 'Failed to get owner summary' });
         }
     }
 

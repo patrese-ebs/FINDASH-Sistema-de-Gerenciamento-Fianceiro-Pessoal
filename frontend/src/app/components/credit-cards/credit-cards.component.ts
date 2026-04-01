@@ -59,6 +59,16 @@ export class CreditCardsComponent implements OnInit {
     paymentAmount: number = 0;
     viewingCard: CreditCard | null = null;
 
+    // Invoice Detail (Owner Breakdown)
+    showDetailSection: boolean = false;
+    invoiceDetails: any = null; // { items, totalDetailed, invoiceTotal, undetailed, byOwner }
+    detailForm: FormGroup;
+    editingDetailId: string | null = null;
+    detailSubmitting: boolean = false;
+    knownOwners: string[] = [];
+    activeInvoiceTab: 'invoices' | 'byOwner' = 'invoices';
+    ownerSummary: any = null; // { summary: { owner: { total, months[] } }, knownOwners }
+
     // Filter
     cardFilter: 'all' | 'pending' | 'paid' | 'cancelled' = 'all';
     months = [
@@ -120,6 +130,15 @@ export class CreditCardsComponent implements OnInit {
             planningControls[`month_${m}`] = [0];
         });
         this.planningForm = this.fb.group(planningControls);
+
+        // Detail Form
+        this.detailForm = this.fb.group({
+            description: ['', Validators.required],
+            amount: [0, [Validators.required, Validators.min(0.01)]],
+            owner: ['', Validators.required],
+            installmentInfo: [''],
+            category: ['Outros']
+        });
     }
 
     get availableParentCards(): CreditCard[] {
@@ -283,7 +302,6 @@ export class CreditCardsComponent implements OnInit {
         this.showTransactionModal = false;
         this.showPlanningModal = false;
         this.showInvoiceModal = false;
-        this.showInvoiceModal = false;
         this.selectedCard = null;
         this.showRecurrenceModal = false;
         this.recurrenceAction = null;
@@ -292,6 +310,13 @@ export class CreditCardsComponent implements OnInit {
         this.lastLoadedPlanValues = null;
         this.lastLoadedPlanYear = null;
         this.lastLoadedPlanCardId = null;
+        // Reset detail state
+        this.showDetailSection = false;
+        this.invoiceDetails = null;
+        this.editingDetailId = null;
+        this.activeInvoiceTab = 'invoices';
+        this.ownerSummary = null;
+        this.resetDetailForm();
     }
 
     onCardSubmit() {
@@ -833,6 +858,158 @@ export class CreditCardsComponent implements OnInit {
                 }
             });
         }
+    }
+
+    // ==================== Invoice Detail (Owner Breakdown) ====================
+
+    toggleDetailSection(monthIndex: number) {
+        const monthData = this.yearlyOverview[monthIndex];
+        if (!monthData || !this.viewingCard) return;
+
+        if (this.showDetailSection) {
+            this.showDetailSection = false;
+            this.invoiceDetails = null;
+            return;
+        }
+
+        this.showDetailSection = true;
+        this.loadInvoiceDetails(monthData.month, monthData.year);
+    }
+
+    loadInvoiceDetails(month: number, year: number) {
+        if (!this.viewingCard) return;
+        this.cardService.getInvoiceDetails(this.viewingCard.id!, month, year).subscribe({
+            next: (data) => {
+                this.invoiceDetails = data;
+                if (data.byOwner) {
+                    // Collect known owners from response
+                    const owners = Object.keys(data.byOwner);
+                    owners.forEach(o => {
+                        if (!this.knownOwners.includes(o)) this.knownOwners.push(o);
+                    });
+                }
+            },
+            error: (err) => console.error('Failed to load invoice details', err)
+        });
+    }
+
+    resetDetailForm() {
+        this.editingDetailId = null;
+        this.detailForm.reset({
+            description: '',
+            amount: 0,
+            owner: '',
+            installmentInfo: '',
+            category: 'Outros'
+        });
+    }
+
+    editDetail(item: any) {
+        this.editingDetailId = item.id;
+        this.detailForm.patchValue({
+            description: item.description,
+            amount: item.amount,
+            owner: item.owner,
+            installmentInfo: item.installmentInfo || '',
+            category: item.category || 'Outros'
+        });
+    }
+
+    onDetailSubmit(month: number, year: number) {
+        if (this.detailForm.invalid || !this.viewingCard) return;
+        this.detailSubmitting = true;
+
+        const val = this.detailForm.value;
+
+        if (this.editingDetailId) {
+            this.cardService.updateInvoiceDetail(this.viewingCard.id!, this.editingDetailId, val).subscribe({
+                next: () => {
+                    this.detailSubmitting = false;
+                    this.resetDetailForm();
+                    this.loadInvoiceDetails(month, year);
+                },
+                error: (err) => {
+                    console.error('Update detail failed', err);
+                    this.detailSubmitting = false;
+                    alert('Erro ao atualizar detalhe');
+                }
+            });
+        } else {
+            const detail = {
+                month,
+                year,
+                ...val
+            };
+            this.cardService.addInvoiceDetail(this.viewingCard.id!, detail).subscribe({
+                next: () => {
+                    this.detailSubmitting = false;
+                    this.resetDetailForm();
+                    this.loadInvoiceDetails(month, year);
+                    // Add new owner to known list
+                    if (val.owner && !this.knownOwners.includes(val.owner)) {
+                        this.knownOwners.push(val.owner);
+                    }
+                },
+                error: (err) => {
+                    console.error('Add detail failed', err);
+                    this.detailSubmitting = false;
+                    alert('Erro ao adicionar detalhe');
+                }
+            });
+        }
+    }
+
+    deleteDetail(detailId: string, month: number, year: number) {
+        if (!this.viewingCard) return;
+        if (!confirm('Excluir este item de detalhamento?')) return;
+
+        this.cardService.deleteInvoiceDetail(this.viewingCard.id!, detailId).subscribe({
+            next: () => this.loadInvoiceDetails(month, year),
+            error: (err) => {
+                console.error('Delete detail failed', err);
+                alert('Erro ao excluir detalhe');
+            }
+        });
+    }
+
+    getOwnerKeys(byOwner: any): string[] {
+        return byOwner ? Object.keys(byOwner) : [];
+    }
+
+    // Owner Summary (Tab "Por Titular")
+    switchToOwnerTab() {
+        this.activeInvoiceTab = 'byOwner';
+        if (!this.ownerSummary && this.viewingCard) {
+            this.loadOwnerSummary();
+        }
+    }
+
+    loadOwnerSummary() {
+        if (!this.viewingCard) return;
+        this.cardService.getOwnerSummary(this.viewingCard.id!, this.invoiceYear).subscribe({
+            next: (data) => {
+                this.ownerSummary = data;
+                if (data.knownOwners) {
+                    this.knownOwners = data.knownOwners;
+                }
+            },
+            error: (err) => console.error('Failed to load owner summary', err)
+        });
+    }
+
+    getOwnerSummaryKeys(): string[] {
+        return this.ownerSummary?.summary ? Object.keys(this.ownerSummary.summary) : [];
+    }
+
+    getOwnerTotal(): number {
+        if (!this.ownerSummary?.summary) return 0;
+        return Object.values(this.ownerSummary.summary).reduce((sum: number, o: any) => sum + o.total, 0);
+    }
+
+    getOwnerPercentage(ownerKey: string): number {
+        const total = this.getOwnerTotal();
+        if (total === 0) return 0;
+        return (this.ownerSummary.summary[ownerKey].total / total) * 100;
     }
 
     // Helper for class binding

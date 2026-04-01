@@ -14,6 +14,7 @@ import {
     createExpenseSchema, updateExpenseSchema,
     createIncomeSchema, updateIncomeSchema,
     createCreditCardSchema, updateCreditCardSchema, addTransactionSchema, payInvoiceSchema,
+    addInvoiceDetailSchema, updateInvoiceDetailSchema,
     createInvestmentSchema, updateInvestmentSchema,
     adminCreateUserSchema, adminUpdateUserSchema, adminResetPasswordSchema,
 } from '../middleware/schemas';
@@ -75,6 +76,13 @@ router.post('/credit-cards/:id/invoice/unpay', authMiddleware, creditCardControl
 router.post('/credit-cards/:id/invoice/plan', authMiddleware, creditCardController.planInvoices.bind(creditCardController));
 router.get('/credit-cards/:id/balance', authMiddleware, creditCardController.getBalance.bind(creditCardController));
 router.get('/credit-cards/:id/yearly-overview/:year', authMiddleware, creditCardController.getYearlyOverview.bind(creditCardController));
+
+// Invoice Detail (Owner Breakdown) routes
+router.get('/credit-cards/:id/invoice-details/:month/:year', authMiddleware, creditCardController.getInvoiceDetails.bind(creditCardController));
+router.post('/credit-cards/:id/invoice-details', authMiddleware, validate(addInvoiceDetailSchema), creditCardController.addInvoiceDetail.bind(creditCardController));
+router.put('/credit-cards/:id/invoice-details/:detailId', authMiddleware, validate(updateInvoiceDetailSchema), creditCardController.updateInvoiceDetail.bind(creditCardController));
+router.delete('/credit-cards/:id/invoice-details/:detailId', authMiddleware, creditCardController.deleteInvoiceDetail.bind(creditCardController));
+router.get('/credit-cards/:id/owner-summary/:year', authMiddleware, creditCardController.getOwnerSummary.bind(creditCardController));
 
 // Investment routes
 router.get('/investments', authMiddleware, investmentController.getAll.bind(investmentController));

@@ -8,4 +8,5 @@ export { default as Investment } from './Investment';
 // export { default as FinancialPlan } from './FinancialPlan';
 export { default as PaymentReminder } from './PaymentReminder';
 export { default as CreditCardInvoice } from './CreditCardInvoice';
+export { default as InvoiceDetail } from './InvoiceDetail';
 export { default as PasswordResetToken } from './PasswordResetToken';

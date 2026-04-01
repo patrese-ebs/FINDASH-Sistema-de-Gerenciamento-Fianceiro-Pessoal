@@ -552,16 +552,49 @@
             </button>
         </div>
 
+        <!-- Tabs -->
+        <div class="bg-dark-surface border-b border-dark-border px-6 flex gap-1">
+            <button (click)="activeInvoiceTab = 'invoices'"
+                class="px-4 py-2.5 text-sm font-medium transition-all border-b-2 -mb-px"
+                [ngClass]="activeInvoiceTab === 'invoices'
+                    ? 'border-accent-emerald text-accent-emerald'
+                    : 'border-transparent text-text-secondary hover:text-text-primary'">
+                <span class="flex items-center gap-1.5">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" />
+                        <line x1="16" y1="2" x2="16" y2="6" />
+                        <line x1="8" y1="2" x2="8" y2="6" />
+                        <line x1="3" y1="10" x2="21" y2="10" />
+                    </svg>
+                    Faturas
+                </span>
+            </button>
+            <button (click)="switchToOwnerTab()"
+                class="px-4 py-2.5 text-sm font-medium transition-all border-b-2 -mb-px"
+                [ngClass]="activeInvoiceTab === 'byOwner'
+                    ? 'border-accent-blue text-accent-blue'
+                    : 'border-transparent text-text-secondary hover:text-text-primary'">
+                <span class="flex items-center gap-1.5">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <path stroke-linecap="round" d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
+                    </svg>
+                    Por Titular
+                </span>
+            </button>
+        </div>
+
         <!-- Year Navigation -->
         <div class="bg-dark-surface border-b border-dark-border px-6 py-3 flex justify-between items-center">
-            <button (click)="prevYear()" class="fd-btn-ghost text-sm py-1.5">
+            <button (click)="prevYear(); ownerSummary = null" class="fd-btn-ghost text-sm py-1.5">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <polyline points="15 18 9 12 15 6" />
                 </svg>
                 Anterior
             </button>
             <span class="font-bold text-accent-emerald font-mono">{{ invoiceYear }}</span>
-            <button (click)="nextYear()" class="fd-btn-ghost text-sm py-1.5">
+            <button (click)="nextYear(); ownerSummary = null" class="fd-btn-ghost text-sm py-1.5">
                 Próximo
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <polyline points="9 18 15 12 9 6" />
@@ -569,12 +602,12 @@
             </button>
         </div>
 
-        <!-- Months Accordion -->
-        <div class="flex-1 overflow-y-auto p-4 space-y-2">
+        <!-- ==================== TAB: FATURAS ==================== -->
+        <div *ngIf="activeInvoiceTab === 'invoices'" class="flex-1 overflow-y-auto p-4 space-y-2">
             <div *ngFor="let monthData of yearlyOverview; let i = index" class="fd-card overflow-hidden">
 
                 <!-- Month Header -->
-                <div (click)="toggleMonth(i)"
+                <div (click)="toggleMonth(i); showDetailSection = false; invoiceDetails = null"
                     class="px-4 py-3 flex justify-between items-center cursor-pointer hover:bg-dark-surface/50 select-none transition-colors">
                     <div class="flex items-center gap-4">
                         <span class="font-semibold text-sm w-24">{{ months[monthData.month - 1]?.label }}</span>
@@ -703,6 +736,255 @@
                             </tr>
                         </tbody>
                     </table>
+
+                    <!-- ===== INVOICE DETAIL (Owner Breakdown) Section ===== -->
+                    <div class="border-t border-dark-border">
+                        <!-- Toggle Button -->
+                        <button (click)="$event.stopPropagation(); toggleDetailSection(i)"
+                            class="w-full px-4 py-3 flex items-center justify-between text-sm hover:bg-dark-surface/50 transition-colors"
+                            [ngClass]="showDetailSection ? 'bg-accent-blue/5' : ''">
+                            <span class="flex items-center gap-2 font-medium"
+                                [ngClass]="showDetailSection ? 'text-accent-blue' : 'text-text-secondary'">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2" />
+                                    <circle cx="9" cy="7" r="4" />
+                                    <path stroke-linecap="round" d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
+                                </svg>
+                                Detalhamento por Titular
+                            </span>
+                            <svg class="w-4 h-4 text-text-secondary transition-transform duration-300"
+                                [ngClass]="{'rotate-180': showDetailSection}" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" stroke-width="2">
+                                <polyline points="6 9 12 15 18 9" />
+                            </svg>
+                        </button>
+
+                        <!-- Detail Content -->
+                        <div *ngIf="showDetailSection && invoiceDetails" class="px-4 pb-4 space-y-3">
+
+                            <!-- Owner Totals Summary Bar -->
+                            <div *ngIf="invoiceDetails.items.length > 0"
+                                class="bg-dark-surface rounded-lg p-3 space-y-2">
+                                <div class="flex flex-wrap gap-3 items-center">
+                                    <div *ngFor="let ownerKey of getOwnerKeys(invoiceDetails.byOwner)"
+                                        class="flex items-center gap-1.5">
+                                        <span
+                                            class="w-2.5 h-2.5 rounded-full bg-accent-blue flex-shrink-0"></span>
+                                        <span class="text-xs text-text-secondary">{{ ownerKey }}:</span>
+                                        <span class="text-xs font-bold text-text-primary font-mono">
+                                            {{ invoiceDetails.byOwner[ownerKey] | currency:'BRL' }}
+                                        </span>
+                                    </div>
+                                    <span class="text-dark-border">|</span>
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="text-xs text-text-secondary">Detalhado:</span>
+                                        <span class="text-xs font-bold text-accent-emerald font-mono">
+                                            {{ invoiceDetails.totalDetailed | currency:'BRL' }}
+                                        </span>
+                                        <span class="text-xs text-text-secondary">
+                                            de {{ invoiceDetails.invoiceTotal | currency:'BRL' }}
+                                        </span>
+                                    </div>
+                                    <div *ngIf="invoiceDetails.undetailed > 0" class="flex items-center gap-1.5">
+                                        <span class="text-dark-border">|</span>
+                                        <span class="text-xs text-accent-gold">
+                                            Sem detalhe: {{ invoiceDetails.undetailed | currency:'BRL' }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Detail Items List -->
+                            <div *ngIf="invoiceDetails.items.length > 0" class="space-y-1">
+                                <div *ngFor="let detail of invoiceDetails.items"
+                                    class="flex items-center justify-between px-3 py-2 rounded-md bg-dark-surface/40 hover:bg-dark-surface/70 transition-colors group">
+                                    <div class="flex items-center gap-3 flex-1 min-w-0">
+                                        <span
+                                            class="text-xs font-medium text-accent-blue bg-accent-blue/10 px-2 py-0.5 rounded whitespace-nowrap">
+                                            {{ detail.owner }}
+                                        </span>
+                                        <div class="flex flex-col min-w-0">
+                                            <span class="text-sm text-text-primary truncate">{{ detail.description }}</span>
+                                            <div class="flex items-center gap-2">
+                                                <span *ngIf="detail.installmentInfo"
+                                                    class="text-[10px] text-text-secondary">
+                                                    Parcela {{ detail.installmentInfo }}
+                                                </span>
+                                                <span *ngIf="detail.category"
+                                                    class="fd-badge fd-badge-gray text-[10px]">{{ detail.category }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-bold text-sm text-text-primary font-mono whitespace-nowrap">
+                                            {{ detail.amount | currency:'BRL' }}
+                                        </span>
+                                        <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button
+                                                (click)="$event.stopPropagation(); editDetail(detail)"
+                                                class="p-1 text-text-secondary hover:text-accent-emerald rounded transition-colors"
+                                                title="Editar">
+                                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"
+                                                    stroke="currentColor" stroke-width="2">
+                                                    <path stroke-linecap="round"
+                                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                </svg>
+                                            </button>
+                                            <button
+                                                (click)="$event.stopPropagation(); deleteDetail(detail.id, monthData.month, monthData.year)"
+                                                class="p-1 text-text-secondary hover:text-accent-red rounded transition-colors"
+                                                title="Excluir">
+                                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"
+                                                    stroke="currentColor" stroke-width="2">
+                                                    <path stroke-linecap="round"
+                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div *ngIf="invoiceDetails.items.length === 0"
+                                class="py-4 text-center text-text-secondary text-xs">
+                                Nenhum detalhamento adicionado para este mês.
+                            </div>
+
+                            <!-- Add/Edit Detail Form -->
+                            <form [formGroup]="detailForm"
+                                (ngSubmit)="onDetailSubmit(monthData.month, monthData.year)"
+                                class="bg-dark-surface rounded-lg p-3 space-y-3 border border-dark-border">
+                                <div class="text-xs font-medium text-text-secondary mb-1">
+                                    {{ editingDetailId ? '✏️ Editar Item' : '➕ Novo Item' }}
+                                </div>
+                                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                    <div class="sm:col-span-2">
+                                        <input type="text" formControlName="description" class="fd-input text-sm py-1.5"
+                                            placeholder="Descrição (ex: Netflix)">
+                                    </div>
+                                    <div>
+                                        <input type="number" formControlName="amount"
+                                            class="fd-input text-sm font-mono py-1.5" placeholder="Valor" step="0.01">
+                                    </div>
+                                    <div class="relative">
+                                        <input type="text" formControlName="owner" class="fd-input text-sm py-1.5"
+                                            placeholder="Titular" list="ownerSuggestions">
+                                        <datalist id="ownerSuggestions">
+                                            <option *ngFor="let o of knownOwners" [value]="o">
+                                        </datalist>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-3 gap-2">
+                                    <div>
+                                        <input type="text" formControlName="installmentInfo"
+                                            class="fd-input text-sm py-1.5" placeholder="Parcela (ex: 3/12)">
+                                    </div>
+                                    <div>
+                                        <select formControlName="category" class="fd-select text-sm py-1.5">
+                                            <option value="Alimentação">Alimentação</option>
+                                            <option value="Transporte">Transporte</option>
+                                            <option value="Casa">Casa</option>
+                                            <option value="Saúde">Saúde</option>
+                                            <option value="Lazer">Lazer</option>
+                                            <option value="Educação">Educação</option>
+                                            <option value="Compras">Compras</option>
+                                            <option value="Assinaturas">Assinaturas</option>
+                                            <option value="Outros">Outros</option>
+                                        </select>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <button type="submit" [disabled]="detailSubmitting || detailForm.invalid"
+                                            class="fd-btn-primary text-xs py-1.5 px-3 flex-1 disabled:opacity-50">
+                                            {{ detailSubmitting ? '...' : (editingDetailId ? 'Salvar' : 'Adicionar') }}
+                                        </button>
+                                        <button *ngIf="editingDetailId" type="button" (click)="resetDetailForm()"
+                                            class="fd-btn-ghost text-xs py-1.5 px-2">
+                                            Cancelar
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB: POR TITULAR ==================== -->
+        <div *ngIf="activeInvoiceTab === 'byOwner'" class="flex-1 overflow-y-auto p-4 space-y-4">
+
+            <!-- Empty State -->
+            <div *ngIf="getOwnerSummaryKeys().length === 0"
+                class="flex flex-col items-center justify-center py-16 text-center">
+                <div class="text-4xl mb-3">👥</div>
+                <p class="text-text-secondary text-sm">Nenhum detalhamento por titular encontrado para {{ invoiceYear }}.</p>
+                <p class="text-text-secondary text-xs mt-1">Adicione detalhes na aba "Faturas" expanda um mês e clique em "Detalhamento por Titular".</p>
+            </div>
+
+            <!-- Owner Cards -->
+            <div *ngFor="let ownerKey of getOwnerSummaryKeys()" class="fd-card p-4">
+                <div class="flex justify-between items-center mb-3">
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-accent-blue"></span>
+                        <span class="font-semibold text-text-primary">{{ ownerKey }}</span>
+                    </div>
+                    <div class="text-right">
+                        <div class="font-bold text-lg text-text-primary font-mono">
+                            {{ ownerSummary.summary[ownerKey].total | currency:'BRL' }}
+                        </div>
+                        <div class="text-xs text-text-secondary">
+                            {{ getOwnerPercentage(ownerKey) | number:'1.0-0' }}% do total detalhado
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Percentage Bar -->
+                <div class="fd-progress mb-3">
+                    <div class="fd-progress-bar bg-accent-blue"
+                        [style.width.%]="getOwnerPercentage(ownerKey)">
+                    </div>
+                </div>
+
+                <!-- Monthly Breakdown -->
+                <div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-12 gap-1">
+                    <div *ngFor="let m of planningMonths; let mi = index"
+                        class="flex flex-col items-center p-1 rounded text-center"
+                        [ngClass]="ownerSummary.summary[ownerKey].months[mi] > 0 ? 'bg-accent-blue/10' : 'bg-dark-surface/40'">
+                        <span class="text-[9px] text-text-secondary">{{ months[mi]?.label?.substring(0, 3) }}</span>
+                        <span class="text-[10px] font-mono font-medium"
+                            [ngClass]="ownerSummary.summary[ownerKey].months[mi] > 0 ? 'text-accent-blue' : 'text-text-secondary/50'">
+                            {{ ownerSummary.summary[ownerKey].months[mi] > 0
+                                ? (ownerSummary.summary[ownerKey].months[mi] | currency:'BRL':'symbol':'1.0-0')
+                                : '-' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Proportion -->
+            <div *ngIf="getOwnerSummaryKeys().length > 1"
+                class="fd-card p-4 border-accent-emerald/20">
+                <div class="flex items-center gap-2 mb-3">
+                    <svg class="w-4 h-4 text-accent-emerald" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+                        <path stroke-linecap="round" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+                    </svg>
+                    <span class="text-sm font-semibold text-text-primary">Proporção {{ invoiceYear }}</span>
+                </div>
+                <div class="flex flex-wrap gap-4">
+                    <div *ngFor="let ownerKey of getOwnerSummaryKeys()" class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-accent-blue"></span>
+                        <span class="text-sm text-text-primary">{{ ownerKey }}:</span>
+                        <span class="text-sm font-bold font-mono text-accent-blue">
+                            {{ getOwnerPercentage(ownerKey) | number:'1.0-0' }}%
+                        </span>
+                        <span class="text-xs text-text-secondary font-mono">
+                            ({{ ownerSummary.summary[ownerKey].total | currency:'BRL' }})
+                        </span>
+                    </div>
+                </div>
+                <div class="mt-2 text-xs text-text-secondary">
+                    Total detalhado: <span class="font-mono font-medium text-text-primary">{{ getOwnerTotal() | currency:'BRL' }}</span>
                 </div>
             </div>
         </div>
