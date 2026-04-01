@@ -115,6 +115,7 @@ export class CreditCardsComponent implements OnInit {
             month: [new Date().getMonth() + 1, Validators.required],
             year: [new Date().getFullYear(), Validators.required],
             installments: [1, [Validators.required, Validators.min(1)]],
+            currentInstallment: [1, [Validators.min(1)]],
             totalValue: [0], // Used if not detailed
             description: ['', Validators.required],
             category: ['Outros'],
@@ -396,19 +397,15 @@ export class CreditCardsComponent implements OnInit {
             month: new Date().getMonth() + 1,
             year: new Date().getFullYear(),
             installments: 1,
+            currentInstallment: 1,
             totalValue: 0,
             category: 'Outros',
             date: new Date().toISOString().split('T')[0],
             owner: '',
             detailOnly: false
         });
-        // Load known owners for autocomplete
-        if (this.selectedCard?.id) {
-            this.cardService.getOwnerSummary(this.selectedCard.id, new Date().getFullYear()).subscribe({
-                next: (data: any) => this.knownOwners = data.knownOwners || [],
-                error: () => this.knownOwners = []
-            });
-        }
+        // Load known owners for autocomplete (global across all cards)
+        this.loadKnownOwners();
     }
 
     onTransactionSubmit() {
@@ -468,6 +465,7 @@ export class CreditCardsComponent implements OnInit {
                 creditCardId: val.cardId,
                 isPaid: false,
                 installments: val.installments,
+                currentInstallment: val.currentInstallment || 1,
                 owner: val.owner || null,
                 detailOnly: val.detailOnly || false
             };
@@ -993,6 +991,29 @@ export class CreditCardsComponent implements OnInit {
 
     getOwnerKeys(byOwner: any): string[] {
         return byOwner ? Object.keys(byOwner) : [];
+    }
+
+    loadKnownOwners() {
+        // Load known owners from ALL cards for global autocomplete
+        const ownerSet = new Set<string>();
+        let pending = this.cards.length;
+        if (pending === 0) {
+            this.knownOwners = [];
+            return;
+        }
+        this.cards.forEach(card => {
+            this.cardService.getOwnerSummary(card.id!, new Date().getFullYear()).subscribe({
+                next: (data: any) => {
+                    (data.knownOwners || []).forEach((o: string) => ownerSet.add(o));
+                    pending--;
+                    if (pending === 0) this.knownOwners = Array.from(ownerSet);
+                },
+                error: () => {
+                    pending--;
+                    if (pending === 0) this.knownOwners = Array.from(ownerSet);
+                }
+            });
+        });
     }
 
     // Owner Summary (Tab "Por Titular")

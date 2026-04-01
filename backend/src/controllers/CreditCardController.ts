@@ -554,7 +554,7 @@ export class CreditCardController {
     async addTransaction(req: AuthRequest, res: Response): Promise<void> {
         try {
             const { id } = req.params;
-            const { description, totalAmount, installments, category, purchaseDate, owner, detailOnly } = req.body;
+            const { description, totalAmount, installments, currentInstallment, category, purchaseDate, owner, detailOnly } = req.body;
             const userId = req.userId;
 
             if (!userId) {
@@ -577,7 +577,7 @@ export class CreditCardController {
                 description,
                 totalAmount,
                 installments,
-                currentInstallment: 1,
+                currentInstallment: currentInstallment || 1,
                 installmentAmount,
                 purchaseDate: new Date(purchaseDate),
                 category,

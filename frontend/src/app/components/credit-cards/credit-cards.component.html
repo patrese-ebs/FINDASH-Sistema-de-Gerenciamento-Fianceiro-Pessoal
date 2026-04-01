@@ -445,6 +445,24 @@
                     </span>
                 </div>
             </div>
+
+            <!-- Parcelas já pagas (shows only for installments > 1) -->
+            <div *ngIf="transactionForm.get('installments')?.value > 1 && !editingTransactionId"
+                class="bg-dark-surface rounded-lg p-3 border border-dark-border">
+                <label class="fd-label mb-2">Parcelas já pagas</label>
+                <div class="flex items-center gap-3">
+                    <input type="number" formControlName="currentInstallment" min="1"
+                        [max]="transactionForm.get('installments')?.value"
+                        class="fd-input font-mono w-20 text-center" placeholder="1">
+                    <span class="text-xs text-text-secondary">
+                        de {{ transactionForm.get('installments')?.value }} parcelas
+                    </span>
+                </div>
+                <p class="text-[10px] text-text-secondary mt-2">
+                    💡 Se esta compra já tem parcelas pagas, informe em qual parcela está.
+                    Ex: se já pagou 3 de 12, coloque 4 (a próxima a vencer).
+                </p>
+            </div>
             <div class="grid grid-cols-2 gap-4">
                 <div>
                     <label class="fd-label">Categoria</label>

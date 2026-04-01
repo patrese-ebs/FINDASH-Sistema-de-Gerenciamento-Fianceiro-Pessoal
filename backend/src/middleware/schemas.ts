@@ -55,6 +55,7 @@ export const createExpenseSchema = z.object({
     recurrenceEndDate: z.string().optional().nullable(),
     isPaid: z.boolean().optional(),
     installments: z.number().int().min(1).optional(),
+    currentInstallment: z.number().int().min(1).optional(),
     owner: z.string().max(50).optional().nullable(),
     detailOnly: z.boolean().optional(),
 });
@@ -122,6 +123,7 @@ export const addTransactionSchema = z.object({
     description: z.string().min(1).max(255),
     totalAmount: z.number().positive(),
     installments: z.number().int().min(1),
+    currentInstallment: z.number().int().min(1).optional(),
     category: z.string().min(1).max(50),
     purchaseDate: z.string().min(1),
     owner: z.string().max(50).optional().nullable(),

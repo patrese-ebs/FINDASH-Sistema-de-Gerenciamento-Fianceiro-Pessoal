@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SidebarComponent } from '../sidebar/sidebar.component';
 import { TransactionService } from '../../services/transaction';
+import { CreditCardService } from '../../services/credit-card';
 import { AuthService } from '../../services/auth';
 import { Chart, registerables } from 'chart.js';
 
@@ -50,6 +51,11 @@ export class DashboardComponent implements OnInit, AfterViewInit {
     paidIncome: number = 0;
     paidExpenses: number = 0;
 
+    // Owner Breakdown for dashboard
+    ownerBreakdown: { [owner: string]: number } = {};
+    ownerBreakdownKeys: string[] = [];
+    ownerBreakdownTotal: number = 0;
+
     @ViewChild('cashFlowChart') cashFlowChartRef!: ElementRef;
     @ViewChild('expenseChart') expenseChartRef!: ElementRef;
 
@@ -59,6 +65,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
 
     constructor(
         private transactionService: TransactionService,
+        private cardService: CreditCardService,
         private authService: AuthService,
         private http: HttpClient
     ) { }
@@ -88,6 +95,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
                 clearTimeout(timeoutId);
                 this.transactions = data || [];
                 this.calculateStats();
+                this.loadOwnerBreakdown();
                 this.loading = false;
             },
             error: (err) => {
@@ -127,6 +135,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
         }
         this.calculateStats();
         this.loadInsights();
+        this.loadOwnerBreakdown();
     }
 
     nextMonth() {
@@ -138,6 +147,7 @@ export class DashboardComponent implements OnInit, AfterViewInit {
         }
         this.calculateStats();
         this.loadInsights();
+        this.loadOwnerBreakdown();
     }
 
     getMonthName(monthVal: number): string {
@@ -281,5 +291,45 @@ export class DashboardComponent implements OnInit, AfterViewInit {
                 this.searchingDebt = false;
             }
         });
+    }
+
+    loadOwnerBreakdown() {
+        this.ownerBreakdown = {};
+        this.ownerBreakdownKeys = [];
+        this.ownerBreakdownTotal = 0;
+
+        this.cardService.getAll().subscribe({
+            next: (cards) => {
+                if (cards.length === 0) return;
+                let pending = cards.length;
+                const aggregate: { [owner: string]: number } = {};
+
+                cards.forEach(card => {
+                    this.cardService.getYearlyOverview(card.id!, this.selectedYear).subscribe({
+                        next: (overview: any[]) => {
+                            const monthData = overview.find((m: any) => m.month === this.selectedMonth);
+                            if (monthData && monthData.byOwner) {
+                                Object.keys(monthData.byOwner).forEach(owner => {
+                                    aggregate[owner] = (aggregate[owner] || 0) + monthData.byOwner[owner];
+                                });
+                            }
+                            pending--;
+                            if (pending === 0) this.finalizeOwnerBreakdown(aggregate);
+                        },
+                        error: () => {
+                            pending--;
+                            if (pending === 0) this.finalizeOwnerBreakdown(aggregate);
+                        }
+                    });
+                });
+            },
+            error: () => {}
+        });
+    }
+
+    finalizeOwnerBreakdown(aggregate: { [owner: string]: number }) {
+        this.ownerBreakdown = aggregate;
+        this.ownerBreakdownKeys = Object.keys(aggregate).sort();
+        this.ownerBreakdownTotal = Object.values(aggregate).reduce((sum, v) => sum + v, 0);
     }
 }
